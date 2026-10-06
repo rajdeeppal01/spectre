@@ -1,0 +1,58 @@
+# Environment files — NEVER commit API keys
+.env
+infrastructure/.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+.next/
+.nuxt/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Docker volumes (local data)
+infrastructure/volumes/
+
+# ChromaDB / vector store data (too large for git, rebuilt on first run)
+rag/chromadb/
+
+# Model weights (downloaded by Ollama, not stored in repo)
+*.gguf
+*.bin
+models/
+
+# Pentest outputs (potentially sensitive)
+outputs/
+scans/*.xml
+scans/*.json
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Temp
+tmp/
+temp/
+scratch/

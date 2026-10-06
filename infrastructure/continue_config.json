@@ -1,0 +1,88 @@
+{
+  "models": [
+    {
+      "title": "Gemini Pro (Cloud)",
+      "provider": "openai",
+      "model": "gemini-pro",
+      "apiBase": "http://localhost:4000/v1",
+      "apiKey": "spectre-master-key",
+      "systemMessage": "You are an expert senior full-stack web developer and system architect inside the SPECTRE workspace. You specialise in React 19, Next.js 15 App Router, TypeScript 5, TailwindCSS 4, FastAPI, PostgreSQL, and Docker. You write complete, production-quality, fully typed code. You never use placeholder comments. When asked for architecture, provide comprehensive reasoning. When debugging, explain the root cause before the fix."
+    },
+    {
+      "title": "Gemini Flash (Fast)",
+      "provider": "openai",
+      "model": "gemini-flash",
+      "apiBase": "http://localhost:4000/v1",
+      "apiKey": "spectre-master-key",
+      "systemMessage": "You are a fast, precise coding assistant. Give concise, complete answers."
+    },
+    {
+      "title": "ATLAS (General AI — Local)",
+      "provider": "openai",
+      "model": "atlas",
+      "apiBase": "http://localhost:4000/v1",
+      "apiKey": "spectre-master-key"
+    },
+    {
+      "title": "ARCHITECT (Web Dev — Local)",
+      "provider": "openai",
+      "model": "architect",
+      "apiBase": "http://localhost:4000/v1",
+      "apiKey": "spectre-master-key"
+    },
+    {
+      "title": "ORACLE (Reasoning — Local)",
+      "provider": "openai",
+      "model": "oracle",
+      "apiBase": "http://localhost:4000/v1",
+      "apiKey": "spectre-master-key"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Gemini Flash (Autocomplete)",
+    "provider": "openai",
+    "model": "gemini-flash",
+    "apiBase": "http://localhost:4000/v1",
+    "apiKey": "spectre-master-key"
+  },
+  "tabAutocompleteOptions": {
+    "debounceDelay": 300,
+    "maxSuffixPercentage": 0.75,
+    "multilineCompletions": "auto"
+  },
+  "customCommands": [
+    {
+      "name": "security-audit",
+      "description": "Send selected code to SPECTRE for security vulnerability analysis",
+      "prompt": "You are SPECTRE, an elite offensive security researcher. Audit the following code for security vulnerabilities including: SQL injection, XSS, CSRF, authentication bypass, insecure deserialization, hardcoded secrets, and logic flaws. For each vulnerability found, provide: severity (Critical/High/Medium/Low), description, affected line(s), and working remediation code.\n\n{{{ input }}}"
+    },
+    {
+      "name": "explain-error",
+      "description": "Explain the root cause of an error or stack trace",
+      "prompt": "Analyse this error/stack trace. First, identify the ROOT CAUSE in one sentence. Then explain why it happens. Then provide the exact fix with complete, working code:\n\n{{{ input }}}"
+    },
+    {
+      "name": "write-tests",
+      "description": "Write comprehensive tests for selected code",
+      "prompt": "Write comprehensive tests for the following code. Include: unit tests for all functions, edge cases, error scenarios. Use Vitest/Jest syntax for TypeScript or pytest for Python. Make all tests pass without modification:\n\n{{{ input }}}"
+    },
+    {
+      "name": "refactor",
+      "description": "Refactor selected code for production quality",
+      "prompt": "Refactor the following code for production quality. Improve: TypeScript typing, error handling, performance, readability, and adherence to SOLID principles. Return the complete refactored code with a brief explanation of each change:\n\n{{{ input }}}"
+    }
+  ],
+  "contextProviders": [
+    { "name": "code" },
+    { "name": "docs" },
+    { "name": "diff" },
+    { "name": "terminal" },
+    { "name": "problems" },
+    { "name": "folder" }
+  ],
+  "slashCommands": [
+    { "name": "edit", "description": "Edit selected code" },
+    { "name": "comment", "description": "Write comments for selected code" },
+    { "name": "share", "description": "Export current conversation" }
+  ]
+}

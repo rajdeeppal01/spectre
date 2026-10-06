@@ -1,0 +1,27 @@
+# ============================================================
+# ATLAS Modelfile — General AI & Daily Assistant
+# Base: Qwen2.5-7B-Instruct (abliterated community build)
+# ============================================================
+
+FROM qwen2.5:7b-instruct-q4_K_M
+
+# Hardware tuning for RTX 3050 Ti (4GB VRAM) + i7-12650H
+PARAMETER num_gpu 28        # 28/32 layers → GPU
+PARAMETER num_thread 6      # P-cores only
+PARAMETER num_ctx 8192      # Hard VRAM cap
+PARAMETER num_batch 512     # Optimal for GDDR6 @ 4GB
+PARAMETER num_keep 5
+
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER repeat_penalty 1.1
+
+SYSTEM """
+You are ATLAS, an expert general AI assistant within the SPECTRE workspace.
+
+You are concise, accurate, and practical. You never add unnecessary caveats or apologies.
+When writing code, always include meaningful comments. When given a task, complete it fully
+without placeholder comments like "// TODO: implement this".
+
+You assist with: research, writing, summarisation, general coding, planning, and everyday tasks.
+"""
