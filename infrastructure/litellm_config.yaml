@@ -1,90 +1,54 @@
-# ============================================================
-# SPECTRE — LiteLLM Router Configuration
-# Routes requests to Gemini Pro (cloud) or Ollama (local)
-# based on model selection and routing rules
-# ============================================================
-
 model_list:
-
-  # ── CLOUD TIER ─────────────────────────────────────────────
-
-  # Gemini 2.5 Pro — Primary intelligence, 1M token context
-  # Used for: web development, architecture, complex reasoning
+  # ── Cloud Tier — Gemini (student plan API key) ──────────────────────
   - model_name: gemini-pro
     litellm_params:
       model: gemini/gemini-2.5-pro
       api_key: os.environ/GEMINI_API_KEY
-      max_tokens: 8192
-      temperature: 0.7
 
-  # Gemini 2.0 Flash — Fast autocomplete and quick lookups
-  # Used for: VS Code tab completion, simple queries
   - model_name: gemini-flash
     litellm_params:
       model: gemini/gemini-2.0-flash-exp
       api_key: os.environ/GEMINI_API_KEY
-      max_tokens: 4096
-      temperature: 0.3
 
-  # ── LOCAL TIER (Ollama) ────────────────────────────────────
-
-  # ATLAS — General AI & daily assistant
+  # ── Local Tier — Ollama (localhost:11434) ───────────────────────────
+  # These point at the custom-built models from pull_models.ps1
+  # (base quantized model + Modelfile system prompt + hardware tuning
+  # params), NOT the raw base tags — otherwise the SPECTRE/ARCHITECT/
+  # etc. system prompts never get applied.
   - model_name: atlas
     litellm_params:
-      model: ollama/qwen2.5:7b-instruct-q4_K_M
+      model: ollama/atlas
       api_base: http://ollama:11434
-      stream: true
 
-  # SPECTRE — Offensive cybersecurity (NEVER routed to cloud)
-  # This model is explicitly locked to local inference only.
   - model_name: spectre
     litellm_params:
-      model: ollama/whiterabbitneo2:8b-q4_K_M
+      model: ollama/spectre
       api_base: http://ollama:11434
-      stream: true
 
-  # ARCHITECT — Full-stack web development & debugging
   - model_name: architect
     litellm_params:
-      model: ollama/devstral:7b-q4_K_M
+      model: ollama/architect
       api_base: http://ollama:11434
-      stream: true
 
-  # ORACLE — Deep reasoning, architecture, quantum computing
   - model_name: oracle
     litellm_params:
-      model: ollama/llama3.1:8b-instruct-q4_K_M
+      model: ollama/oracle
       api_base: http://ollama:11434
-      stream: true
 
-  # ── OFFLINE FALLBACK GROUP ─────────────────────────────────
-  # When OFFLINE mode is selected in the UI, all non-security
-  # tasks fall back to this group (round-robin between local models)
-  - model_name: offline-auto
+  # ── Embedding model for Open WebUI RAG (local, no VRAM) ─────────────
+  - model_name: nomic-embed
     litellm_params:
-      model: ollama/qwen2.5:7b-instruct-q4_K_M
+      model: ollama/nomic-embed-text
       api_base: http://ollama:11434
 
-# ── ROUTER SETTINGS ──────────────────────────────────────────
-router_settings:
-  routing_strategy: simple-shuffle
-  num_retries: 2
-  timeout: 120
-  retry_after: 5
-
-# ── SERVER SETTINGS ──────────────────────────────────────────
 litellm_settings:
-  # Master key for Open WebUI → LiteLLM auth
-  master_key: os.environ/LITELLM_MASTER_KEY
-
-  # Drop unsupported params (prevents errors across different model families)
   drop_params: true
+  set_verbose: false
+  # SPECTRE is never allowed to fall back to a cloud model under any
+  # retry/fallback logic — keep it out of general_settings fallbacks.
 
-  # Request/response logging (local only, never sent externally)
-  success_callback: []
-  failure_callback: []
-
-  # Safety: block any attempt to route 'spectre' model to cloud
-  guardrails:
-    - model_name: spectre
-      block_external_calls: true
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  # No fallback chain defined for "spectre" on purpose — it must fail
+  # loudly rather than silently reroute offensive-security content to
+  # a cloud model.

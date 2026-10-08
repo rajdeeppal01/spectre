@@ -1,17 +1,6 @@
 version: "3.9"
 
-# ============================================================
-# SPECTRE — Full Stack AI Workspace
-# Services: Ollama · Open WebUI · LiteLLM · SearXNG
-# ============================================================
-
 services:
-
-  # ----------------------------------------------------------
-  # Ollama — Local model inference engine
-  # Exposes OpenAI-compatible API at :11434
-  # GPU passthrough enabled for RTX 3050 Ti
-  # ----------------------------------------------------------
   ollama:
     image: ollama/ollama:latest
     container_name: spectre-ollama
@@ -19,11 +8,12 @@ services:
     ports:
       - "11434:11434"
     volumes:
-      - ollama_data:/root/.ollama
-    environment:
-      - OLLAMA_NUM_PARALLEL=1        # One request at a time on 4GB VRAM
-      - OLLAMA_MAX_LOADED_MODELS=1   # Only keep one model in VRAM at a time
-      - OLLAMA_FLASH_ATTENTION=1     # Reduces VRAM usage with Flash Attention
+      - ollama-data:/root/.ollama
+      - ./modelfiles:/modelfiles:ro
+    # GPU passthrough — requires NVIDIA Container Toolkit on the host
+    # (native Windows: use WSL2 + Docker Desktop with GPU support enabled;
+    #  this block is ignored harmlessly if no GPU runtime is present, but
+    #  local models will run on CPU only — expect it to be slow).
     deploy:
       resources:
         reservations:
@@ -31,98 +21,73 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-    networks:
-      - spectre-net
-
-  # ----------------------------------------------------------
-  # Open WebUI — Chat interface (the "Odysseus" equivalent)
-  # Dashboard at :3000
-  # Connects to both Ollama (local) and LiteLLM (router)
-  # ----------------------------------------------------------
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:latest
-    container_name: spectre-webui
-    restart: unless-stopped
-    ports:
-      - "3000:8080"
-    volumes:
-      - openwebui_data:/app/backend/data
     environment:
-      # Point to LiteLLM proxy as the primary OpenAI-compatible backend
-      - OPENAI_API_BASE_URL=http://litellm:4000/v1
-      - OPENAI_API_KEY=${LITELLM_MASTER_KEY:-spectre-master-key}
-      # Also connect to Ollama directly for model management UI
-      - OLLAMA_BASE_URL=http://ollama:11434
-      # Embedding model for RAG (runs inside Open WebUI container)
-      - RAG_EMBEDDING_ENGINE=ollama
-      - RAG_EMBEDDING_MODEL=nomic-embed-text
-      - OLLAMA_BASE_URL_FOR_EMBEDDING=http://ollama:11434
-      # RAG tuning
-      - CHUNK_SIZE=1500
-      - CHUNK_OVERLAP=150
-      - RAG_TOP_K=5
-      # Web search via SearXNG
-      - ENABLE_RAG_WEB_SEARCH=true
-      - RAG_WEB_SEARCH_ENGINE=searxng
-      - SEARXNG_QUERY_URL=http://searxng:8080/search?q=<query>&format=json
-    depends_on:
-      - ollama
-      - litellm
-      - searxng
-    networks:
-      - spectre-net
+      - OLLAMA_NUM_PARALLEL=1
+      - OLLAMA_MAX_LOADED_MODELS=1   # 4GB VRAM — load one model at a time
 
-  # ----------------------------------------------------------
-  # LiteLLM — Universal AI proxy and router
-  # Exposes all models (cloud + local) as a single API at :4000
-  # ----------------------------------------------------------
   litellm:
-    image: ghcr.io/berriai/litellm:main-latest
+    image: ghcr.io/berriai/litellm:main-stable
     container_name: spectre-litellm
     restart: unless-stopped
     ports:
       - "4000:4000"
     volumes:
-      - ./litellm_config.yaml:/app/config.yaml
-    env_file:
-      - .env
-    command: ["--config", "/app/config.yaml", "--port", "4000", "--num_workers", "1"]
-    networks:
-      - spectre-net
+      - ./litellm_config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+    depends_on:
+      - ollama
 
-  # ----------------------------------------------------------
-  # SearXNG — Private, self-hosted web search engine
-  # Used by Open WebUI to give models live internet access
-  # No search data is sent to Google, Bing, or any third party
-  # ----------------------------------------------------------
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: spectre-open-webui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui-data:/app/backend/data
+    environment:
+      # Point Open WebUI at LiteLLM, not Ollama directly, so all 6
+      # models (2 cloud + 4 local) show up in one dropdown.
+      - OPENAI_API_BASE_URL=http://litellm:4000/v1
+      - OPENAI_API_KEY=${LITELLM_MASTER_KEY}
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+      - RAG_EMBEDDING_ENGINE=ollama
+      - RAG_EMBEDDING_MODEL=nomic-embed-text
+      - RAG_OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - litellm
+
+  auto-router:
+    image: python:3.12-slim
+    container_name: spectre-auto-router
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ../scripts:/app
+    command: >
+      sh -c "pip install --no-cache-dir fastapi httpx uvicorn[standard] &&
+             uvicorn auto_router:app --host 0.0.0.0 --port 5000"
+    ports:
+      - "5000:5000"
+    environment:
+      - LITELLM_BASE=http://litellm:4000
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+    depends_on:
+      - litellm
+
   searxng:
     image: searxng/searxng:latest
     container_name: spectre-searxng
     restart: unless-stopped
     ports:
-      - "8088:8080"
+      - "8080:8080"
     volumes:
-      - searxng_data:/etc/searxng
-    environment:
-      - SEARXNG_BASE_URL=http://localhost:8088
-    networks:
-      - spectre-net
+      - searxng-data:/etc/searxng
 
-# ----------------------------------------------------------
-# Volumes — persistent data across container restarts
-# ----------------------------------------------------------
 volumes:
-  ollama_data:
-    name: spectre-ollama-data
-  openwebui_data:
-    name: spectre-webui-data
-  searxng_data:
-    name: spectre-searxng-data
-
-# ----------------------------------------------------------
-# Network — isolated bridge network for all SPECTRE services
-# ----------------------------------------------------------
-networks:
-  spectre-net:
-    name: spectre-network
-    driver: bridge
+  ollama-data:
+  open-webui-data:
+  searxng-data:
