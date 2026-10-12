@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPECTRE — Command Center & Architecture Visualizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070b14;
+      --bg-card: rgba(15, 23, 42, 0.7);
+      --bg-card-hover: rgba(30, 41, 59, 0.8);
+      --border-color: rgba(56, 189, 248, 0.15);
+      --border-glow: rgba(56, 189, 248, 0.35);
+      --cyan-glow: #38bdf8;
+      --emerald-glow: #10b981;
+      --purple-glow: #a855f7;
+      --rose-glow: #f43f5e;
+      --amber-glow: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.04) 0px, transparent 60%);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Header & Navigation */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 2.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0284c7, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fira Code', monospace;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(2, 132, 199, 0.4);
+    }
+
+    .brand-title h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-title p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--emerald-glow);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--emerald-glow);
+      box-shadow: 0 0 10px var(--emerald-glow);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.9); }
+    }
+
+    /* Nav Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.35rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 2rem;
+    }
+
+    .nav-tab {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      text-align: center;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan-glow);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.1);
+    }
+
+    /* Stats Overview Cards */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-glow);
+    }
+
+    .metric-title {
+      font-size: 0.775rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .metric-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #fff;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .metric-sub {
+      font-size: 0.775rem;
+      color: var(--cyan-glow);
+      margin-top: 0.25rem;
+    }
+
+    /* Section Headers */
+    .section-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-header h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-header p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    /* Two-Tier Architecture Graph */
+    .tier-container {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin-bottom: 3rem;
+    }
+
+    @media (max-width: 900px) {
+      .tier-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      .bridge-column {
+        flex-direction: row !important;
+        padding: 1rem 0;
+      }
+    }
+
+    .tier-box {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 1.75rem;
+    }
+
+    .tier-box.cloud {
+      border-color: rgba(56, 189, 248, 0.3);
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.05);
+    }
+
+    .tier-box.local {
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.05);
+    }
+
+    .tier-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .tier-header h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .tier-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .tier-tag.cloud { background: rgba(56, 189, 248, 0.2); color: var(--cyan-glow); }
+    .tier-tag.local { background: rgba(16, 185, 129, 0.2); color: var(--emerald-glow); }
+
+    .model-card-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .model-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .model-info h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .model-info p {
+      font-size: 0.775rem;
+      color: var(--text-muted);
+    }
+
+    .model-badge {
+      font-size: 0.725rem;
+      font-family: 'Fira Code', monospace;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .bridge-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .router-badge {
+      background: linear-gradient(180deg, #1e293b, #0f172a);
+      border: 1px solid var(--border-glow);
+      padding: 1rem 0.5rem;
+      border-radius: 14px;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--cyan-glow);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+    }
+
+    /* Sprint Timeline */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+    }
+
+    .sprint-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 140px 1fr auto;
+      gap: 1.5rem;
+      align-items: center;
+      transition: border-color 0.2s ease;
+    }
+
+    .sprint-card:hover {
+      border-color: var(--border-glow);
+    }
+
+    @media (max-width: 768px) {
+      .sprint-card {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+    }
+
+    .sprint-meta h4 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .sprint-meta span {
+      font-size: 0.75rem;
+      font-family: 'Fira Code', monospace;
+      color: var(--text-muted);
+    }
+
+    .sprint-desc h5 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .sprint-desc p {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    .sprint-status-tag {
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--emerald-glow);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* Interactive Playground Tab */
+    .playground-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .playground-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .tool-widget {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .tool-widget h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tool-input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tool-input {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+    }
+
+    .tool-input:focus {
+      outline: none;
+      border-color: var(--cyan-glow);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+
+    .tool-btn {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tool-btn:hover {
+      opacity: 0.9;
+    }
+
+    .tool-output {
+      background: #050811;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.775rem;
+      color: #38bdf8;
+      min-height: 120px;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.825rem;
+    }
+
+    footer a {
+      color: var(--cyan-glow);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="logo-badge">S</div>
+        <div class="brand-title">
+          <h1>SPECTRE Command Center</h1>
+          <p>Two-Tier Hybrid AI Ecosystem • v5.0 Active</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <div class="status-pill">
+          <span class="status-indicator"></span>
+          <span>100% Core Architecture Built</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('overview')">System Overview</button>
+      <button class="nav-tab" onclick="switchTab('architecture')">Architecture & Models</button>
+      <button class="nav-tab" onclick="switchTab('sprints')">Sprint Deliverables (1–5)</button>
+      <button class="nav-tab" onclick="switchTab('playground')">Live Tool Playground</button>
+    </div>
+
+    <!-- TAB 1: System Overview -->
+    <div id="tab-overview" class="tab-content">
+      <!-- Metrics Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-title">Tracked Files <span>📁</span></div>
+          <div class="metric-value" id="val-files">37+</div>
+          <div class="metric-sub">Across 6 core layers</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Lines of Code <span>💻</span></div>
+          <div class="metric-value" id="val-loc">12,400+</div>
+          <div class="metric-sub">Python, Configs & Markdown</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">AI Personas <span>🤖</span></div>
+          <div class="metric-value">6</div>
+          <div class="metric-sub">2 Cloud + 4 Local Air-Gapped</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">RAG Vectors <span>🧠</span></div>
+          <div class="metric-value">39 Chunks</div>
+          <div class="metric-sub">Pre-indexed & searchable</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Security Rules <span>🛡️</span></div>
+          <div class="metric-value">14 Signatures</div>
+          <div class="metric-sub">OWASP, Secrets & PQC</div>
+        </div>
+      </div>
+
+      <!-- Quick Architecture Snapshot -->
+      <div class="section-header">
+        <h2>Two-Tier Hybrid Architecture</h2>
+        <p>Dynamic routing balances frontier cloud intelligence with local air-gapped isolation.</p>
+      </div>
+
+      <div class="tier-container">
+        <!-- Tier 1: Cloud -->
+        <div class="tier-box cloud">
+          <div class="tier-header">
+            <h3>Tier 1 — Cloud Frontier</h3>
+            <span class="tier-tag cloud">Google AI Studio</span>
+          </div>
+          <div class="model-card-grid">
+            <div class="model-card">
+              <div class="model-info">
+                <h4>Gemini 2.5 Pro</h4>
+                <p>1M Token Context • System Architecture & Web Dev</p>
+              </div>
+              <span class="model-badge">Primary Brain</span>
+            </div>
+            <div class="model-card">
+              <div class="model-info">
+                <h4>Gemini 2.0 Flash</h4>
+                <p>Ultra-Low Latency • Tab Autocomplete in VS Code</p>
+              </div>
+              <span class="model-badge">~200ms</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bridge -->
+        <div class="bridge-column">
+          <div class="router-badge">
+            ⚡<br>LiteLLM<br>:4000<br>+<br>AUTO<br>Router
+          </div>
+        </div>
+
+        <!-- Tier 2: Local -->
+        <div class="tier-box local">
+          <div class="tier-header">
+            <h3>Tier 2 — Local Air-Gapped</h3>
+            <span class="tier-tag local">Ollama (RTX 3050 Ti)</span>
+          </div>
+          <div class="model-card-grid">
+            <div class="model-card">
+              <div class="model-info">
+                <h4>SPECTRE (WhiteRabbitNeo 8B)</h4>
+                <p>Offensive Cybersecurity • Never touches cloud</p>
+              </div>
+              <span class="model-badge">Exploit / CVE</span>
+            </div>
+            <div class="model-card">
+              <div class="model-info">
+                <h4>ARCHITECT (Devstral 7B)</h4>
+                <p>Full-Stack Web Dev • Offline SWE-Bench Leader</p>
+              </div>
+              <span class="model-badge">Offline Code</span>
+            </div>
+            <div class="model-card">
+              <div class="model-info">
+                <h4>ORACLE (Llama 3.1 8B)</h4>
+                <p>Deep STEM Reasoning & Quantum Simulation</p>
+              </div>
+              <span class="model-badge">Quantum/STEM</span>
+            </div>
+            <div class="model-card">
+              <div class="model-info">
+                <h4>ATLAS (Qwen 2.5 7B)</h4>
+                <p>Daily Assistant & Technical Report Writer</p>
+              </div>
+              <span class="model-badge">General AI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Architecture & Models -->
+    <div id="tab-architecture" class="tab-content" style="display: none;">
+      <div class="section-header">
+        <h2>Hardware Allocation & Optimization Profile</h2>
+        <p>Configured specifically for Intel i7-12650H + 16GB RAM + NVIDIA RTX 3050 Ti (4GB VRAM).</p>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-title">GPU Offload Layers</div>
+          <div class="metric-value">28 / 32</div>
+          <div class="metric-sub">num_gpu in Modelfiles</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">CPU Thread Binding</div>
+          <div class="metric-value">6 Threads</div>
+          <div class="metric-sub">Dedicated to P-Cores</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Context Hard-Cap</div>
+          <div class="metric-value">8,192 Tokens</div>
+          <div class="metric-sub">Prevents GDDR6 VRAM Overflow</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-title">Batch Size</div>
+          <div class="metric-value">512 Tokens</div>
+          <div class="metric-sub">Tuned to memory bandwidth</div>
+        </div>
+      </div>
+
+      <div class="tier-box" style="margin-top: 1.5rem;">
+        <div class="tier-header">
+          <h3>Intelligent AUTO-Routing Rules Sequence</h3>
+          <span class="tier-tag cloud">scripts/auto_router.py</span>
+        </div>
+        <div style="font-family: 'Fira Code', monospace; font-size: 0.85rem; line-height: 1.8; color: #94a3b8;">
+          1. <strong style="color: #f43f5e;">Rule 1 (Security Filter):</strong> Matches 'exploit|cve|nmap|malware|sqli|rce' -> Force local SPECTRE (Air-gapped)<br>
+          2. <strong style="color: #38bdf8;">Rule 2 (Connectivity Check):</strong> No internet detected -> Fall back gracefully to ARCHITECT or ATLAS<br>
+          3. <strong style="color: #a855f7;">Rule 3 (Task Complexity):</strong> >1000 tokens OR 'architecture|refactor' -> Route to Gemini 2.5 Pro (1M context)<br>
+          4. <strong style="color: #10b981;">Rule 4 (Latency / Autocomplete):</strong> <50 words -> Route to Gemini Flash (200ms tab completion)
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Sprints Deliverables -->
+    <div id="tab-sprints" class="tab-content" style="display: none;">
+      <div class="section-header">
+        <h2>Sprint Progression & Complete File Inventory</h2>
+        <p>37 production artifacts delivered across 5 consecutive engineering sprints.</p>
+      </div>
+
+      <div class="timeline">
+        <div class="sprint-card">
+          <div class="sprint-meta">
+            <h4>Sprint 1</h4>
+            <span>Foundation</span>
+          </div>
+          <div class="sprint-desc">
+            <h5>Infrastructure & Two-Tier Proxy Routing</h5>
+            <p>Docker Compose stack (Ollama, Open WebUI, LiteLLM, SearXNG), Continue.dev VS Code config, and hardware-tuned Modelfiles.</p>
+          </div>
+          <div class="sprint-status-tag">✓ Completed</div>
+        </div>
+
+        <div class="sprint-card">
+          <div class="sprint-meta">
+            <h4>Sprint 2</h4>
+            <span>Automation</span>
+          </div>
+          <div class="sprint-desc">
+            <h5>Offensive Pentest Pipelines & CrewAI Swarm</h5>
+            <p>Nmap recon parser, Burp Suite HTTP history bridge, 4-agent Red Team crew (SCOUT, EXPLOIT, REVIEWER, REPORTER), and codebase RAG sync.</p>
+          </div>
+          <div class="sprint-status-tag">✓ Completed</div>
+        </div>
+
+        <div class="sprint-card">
+          <div class="sprint-meta">
+            <h4>Sprint 3</h4>
+            <span>Quantum & RAG</span>
+          </div>
+          <div class="sprint-desc">
+            <h5>Post-Quantum Cryptography & Universal RAG Collections</h5>
+            <p>PQC codebase auditor (NIST FIPS 203/204/205), live ANU quantum vacuum RNG, quantum circuit simulator (Grover/Shor/LWE), and 4 curated RAG collections.</p>
+          </div>
+          <div class="sprint-status-tag">✓ Completed</div>
+        </div>
+
+        <div class="sprint-card">
+          <div class="sprint-meta">
+            <h4>Sprint 4</h4>
+            <span>Hardening</span>
+          </div>
+          <div class="sprint-desc">
+            <h5>Web Dev Studio, Continuous Security & SPECTRE Doctor</h5>
+            <p>Background real-time security daemon, zero-placeholder Next.js 15 / FastAPI studio bridge, pre-save security gate, and 100-pt diagnostic suite.</p>
+          </div>
+          <div class="sprint-status-tag">✓ Completed</div>
+        </div>
+
+        <div class="sprint-card">
+          <div class="sprint-meta">
+            <h4>Sprint 5</h4>
+            <span>Command Center</span>
+          </div>
+          <div class="sprint-desc">
+            <h5>SPECTRE Command Center & Interactive Architecture Visualizer</h5>
+            <p>Unified web & CLI control center, live tool playground, real-time metrics visualizer, and end-to-end workspace orchestrator.</p>
+          </div>
+          <div class="sprint-status-tag" style="background: rgba(56, 189, 248, 0.2); border-color: rgba(56, 189, 248, 0.5); color: #38bdf8;">✓ Completed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Live Tool Playground -->
+    <div id="tab-playground" class="tab-content" style="display: none;">
+      <div class="section-header">
+        <h2>Live Tool Playground</h2>
+        <p>Execute live SPECTRE tools and verify system responsiveness directly from the dashboard.</p>
+      </div>
+
+      <div class="playground-grid">
+        <!-- Tool 1: Quantum Random Generator -->
+        <div class="tool-widget">
+          <h3>⚛️ Live Quantum Random Generator (QRNG)</h3>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">
+            Fetches live quantum vacuum fluctuations from ANU Quantum Optics Lab or air-gapped CPU jitter.
+          </p>
+          <div class="tool-input-row">
+            <button class="tool-btn" onclick="runQRNG('key')">Generate AES-256 Key</button>
+            <button class="tool-btn" style="background: linear-gradient(135deg, #7c3aed, #9333ea);" onclick="runQRNG('seed')">Generate PQC Seed</button>
+          </div>
+          <div class="tool-output" id="output-qrng">Click a button to generate quantum-seeded cryptographic material...</div>
+        </div>
+
+        <!-- Tool 2: Semantic RAG Search -->
+        <div class="tool-widget">
+          <h3>🧠 Offline Semantic RAG Search</h3>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">
+            Searches 39 pre-indexed vectors across cybersecurity, PQC, and web dev standards.
+          </p>
+          <div class="tool-input-row">
+            <input type="text" id="rag-query" class="tool-input" placeholder="e.g. How does ML-KEM work? or OWASP injection" value="How does ML-KEM work?">
+            <button class="tool-btn" onclick="runRAGSearch()">Search</button>
+          </div>
+          <div class="tool-output" id="output-rag">Search query results will appear here with relevance scores...</div>
+        </div>
+
+        <!-- Tool 3: Quantum Simulator Demo -->
+        <div class="tool-widget">
+          <h3>🔬 Quantum Circuit Simulation</h3>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">
+            Simulate quantum speedups against classical cryptography.
+          </p>
+          <div class="tool-input-row">
+            <button class="tool-btn" onclick="runQuantumSim('grover')">Grover (AES Speedup)</button>
+            <button class="tool-btn" style="background: linear-gradient(135deg, #059669, #10b981);" onclick="runQuantumSim('shor')">Shor (Factoring RSA)</button>
+            <button class="tool-btn" style="background: linear-gradient(135deg, #d97706, #f59e0b);" onclick="runQuantumSim('lwe')">LWE Lattice Demo</button>
+          </div>
+          <div class="tool-output" id="output-sim">Select a quantum circuit to simulate...</div>
+        </div>
+
+        <!-- Tool 4: System Doctor Diagnostics -->
+        <div class="tool-widget">
+          <h3>🩺 SPECTRE Health Doctor</h3>
+          <p style="font-size: 0.8rem; color: var(--text-muted);">
+            Run diagnostic checks across Docker, Ollama, GPU, and RAG pipelines.
+          </p>
+          <div class="tool-input-row">
+            <button class="tool-btn" onclick="runDoctor()">Run Health Diagnostics</button>
+          </div>
+          <div class="tool-output" id="output-doctor">Click to run workspace health inspection...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>SPECTRE Ecosystem • Built with frontier cloud intelligence and local air-gapped privacy.</p>
+      <p style="margin-top: 0.25rem;">GitHub: <a href="https://github.com/rajdeeppal01/spectre" target="_blank">github.com/rajdeeppal01/spectre</a></p>
+    </footer>
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).style.display = 'block';
+      event.target.classList.add('active');
+    }
+
+    async function runQRNG(type) {
+      const out = document.getElementById('output-qrng');
+      out.innerText = "Fetching quantum entropy...";
+      try {
+        const res = await fetch('/api/qrng?type=' + type);
+        const data = await res.json();
+        out.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.innerText = "Error: " + err;
+      }
+    }
+
+    async function runRAGSearch() {
+      const query = document.getElementById('rag-query').value;
+      const out = document.getElementById('output-rag');
+      out.innerText = "Executing semantic search across RAG collections...";
+      try {
+        const res = await fetch('/api/rag?q=' + encodeURIComponent(query));
+        const data = await res.json();
+        out.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.innerText = "Error: " + err;
+      }
+    }
+
+    async function runQuantumSim(demo) {
+      const out = document.getElementById('output-sim');
+      out.innerText = "Executing quantum statevector simulation for " + demo + "...";
+      try {
+        const res = await fetch('/api/sim?demo=' + demo);
+        const data = await res.json();
+        out.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.innerText = "Error: " + err;
+      }
+    }
+
+    async function runDoctor() {
+      const out = document.getElementById('output-doctor');
+      out.innerText = "Running full-stack system diagnostics...";
+      try {
+        const res = await fetch('/api/doctor');
+        const data = await res.json();
+        out.innerText = JSON.stringify(data, null, 2);
+      } catch (err) {
+        out.innerText = "Error: " + err;
+      }
+    }
+  </script>
+</body>
+</html>

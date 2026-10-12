@@ -53,6 +53,7 @@ python scripts\init_rag.py --build
 ```
 
 Access:
+- **Command Center Dashboard:** http://localhost:5050 (`python scripts\spectre_dashboard.py`)
 - **Open WebUI:** http://localhost:3000
 - **LiteLLM Proxy:** http://localhost:4000
 
@@ -111,6 +112,8 @@ python scripts\spectre_doctor.py --verbose
 
 ```
 spectre/
+├── dashboard/               # Interactive Command Center UI
+│   └── index.html          # Dark-mode glassmorphic visualizer
 ├── infrastructure/          # Docker Compose, LiteLLM config, Ollama Modelfiles
 │   ├── docker-compose.yml  # Ollama, Open WebUI, LiteLLM, SearXNG
 │   ├── litellm_config.yaml # Unified cloud + local proxy routing
@@ -121,6 +124,7 @@ spectre/
 │   ├── setup.ps1           # Automated environment installer
 │   ├── pull_models.ps1     # Download all local models
 │   ├── auto_router.py      # AUTO-mode intelligent request router
+│   ├── spectre_dashboard.py# Unified web & CLI command center
 │   ├── continuous_security.py # Real-time background vulnerability daemon
 │   ├── web_dev_studio.py   # Full-stack Next.js/FastAPI studio bridge
 │   ├── spectre_doctor.py   # Automated system diagnostics & health scorecard
@@ -144,7 +148,8 @@ spectre/
     └── sprints/
         ├── sprint_2.md     # Sprint 2 architecture review
         ├── sprint_3.md     # Sprint 3 architecture review
-        └── sprint_4.md     # Sprint 4 architecture review
+        ├── sprint_4.md     # Sprint 4 architecture review
+        └── sprint_5.md     # Sprint 5 architecture review
 ```
 
 ## Hardware Requirements
@@ -159,6 +164,7 @@ spectre/
 - [x] **Sprint 2** — Automation Pipelines, Nmap Recon, Burp Bridge, CrewAI Red Team Swarm, AUTO-mode Router
 - [x] **Sprint 3** — Grounded Quantum / PQC Layer, ANU QRNG, Circuit Sim, Universal RAG Collections
 - [x] **Sprint 4** — Full-stack Web Dev Studio, Continuous Security Background Daemon, Production Diagnostics Suite
+- [x] **Sprint 5** — SPECTRE Command Center & Interactive Architecture Visualizer
 
 ---
 
