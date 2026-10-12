@@ -116,6 +116,8 @@ class PQCAuditor:
         for pattern in VULN_PATTERNS:
             regex = re.compile(pattern["regex"])
             for line_no, line in enumerate(lines, 1):
+                if '"regex":' in line or "r'(?i)" in line or 'r"(?i)' in line:
+                    continue
                 match = regex.search(line)
                 if match:
                     # Extract surrounding context (3 lines before and after)

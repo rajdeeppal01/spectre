@@ -83,6 +83,30 @@ python scripts\quantum_sim.py --demo all
 
 ---
 
+## Web Dev Studio & Continuous Security (Sprint 4)
+
+### 1. Continuous Security Background Daemon (MODE C Always-On)
+Traps vulnerabilities, hardcoded secrets, injection vectors, and classical crypto on every file save:
+```powershell
+python scripts\continuous_security.py --watch ./src
+python scripts\continuous_security.py --scan ./src --pre-commit
+```
+
+### 2. Full-Stack Web Dev Studio Bridge
+Scaffolds zero-placeholder Next.js 15 / FastAPI apps with pre-save SPECTRE security validation:
+```powershell
+python scripts\web_dev_studio.py --scaffold nextjs --name dashboard-app
+python scripts\web_dev_studio.py --generate component --prompt "Responsive dark analytics card" --out ./src/Card.tsx
+```
+
+### 3. System Health & Diagnostics (Doctor)
+Runs an automated health scorecard across hardware, Docker, Ollama models, LiteLLM, and pipelines:
+```powershell
+python scripts\spectre_doctor.py --verbose
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -93,8 +117,13 @@ spectre/
 │   ├── continue_config.json# VS Code IDE integration
 │   ├── .env.example
 │   └── modelfiles/         # Hardware-tuned Ollama model configurations
-├── scripts/                 # Automation, security, and quantum pipelines
+├── scripts/                 # Automation, security, web dev, and quantum pipelines
 │   ├── setup.ps1           # Automated environment installer
+│   ├── pull_models.ps1     # Download all local models
+│   ├── auto_router.py      # AUTO-mode intelligent request router
+│   ├── continuous_security.py # Real-time background vulnerability daemon
+│   ├── web_dev_studio.py   # Full-stack Next.js/FastAPI studio bridge
+│   ├── spectre_doctor.py   # Automated system diagnostics & health scorecard
 │   ├── codebase_sync.py    # Auto-sync active code into RAG vector store
 │   ├── recon_pipeline.py   # Nmap XML → SPECTRE → CVE exploit map
 │   ├── pqc_audit.py        # Post-quantum cryptography codebase scanner
@@ -114,7 +143,8 @@ spectre/
 └── docs/                    # Architecture & sprint documentation
     └── sprints/
         ├── sprint_2.md     # Sprint 2 architecture review
-        └── sprint_3.md     # Sprint 3 architecture review
+        ├── sprint_3.md     # Sprint 3 architecture review
+        └── sprint_4.md     # Sprint 4 architecture review
 ```
 
 ## Hardware Requirements
@@ -126,9 +156,9 @@ spectre/
 ## Roadmap
 
 - [x] **Sprint 1** — Infrastructure, Docker Compose, LiteLLM Proxy, Hardware-tuned Modelfiles
-- [x] **Sprint 2** — Automation Pipelines, Nmap Recon, Burp Bridge, CrewAI Red Team Swarm
+- [x] **Sprint 2** — Automation Pipelines, Nmap Recon, Burp Bridge, CrewAI Red Team Swarm, AUTO-mode Router
 - [x] **Sprint 3** — Grounded Quantum / PQC Layer, ANU QRNG, Circuit Sim, Universal RAG Collections
-- [ ] **Sprint 4** — Full-stack Web Dev Studio, Continuous Security Background Daemon, Production Hardening
+- [x] **Sprint 4** — Full-stack Web Dev Studio, Continuous Security Background Daemon, Production Diagnostics Suite
 
 ---
 
