@@ -1055,7 +1055,7 @@
         ></textarea>
         <button id="send-btn" onclick="sendMessage()" title="Send task (Enter)">↑</button>
       </div>
-      <div class="input-hint">Autonomous agent with live tool execution · Gemini 3.5 Flash · Press Enter to execute</div>
+      <div class="input-hint">Autonomous agent with live tool execution · <span id="model-indicator">Gemini (Failover Protected)</span> · Press Enter to execute</div>
     </div>
 
   </main>
@@ -1813,12 +1813,15 @@ async function checkStatus() {
     const d = await r.json();
     const dot = document.getElementById('status-dot');
     const text = document.getElementById('status-text');
+    const modelInd = document.getElementById('model-indicator');
     if (d.api_key) {
       dot.className = 'status-dot';
-      text.textContent = `Gemini ${d.model} · [${d.active_project.name}]`;
+      text.textContent = `${d.model} · [${d.active_project.name}]`;
+      if (modelInd) modelInd.textContent = `${d.model} (Failover Protected)`;
     } else {
       dot.className = 'status-dot offline';
       text.textContent = 'No API key set';
+      if (modelInd) modelInd.textContent = 'No API key';
     }
   } catch {
     document.getElementById('status-dot').className = 'status-dot offline';

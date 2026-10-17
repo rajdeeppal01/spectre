@@ -64,7 +64,17 @@ def _load_env() -> dict:
 
 _ENV = _load_env()
 GEMINI_API_KEY = _ENV.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
-ACTIVE_MODEL = "gemini-3.5-flash"  # Fast, reliable, supports function calling + thought signatures
+
+# Multi-model failover pool protects against 429 quota exhaustion and model outages
+MODEL_FAILOVER_POOL = [
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-3.7-flash",
+    "gemini-flash-latest",
+    "gemini-3.8-flash",
+    "gemini-3.5-flash",
+]
+ACTIVE_MODEL = MODEL_FAILOVER_POOL[0]
 
 # --- Multi-Project Registry ---------------------------------------------------
 
@@ -503,6 +513,39 @@ def _dispatch_tool(name: str, args: dict) -> dict:
 _sessions: dict[str, list] = {}
 _sessions_lock = threading.Lock()
 
+def _call_gemini_with_failover(payload: dict) -> tuple[dict | None, str | None]:
+    """Execute generateContent with automatic model failover across MODEL_FAILOVER_POOL."""
+    global ACTIVE_MODEL
+    # Try ACTIVE_MODEL first, followed by the rest of the pool
+    candidates = [ACTIVE_MODEL] + [m for m in MODEL_FAILOVER_POOL if m != ACTIVE_MODEL]
+    last_err = ""
+
+    for cand in candidates:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{cand}:generateContent?key={GEMINI_API_KEY}"
+        try:
+            resp = _requests.post(url, json=payload, timeout=60)
+            if resp.status_code == 200:
+                if cand != ACTIVE_MODEL:
+                    print(f"[*] Gemini model failover successful: switched from {ACTIVE_MODEL} -> {cand}")
+                    ACTIVE_MODEL = cand
+                return resp.json(), None
+            elif resp.status_code in (429, 404, 503):
+                err_data = resp.json().get("error", {})
+                last_err = f"{cand} (HTTP {resp.status_code}): {err_data.get('message', resp.text)}"
+                print(f"[!] Quota/Availability issue on {cand} ({resp.status_code}). Failing over to next candidate...")
+                continue
+            else:
+                err_data = resp.json().get("error", {})
+                last_err = f"{cand} (HTTP {resp.status_code}): {err_data.get('message', resp.text)}"
+                print(f"[!] Error on {cand} ({resp.status_code}): {last_err}. Trying other models...")
+                continue
+        except Exception as exc:
+            last_err = f"{cand} connection error: {exc}"
+            continue
+
+    return None, last_err
+
+
 def _stream_agent_task(agent: str, sid: str, user_prompt: str):
     if not GEMINI_API_KEY:
         yield {"type": "error", "message": "No Gemini API key found in infrastructure/.env"}
@@ -523,14 +566,12 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str):
     base_system = SYSTEM_PROMPTS.get(agent, SYSTEM_PROMPTS["webdev"])
     system_instruction = base_system + project_context
 
-    url_generate = f"https://generativelanguage.googleapis.com/v1beta/models/{ACTIVE_MODEL}:generateContent?key={GEMINI_API_KEY}"
-
     with _sessions_lock:
         history = _sessions.setdefault(sid, [])
         history.append({"role": "user", "parts": [{"text": user_prompt}]})
         contents = list(history)
 
-    max_tool_turns = 5
+    max_tool_turns = 8
     current_turn = 0
 
     while current_turn < max_tool_turns:
@@ -546,15 +587,9 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str):
             }
         }
 
-        try:
-            resp = _requests.post(url_generate, json=payload, timeout=60)
-            if resp.status_code != 200:
-                err_data = resp.json().get("error", {})
-                yield {"type": "error", "message": f"Gemini API Error {resp.status_code}: {err_data.get('message', resp.text)}"}
-                return
-            res_json = resp.json()
-        except Exception as exc:
-            yield {"type": "error", "message": f"Connection error: {exc}"}
+        res_json, err_msg = _call_gemini_with_failover(payload)
+        if not res_json:
+            yield {"type": "error", "message": f"Gemini API Error (all failovers exhausted): {err_msg}"}
             return
 
         candidate = res_json.get("candidates", [{}])[0]
@@ -606,11 +641,41 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str):
                 fr_parts.append({"functionResponse": fr_item})
 
             contents.append({"role": "user", "parts": fr_parts})
+
+            # If we've reached max tool turns, force a final response synthesis
+            if current_turn >= max_tool_turns:
+                synth_payload = {
+                    "systemInstruction": {"parts": [{"text": system_instruction}]},
+                    "contents": contents + [{
+                        "role": "user",
+                        "parts": [{"text": "You have completed your tool inspections. Provide your final comprehensive status and report directly to the user now in clear markdown."}]
+                    }],
+                    "generationConfig": {
+                        "temperature": 0.4,
+                        "maxOutputTokens": 8192
+                    }
+                }
+                res_synth, _ = _call_gemini_with_failover(synth_payload)
+                if res_synth:
+                    cand_synth = res_synth.get("candidates", [{}])[0]
+                    synth_content = cand_synth.get("content", {})
+                    text_parts = [p.get("text", "") for p in synth_content.get("parts", []) if "text" in p]
+                    full_text = "".join(text_parts)
+                    if full_text:
+                        chunk_size = 32
+                        for i in range(0, len(full_text), chunk_size):
+                            yield {"type": "text", "text": full_text[i:i + chunk_size]}
+                            time.sleep(0.015)
+                        contents.append(synth_content)
+                break
+
             continue
 
         else:
             text_parts = [p.get("text", "") for p in parts if "text" in p]
             full_text = "".join(text_parts)
+            if not full_text:
+                full_text = "Task execution completed."
 
             chunk_size = 32
             for i in range(0, len(full_text), chunk_size):
@@ -694,6 +759,7 @@ class _Handler(BaseHTTPRequestHandler):
             self._json_resp({
                 "api_key": bool(GEMINI_API_KEY),
                 "model": ACTIVE_MODEL,
+                "failover_pool": MODEL_FAILOVER_POOL,
                 "sessions": len(_sessions),
                 "health": score,
                 "active_project": active_proj,
@@ -866,7 +932,7 @@ def main():
     server = ThreadingHTTPServer(("127.0.0.1", args.port), _Handler)
     url = f"http://127.0.0.1:{args.port}"
     print(f"\n[+] SPECTRE Antigravity Command Center -> {url}")
-    print(f"    Active Model : {ACTIVE_MODEL}")
+    print(f"    Active Model : {ACTIVE_MODEL} (Failover Pool: {len(MODEL_FAILOVER_POOL)} models)")
     print(f"    Active Workspace : {_ACTIVE_PROJECT_ID} ({get_active_project_path()})")
     print("    Press Ctrl+C to stop.\n")
 
