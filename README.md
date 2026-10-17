@@ -149,7 +149,8 @@ spectre/
         ├── sprint_2.md     # Sprint 2 architecture review
         ├── sprint_3.md     # Sprint 3 architecture review
         ├── sprint_4.md     # Sprint 4 architecture review
-        └── sprint_5.md     # Sprint 5 architecture review
+        ├── sprint_5.md     # Sprint 5 architecture review
+        └── sprint_6.md     # Sprint 6 architecture review
 ```
 
 ## Hardware Requirements
@@ -165,6 +166,7 @@ spectre/
 - [x] **Sprint 3** — Grounded Quantum / PQC Layer, ANU QRNG, Circuit Sim, Universal RAG Collections
 - [x] **Sprint 4** — Full-stack Web Dev Studio, Continuous Security Background Daemon, Production Diagnostics Suite
 - [x] **Sprint 5** — SPECTRE Command Center & Interactive Architecture Visualizer
+- [x] **Sprint 6** — Dual-Agent Antigravity Command Center with Autonomous Tool Calling (ARCHITECT Web Dev + SPECTRE Offensive Cyber)
 
 ---
 
