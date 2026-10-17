@@ -263,7 +263,7 @@ def save_report(analysis: dict, target: str, output_dir: Path | None = None) -> 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="SPECTRE Recon Pipeline — Nmap → AI CVE Analysis"
+        description="SPECTRE Recon Pipeline -- Nmap -> AI CVE Analysis"
     )
     parser.add_argument("--target", required=True, help="Target IP, hostname, or CIDR range")
     parser.add_argument("--ports", help="Port range (e.g. 80,443 or 1-1000). Default: all ports")

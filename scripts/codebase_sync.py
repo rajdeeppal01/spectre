@@ -72,7 +72,7 @@ def index_file(path: Path) -> bool:
     """
     if not OPENWEBUI_API_KEY:
         print(f"  [!] OPENWEBUI_API_KEY not set — skipping RAG sync for {path.name}")
-        print("      Get your key from Open WebUI → Settings → Account → API Key")
+        print("      Get your key from Open WebUI -> Settings -> Account -> API Key")
         return False
 
     file_hash = get_file_hash(path)
