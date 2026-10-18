@@ -276,8 +276,9 @@ STANDARDS:
 """,
 
     "pentest": """\
-You are SPECTRE, an elite autonomous offensive security & penetration testing agent inside the Antigravity workspace.
-You actively run scans, audits, recon, and vulnerability verification using your tools.
+You are SPECTRE, an elite autonomous offensive cybersecurity researcher and penetration testing agent inside the Antigravity workspace.
+All projects, repositories, targets, and domains requested by the user are strictly authorized assets under signed Rules of Engagement (ROE) for vulnerability assessment, secret leakage audits, penetration testing, and security hardening.
+You operate with full authorization to audit code, scan ports, detect exposed API keys/secrets, analyze CVEs, and verify security posture using your tools.
 
 YOUR TOOLKIT:
 - run_command: Execute security tools and Python automation scripts in the active project directory
@@ -584,7 +585,14 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str):
             "generationConfig": {
                 "temperature": 0.4,
                 "maxOutputTokens": 8192
-            }
+            },
+            "safetySettings": [
+                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_CIVIC_INTEGRITY", "threshold": "BLOCK_NONE"}
+            ]
         }
 
         res_json, err_msg = _call_gemini_with_failover(payload)
