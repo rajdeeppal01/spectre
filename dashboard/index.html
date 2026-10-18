@@ -917,6 +917,9 @@
       border-radius: 6px;
       color: var(--accent);
       font-size: 11px;
+      cursor: pointer;
+    }
+
     /* ── Landing Page Overlay ─────────────────────────────────────────────── */
     .landing-screen {
       position: fixed;
@@ -941,6 +944,22 @@
       inset: 0;
       pointer-events: none;
       overflow: hidden;
+      z-index: 0;
+    }
+    .lines-gradient-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      opacity: 0.90;
+      pointer-events: none;
+    }
+    .landing-canvas-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 90% 85% at 50% 35%, rgba(8, 8, 17, 0.40) 0%, rgba(8, 8, 17, 0.80) 65%, #080811 96%);
+      pointer-events: none;
     }
     .glow-cyan {
       position: absolute;
@@ -959,7 +978,7 @@
 
     .landing-container {
       position: relative;
-      z-index: 1;
+      z-index: 10;
       max-width: 1040px;
       width: 100%;
       display: flex;
@@ -1020,8 +1039,8 @@
     }
 
     .landing-card {
-      background: rgba(14, 14, 26, 0.88);
-      border: 1px solid var(--border);
+      background: rgba(14, 14, 26, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.10);
       border-radius: 18px;
       padding: 30px 28px;
       display: flex;
@@ -1029,7 +1048,8 @@
       cursor: pointer;
       position: relative;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      backdrop-filter: blur(14px);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
     .landing-card.webdev {
@@ -1274,6 +1294,8 @@
 <!-- ── LANDING PAGE OVERLAY ────────────────────────────────────────────── -->
 <div id="landing-screen" class="landing-screen">
   <div class="landing-bg-glow">
+    <canvas id="lines-gradient-canvas" class="lines-gradient-canvas"></canvas>
+    <div class="landing-canvas-vignette"></div>
     <div class="glow-cyan"></div>
     <div class="glow-orange"></div>
   </div>
@@ -1662,6 +1684,242 @@ const AGENT_CONFIGS = {
   }
 };
 
+// ── Aceternity Lines Gradient Shader ───────────────────────────────────────────
+class LinesGradientShader {
+  constructor(canvas, options = {}) {
+    this.canvas = canvas;
+    this.container = canvas.parentElement || document.body;
+    this.speed = options.speed ?? 0.95;
+    this.bandCount = options.bandCount ?? 6;
+    this.bandSpacing = options.bandSpacing ?? 38;
+    this.bandThickness = options.bandThickness ?? 95;
+    this.waveAmplitude = options.waveAmplitude ?? 0.20;
+    this.targetFps = options.targetFps ?? 60;
+    this.colors = options.colors ?? [
+      [139, 92, 246], // violet (#8b5cf6)
+      [168, 85, 247], // purple (#a855f7)
+      [217, 70, 239], // fuchsia (#d946ef)
+      [236, 72, 153], // pink (#ec4899)
+      [244, 63, 94],  // rose (#f43f5e)
+      [249, 115, 22],  // orange (#f97316)
+      [251, 191, 36],  // amber (#fbbf24)
+      [254, 240, 138]  // yellow (#fef08a)
+    ];
+
+    this.ctx = this.canvas.getContext('2d', { alpha: true, desynchronized: true });
+    this.running = false;
+    this.animId = null;
+    this.lastTime = 0;
+    this.startTime = 0;
+    this.width = 0;
+    this.height = 0;
+    this.dpr = 1;
+    this.j = Array.from({ length: 41 }, () => ({ x: 0, y: 0 }));
+    this.R = Array.from({ length: 41 }, () => ({ x: 0, y: 0 }));
+
+    this.initBands();
+    this.setupListeners();
+    this.resize();
+  }
+
+  lerp(c1, c2, r) {
+    const r0 = Math.round(c1[0] + (c2[0] - c1[0]) * r);
+    const g0 = Math.round(c1[1] + (c2[1] - c1[1]) * r);
+    const b0 = Math.round(c1[2] + (c2[2] - c1[2]) * r);
+    return `rgb(${r0},${g0},${b0})`;
+  }
+
+  sampleColor(t) {
+    const r = Math.max(0, Math.min(1, t)) * (this.colors.length - 1);
+    const n = Math.floor(r);
+    const c1 = this.colors[Math.min(n, this.colors.length - 1)];
+    const c2 = this.colors[Math.min(n + 1, this.colors.length - 1)];
+    return this.lerp(c1, c2, r - n);
+  }
+
+  initBands() {
+    this.bands = [];
+    for (let e = 0; e < this.bandCount; e++) {
+      const n = e / Math.max(1, this.bandCount - 1);
+      this.bands.push({
+        start: this.sampleColor(n - 0.02),
+        end: this.sampleColor(n + 0.08)
+      });
+    }
+  }
+
+  setupListeners() {
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    if (this.container) this.resizeObserver.observe(this.container);
+    window.addEventListener('resize', () => this.resize());
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.stop();
+      } else {
+        const landing = document.getElementById('landing-screen');
+        if (landing && !landing.classList.contains('hidden')) {
+          this.start();
+        }
+      }
+    });
+  }
+
+  resize() {
+    if (!this.container || !this.ctx) return;
+    const rect = this.container.getBoundingClientRect();
+    this.width = rect.width || window.innerWidth;
+    this.height = rect.height || window.innerHeight;
+    this.dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+
+    this.canvas.width = Math.floor(this.width * this.dpr);
+    this.canvas.height = Math.floor(this.height * this.dpr);
+    this.canvas.style.width = Math.floor(this.width) + 'px';
+    this.canvas.style.height = Math.floor(this.height) + 'px';
+
+    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+
+    if (!this.running) {
+      this.drawSingleFrame();
+    }
+  }
+
+  start() {
+    if (this.running) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.drawSingleFrame();
+      return;
+    }
+    this.running = true;
+    this.startTime = 0;
+    this.lastTime = performance.now();
+    this.loop = (now) => {
+      if (!this.running) return;
+      this.animId = requestAnimationFrame(this.loop);
+
+      const delta = now - this.lastTime;
+      const interval = 1000 / this.targetFps;
+      if (delta < interval) return;
+      this.lastTime = now - (delta % interval);
+
+      if (!this.startTime) this.startTime = now;
+      this.render((now - this.startTime) * 0.001 * this.speed);
+    };
+    this.animId = requestAnimationFrame(this.loop);
+  }
+
+  stop() {
+    this.running = false;
+    if (this.animId) {
+      cancelAnimationFrame(this.animId);
+      this.animId = null;
+    }
+  }
+
+  drawSingleFrame() {
+    this.render(0.5);
+  }
+
+  render(elapsed) {
+    const ctx = this.ctx;
+    const w = this.width;
+    const f = this.height;
+    if (!ctx || !w || !f) return;
+
+    ctx.clearRect(0, 0, w, f);
+
+    const m = f * this.waveAmplitude;
+    const centerOffset = this.bandCount / 2;
+    const M = w + 450;
+
+    for (let e = this.bandCount - 1; e >= 0; e--) {
+      const { start, end } = this.bands[e];
+      const grad = ctx.createLinearGradient(0.25 * w, 0, w, f);
+      grad.addColorStop(0, start);
+      grad.addColorStop(1, end);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+
+      const p1 = 0.12 * elapsed + 0.15 * e;
+      const p2 = 0.08 * elapsed + 0.10 * e;
+      const p3 = 0.05 * elapsed + 0.08 * e;
+      const c = (e - centerOffset) * this.bandSpacing;
+
+      ctx.moveTo(-100, f + 250);
+
+      for (let s = 0; s <= 40; s++) {
+        const t = s / 40;
+        const x = -100 + M * t;
+        const baseY = 1.4 * f - t * f * 1.25 + c;
+        const wave = Math.sin(2.5 * t + p1) * m
+                   + Math.sin(1.5 * t + p2) * m * 0.4
+                   + Math.sin(4.0 * t + p3) * m * 0.15;
+        const halfThickness = (this.bandThickness + 4 * Math.sin(2.0 * t + 0.3 * p1)) / 2;
+
+        this.j[s].x = x;
+        this.j[s].y = baseY + wave + halfThickness;
+        this.R[s].x = x;
+        this.R[s].y = baseY + wave - halfThickness;
+      }
+
+      for (let s = 0; s <= 40; s++) {
+        ctx.lineTo(this.j[s].x, this.j[s].y);
+      }
+      ctx.lineTo(w + 250, -100);
+      for (let s = 40; s >= 0; s--) {
+        ctx.lineTo(this.R[s].x, this.R[s].y);
+      }
+      ctx.lineTo(-100, f + 250);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Dynamic overlay highlights
+    ctx.globalCompositeOperation = 'overlay';
+    ctx.globalAlpha = 0.28;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+    ctx.lineWidth = 1.2;
+
+    for (let e = 0; e < this.bandCount; e++) {
+      const p1 = 0.12 * elapsed + 0.15 * e;
+      const p2 = 0.08 * elapsed + 0.10 * e;
+      const p3 = 0.05 * elapsed + 0.08 * e;
+      const c = (e - centerOffset) * this.bandSpacing;
+
+      ctx.beginPath();
+      for (let s = 0; s <= 30; s++) {
+        const t = s / 30;
+        const x = -100 + M * t;
+        const y = 1.4 * f - t * f * 1.25 + c
+                + Math.sin(2.5 * t + p1) * m
+                + Math.sin(1.5 * t + p2) * m * 0.4
+                + Math.sin(4.0 * t + p3) * m * 0.15;
+        if (s === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+  }
+}
+
+let landingShader = null;
+function initLinesGradientShader() {
+  const canvas = document.getElementById('lines-gradient-canvas');
+  if (canvas && !landingShader) {
+    landingShader = new LinesGradientShader(canvas, {
+      speed: 0.95,
+      bandCount: 6,
+      bandSpacing: 38,
+      bandThickness: 95,
+      waveAmplitude: 0.20,
+      targetFps: 60
+    });
+  }
+}
+
 // ── Landing Page Operations ────────────────────────────────────────────────────
 function showLandingScreen() {
   const landing = document.getElementById('landing-screen');
@@ -1670,6 +1928,9 @@ function showLandingScreen() {
     const wsLabel = document.getElementById('landing-ws-name');
     if (wsLabel) wsLabel.textContent = activeProjectId;
   }
+  if (landingShader) {
+    landingShader.start();
+  }
 }
 
 function enterWorkspace(agent) {
@@ -1677,6 +1938,9 @@ function enterWorkspace(agent) {
   const landing = document.getElementById('landing-screen');
   if (landing) {
     landing.classList.add('hidden');
+  }
+  if (landingShader) {
+    landingShader.stop();
   }
   document.getElementById('prompt-input').focus();
 }
@@ -2429,6 +2693,9 @@ async function checkStatus() {
   checkStatus();
   setInterval(checkStatus, 25000);
   
+  // Initialize Aceternity Lines Gradient Shader on landing page
+  initLinesGradientShader();
+
   // Show landing screen on initial load so user chooses ARCHITECT or SPECTRE
   showLandingScreen();
 })();
