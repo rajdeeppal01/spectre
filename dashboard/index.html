@@ -917,21 +917,453 @@
       border-radius: 6px;
       color: var(--accent);
       font-size: 11px;
+    /* ── Landing Page Overlay ─────────────────────────────────────────────── */
+    .landing-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9000;
+      background: #080811;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 40px 20px;
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .landing-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.98);
+    }
+
+    .landing-bg-glow {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .glow-cyan {
+      position: absolute;
+      width: 650px; height: 650px;
+      top: -100px; left: -100px;
+      background: radial-gradient(circle, rgba(34,211,238,0.13) 0%, transparent 68%);
+      filter: blur(80px);
+    }
+    .glow-orange {
+      position: absolute;
+      width: 650px; height: 650px;
+      bottom: -100px; right: -100px;
+      background: radial-gradient(circle, rgba(249,115,22,0.13) 0%, transparent 68%);
+      filter: blur(80px);
+    }
+
+    .landing-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1040px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: auto;
+    }
+
+    .landing-brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 16px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      margin-bottom: 18px;
+    }
+    .landing-brand-icon {
+      width: 16px; height: 16px;
+      color: #22d3ee;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .landing-brand-name {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #cbd5e1;
+    }
+
+    .landing-headline {
+      font-size: 32px;
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .landing-sub {
+      font-size: 14px;
+      color: var(--muted);
+      text-align: center;
+      max-width: 660px;
+      line-height: 1.6;
+      margin-bottom: 38px;
+    }
+
+    .landing-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 26px;
+      width: 100%;
+    }
+
+    @media (max-width: 820px) {
+      .landing-cards { grid-template-columns: 1fr; }
+    }
+
+    .landing-card {
+      background: rgba(14, 14, 26, 0.88);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 30px 28px;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(14px);
+    }
+
+    .landing-card.webdev {
+      border-color: rgba(34, 211, 238, 0.25);
+    }
+    .landing-card.webdev:hover {
+      border-color: #22d3ee;
+      box-shadow: 0 16px 40px rgba(34, 211, 238, 0.2), 0 0 0 1px rgba(34, 211, 238, 0.4);
+      transform: translateY(-4px);
+    }
+
+    .landing-card.pentest {
+      border-color: rgba(249, 115, 22, 0.25);
+    }
+    .landing-card.pentest:hover {
+      border-color: #f97316;
+      box-shadow: 0 16px 40px rgba(249, 115, 22, 0.2), 0 0 0 1px rgba(249, 115, 22, 0.4);
+      transform: translateY(-4px);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+    .landing-card.webdev .card-badge {
+      background: rgba(34, 211, 238, 0.12);
+      color: #22d3ee;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+    }
+    .landing-card.pentest .card-badge {
+      background: rgba(249, 115, 22, 0.12);
+      color: #f97316;
+      border: 1px solid rgba(249, 115, 22, 0.3);
+    }
+
+    .card-icon-wrap {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .landing-card.webdev .card-icon-wrap {
+      background: rgba(34, 211, 238, 0.12);
+      color: #22d3ee;
+      border: 1px solid rgba(34, 211, 238, 0.3);
+    }
+    .landing-card.pentest .card-icon-wrap {
+      background: rgba(249, 115, 22, 0.12);
+      color: #f97316;
+      border: 1px solid rgba(249, 115, 22, 0.3);
+    }
+
+    .card-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+    .landing-card.webdev .card-title { color: #22d3ee; }
+    .landing-card.pentest .card-title { color: #f97316; }
+
+    .card-subtitle {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 10px;
+    }
+
+    .card-desc {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .card-features {
+      list-style: none;
+      padding: 0; margin: 0 0 26px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .card-features li {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+    .card-features li svg {
+      width: 13px; height: 13px;
+      flex-shrink: 0;
+    }
+    .landing-card.webdev .card-features li svg { color: #22d3ee; }
+    .landing-card.pentest .card-features li svg { color: #f97316; }
+
+    .card-cta-btn {
+      margin-top: auto;
+      padding: 12px 18px;
+      border-radius: 9px;
+      border: none;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .landing-card.webdev .card-cta-btn {
+      background: #22d3ee;
+      color: #080811;
+    }
+    .landing-card.webdev .card-cta-btn:hover {
+      background: #38bdf8;
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.5);
+    }
+    .landing-card.pentest .card-cta-btn {
+      background: #f97316;
+      color: #080811;
+    }
+    .landing-card.pentest .card-cta-btn:hover {
+      background: #fb923c;
+      box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+    }
+
+    .landing-footer-ws {
+      margin-top: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 16px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .landing-ws-chip {
+      color: #fff;
+      font-family: var(--mono);
+      font-weight: 600;
+    }
+    .landing-ws-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 11.5px;
       font-weight: 600;
       cursor: pointer;
-      white-space: nowrap;
+      text-decoration: underline;
+    }
+
+    /* ── Context Menu ───────────────────────────────────────────────────────── */
+    .context-menu {
+      position: fixed;
+      z-index: 10000;
+      background: rgba(18, 18, 30, 0.96);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 5px;
+      min-width: 150px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.7), 0 0 12px rgba(255,255,255,0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .context-menu.hidden { display: none; }
+    .context-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 11px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .context-menu-item:hover {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+    .context-menu-item.danger:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+    .context-menu-item svg {
+      flex-shrink: 0;
+      color: currentColor;
+    }
+
+    .chat-item-more {
+      opacity: 0;
+      border: none;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .chat-item:hover .chat-item-more { opacity: 1; }
+    .chat-item-more:hover { color: var(--accent); background: var(--accent-dim); }
+
+    .chat-title-input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--accent);
+      border-radius: 5px;
+      padding: 3px 6px;
+      font-size: 11.5px;
+      font-family: var(--font);
+      color: #fff;
+      outline: none;
+      box-shadow: 0 0 8px var(--accent-glow);
     }
   </style>
 </head>
 
 <body>
+
+<!-- ── LANDING PAGE OVERLAY ────────────────────────────────────────────── -->
+<div id="landing-screen" class="landing-screen">
+  <div class="landing-bg-glow">
+    <div class="glow-cyan"></div>
+    <div class="glow-orange"></div>
+  </div>
+
+  <div class="landing-container">
+    <div class="landing-brand-badge">
+      <span class="landing-brand-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </span>
+      <span class="landing-brand-name">SPECTRE ANTIGRAVITY ENGINE</span>
+    </div>
+    
+    <h1 class="landing-headline">Select Your Autonomous Operating Persona</h1>
+    <p class="landing-sub">Choose your intelligence persona to initialize your local command center session. You can switch personas seamlessly at any time from within the workspace.</p>
+
+    <div class="landing-cards">
+      <!-- ARCHITECT Card -->
+      <div class="landing-card webdev" onclick="enterWorkspace('webdev')">
+        <div class="card-top">
+          <span class="card-badge">DAILY WEB DEV</span>
+          <div class="card-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+        </div>
+        <div class="card-title">ARCHITECT</div>
+        <div class="card-subtitle">Autonomous Full-Stack Web Development Agent</div>
+        <div class="card-desc">Engineered for daily web development: React 19, Next.js 15 App router, FastAPI endpoints, component scaffolding, and live terminal execution.</div>
+        <ul class="card-features">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> React 19, TypeScript 5, Next.js 15 & Vite architecture</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Autonomous tool execution: run shell commands & write code</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Scoped to active project with automatic dependency detection</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Gemini Flash failover pool with automatic quota resilience</li>
+        </ul>
+        <button class="card-cta-btn">
+          Enter ARCHITECT
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- SPECTRE Card -->
+      <div class="landing-card pentest" onclick="enterWorkspace('pentest')">
+        <div class="card-top">
+          <span class="card-badge">OFFENSIVE SEC & PQC</span>
+          <div class="card-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+        </div>
+        <div class="card-title">SPECTRE</div>
+        <div class="card-subtitle">Autonomous Cyber Security & PQC Compliance Agent</div>
+        <div class="card-desc">Engineered for security audits: Nmap recon scanning, Post-Quantum Cryptography compliance, ANU quantum entropy key generation, and defense hardening.</div>
+        <ul class="card-features">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Nmap network recon & target vulnerability discovery</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Post-Quantum Cryptography (PQC) quantum vulnerability audits</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Live ANU Quantum RNG key seeds & AES-256-GCM encryption</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> System security health diagnostics & automated CVE analysis</li>
+        </ul>
+        <button class="card-cta-btn">
+          Enter SPECTRE
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="landing-footer-ws">
+      <span>Active Project Workspace:</span>
+      <span class="landing-ws-chip" id="landing-ws-name">spectre</span>
+      <button class="landing-ws-btn" onclick="openProjectModal()">Switch Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CHAT CONTEXT MENU ──────────────────────────────────────────────────── -->
+<div id="chat-context-menu" class="context-menu hidden">
+  <div class="context-menu-item" onclick="startRenameChat()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    <span>Rename Chat</span>
+  </div>
+  <div class="context-menu-item danger" onclick="deleteChatFromMenu()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+    <span>Delete Chat</span>
+  </div>
+</div>
+
 <div id="app">
 
   <!-- ── SIDEBAR ─────────────────────────────────────────────────────────── -->
   <aside id="sidebar">
     <div id="sidebar-header">
       <div class="logo">
-        <div class="logo-icon" id="logo-icon">⚡</div>
+        <div class="logo-icon" id="logo-icon"></div>
         <div>
           <div class="logo-title">SPECTRE</div>
           <div class="logo-sub">ANTIGRAVITY WORKSPACE</div>
@@ -941,31 +1373,33 @@
       <!-- Active Workspace Selector -->
       <div class="project-selector-card" onclick="openProjectModal()" title="Click to switch workspace">
         <div class="project-card-left">
-          <span class="project-icon" id="sidebar-proj-icon">🔒</span>
+          <span class="project-icon" id="sidebar-proj-icon"></span>
           <div class="project-info">
             <div class="project-active-label">ACTIVE WORKSPACE</div>
             <div class="project-active-name" id="sidebar-proj-name">spectre</div>
           </div>
         </div>
         <div class="project-card-right">
-          <span class="project-switch-badge">Switch ▾</span>
+          <span class="project-switch-badge">Switch</span>
         </div>
       </div>
 
       <!-- Agent Switcher -->
       <div class="agent-switcher">
         <button class="agent-tab active" id="tab-webdev" onclick="setAgent('webdev')">
-          🛠️ ARCHITECT
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          ARCHITECT
         </button>
         <button class="agent-tab" id="tab-pentest" onclick="setAgent('pentest')">
-          🔒 SPECTRE
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          SPECTRE
         </button>
       </div>
     </div>
 
     <!-- New Chat Button -->
     <button id="new-chat-btn" onclick="newChat()">
-      <span style="font-size:16px">＋</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       New task
     </button>
 
@@ -986,7 +1420,7 @@
     <!-- Chat Header -->
     <div id="chat-header">
       <div id="agent-badge">
-        <div id="agent-icon">🛠️</div>
+        <div id="agent-icon"></div>
         <div>
           <div id="agent-name">ARCHITECT</div>
           <div id="agent-desc">Daily Full-Stack Web Development Agent (React 19, Next.js 15, FastAPI)</div>
@@ -995,20 +1429,27 @@
 
       <!-- Workspace Chip in Header -->
       <div class="workspace-chip" onclick="openProjectModal()" title="Switch active project workspace">
-        <span id="chip-proj-icon">📂</span>
+        <span id="chip-proj-icon"></span>
         <span id="chip-proj-name">spectre</span>
-        <span class="chip-switch-arrow">▾</span>
+        <span class="chip-switch-arrow"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
       </div>
 
       <div id="header-actions">
+        <button class="header-btn" onclick="showLandingScreen()" title="Switch Persona / Open Agent Portal">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Portal
+        </button>
         <button class="header-btn" id="btn-terminal-toggle" onclick="toggleTerminal()" title="Toggle Terminal Drawer">
-          <span>>_</span> Terminal
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Terminal
         </button>
         <button class="header-btn" onclick="clearChat()" title="Clear conversation">
-          🗑 Clear
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Clear
         </button>
         <button class="header-btn" onclick="copyLastResponse()" title="Copy last response">
-          📋 Copy
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
         </button>
       </div>
     </div>
@@ -1019,7 +1460,7 @@
     <!-- Messages Container -->
     <div id="messages">
       <div id="empty-state">
-        <div class="empty-icon" id="empty-icon">🛠️</div>
+        <div class="empty-icon" id="empty-icon"></div>
         <h2 id="empty-title">ARCHITECT is ready</h2>
         <p id="empty-desc">Your autonomous web development intelligence. Prompt it to scaffold Next.js apps, generate React components, test FastAPI routes, or audit your codebase.</p>
         <div class="quick-prompts" id="quick-prompts"></div>
@@ -1029,10 +1470,13 @@
     <!-- Terminal Drawer (Collapsible) -->
     <div id="terminal-drawer" class="collapsed">
       <div id="terminal-header">
-        <div class="term-title"><span id="term-proj-icon">⚡</span> Workspace PowerShell Terminal — <span id="term-proj-name" style="color:#fff;margin-left:4px">spectre</span></div>
+        <div class="term-title"><span id="term-proj-icon"></span> Workspace PowerShell Terminal — <span id="term-proj-name" style="color:#fff;margin-left:4px">spectre</span></div>
         <div style="margin-left:auto; display:flex; gap:6px;">
           <button class="code-btn" onclick="clearTerminal()">Clear</button>
-          <button class="code-btn" onclick="toggleTerminal()">✕ Close</button>
+          <button class="code-btn" onclick="toggleTerminal()">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Close
+          </button>
         </div>
       </div>
       <div id="terminal-output">SPECTRE Workspace Terminal initialized. Ready for PowerShell & Python execution.</div>
@@ -1053,7 +1497,9 @@
           onkeydown="handleKey(event)"
           oninput="autoResize(this)"
         ></textarea>
-        <button id="send-btn" onclick="sendMessage()" title="Send task (Enter)">↑</button>
+        <button id="send-btn" onclick="sendMessage()" title="Send task (Enter)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+        </button>
       </div>
       <div class="input-hint">Autonomous agent with live tool execution · <span id="model-indicator">Gemini (Failover Protected)</span> · Press Enter to execute</div>
     </div>
@@ -1066,13 +1512,15 @@
   <div class="modal-dialog">
     <div class="modal-header">
       <div class="modal-title">
-        <span style="font-size:22px">📂</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <div>
           <h3>Switch Active Workspace</h3>
           <p>Choose which project ARCHITECT and SPECTRE will operate on</p>
         </div>
       </div>
-      <button class="modal-close" onclick="closeProjectModal()">✕</button>
+      <button class="modal-close" onclick="closeProjectModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
 
     <div class="modal-search-bar">
@@ -1098,11 +1546,37 @@
    SPECTRE MULTI-PROJECT ANTIGRAVITY ENGINE
    ════════════════════════════════════════════════════════════════════════ */
 
+const SVG_ICONS = {
+  code: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  shield: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+  terminal: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`,
+  folder: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
+  file: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+  zap: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  user: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  trash: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
+  copy: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
+  edit: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  more: `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`,
+  portal: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
+  check: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+};
+
+function getIconSvg(name, size = 14) {
+  const raw = SVG_ICONS[name] || SVG_ICONS['folder'];
+  if (size === 14) return raw;
+  return raw.replace(/width="14" height="14"/, `width="${size}" height="${size}"`)
+            .replace(/width="13" height="13"/, `width="${size}" height="${size}"`)
+            .replace(/width="12" height="12"/, `width="${size}" height="${size}"`);
+}
+
 let currentAgent = 'webdev';
 let currentSid = genUUID();
 let isStreaming = false;
 let conversations = [];
 let activeChatIdx = -1;
+let contextMenuChatIdx = -1;
+let editingChatIdx = -1;
 
 let loadedProjects = [];
 let activeProjectId = 'spectre';
@@ -1110,40 +1584,40 @@ let activeProjectData = null;
 
 const PROJECT_ACTIONS = {
   spectre: [
-    { label: '🎯 Nmap Recon Scan', prompt: 'Run a target recon scan on 127.0.0.1 using python scripts/recon_pipeline.py --target 127.0.0.1' },
-    { label: '🛡️ PQC Quantum Audit', prompt: 'Run python scripts/pqc_audit.py --path . to audit our codebase for quantum-vulnerable cryptography' },
-    { label: '🔒 ANU Quantum Keys', prompt: 'Generate a live quantum-seeded AES-256-GCM key bundle using python scripts/quantum_rng.py --aes-key' },
-    { label: '🩺 Run Doctor Health', prompt: 'Run python scripts/spectre_doctor.py to check workspace health and missing dependencies' },
-    { label: '👁️ Continuous Security Guard', prompt: 'Inspect our files for secrets and common vulnerabilities using continuous security' }
+    { label: 'Nmap Recon Scan', prompt: 'Run a target recon scan on 127.0.0.1 using python scripts/recon_pipeline.py --target 127.0.0.1' },
+    { label: 'PQC Quantum Audit', prompt: 'Run python scripts/pqc_audit.py --path . to audit our codebase for quantum-vulnerable cryptography' },
+    { label: 'ANU Quantum Keys', prompt: 'Generate a live quantum-seeded AES-256-GCM key bundle using python scripts/quantum_rng.py --aes-key' },
+    { label: 'Run Doctor Health', prompt: 'Run python scripts/spectre_doctor.py to check workspace health and missing dependencies' },
+    { label: 'Continuous Security Guard', prompt: 'Inspect our files for secrets and common vulnerabilities using continuous security' }
   ],
   trackrai: [
-    { label: '⚡ Check Next.js Frontend', prompt: 'Inspect frontend-next/package.json and check the Next.js 15 App router structure' },
-    { label: '🐍 Run query_stats.py', prompt: 'Run python query_stats.py to analyze our query stats' },
-    { label: '🐳 Docker Compose Status', prompt: 'Check the docker-compose.yml services in trackrai' },
-    { label: '🔍 Audit Backend Routes', prompt: 'Explore backend directory and check API route definitions' },
-    { label: '📁 List Project Files', prompt: 'List all files and directories in trackrai' }
+    { label: 'Check Next.js Frontend', prompt: 'Inspect frontend-next/package.json and check the Next.js 15 App router structure' },
+    { label: 'Run query_stats.py', prompt: 'Run python query_stats.py to analyze our query stats' },
+    { label: 'Docker Compose Status', prompt: 'Check the docker-compose.yml services in trackrai' },
+    { label: 'Audit Backend Routes', prompt: 'Explore backend directory and check API route definitions' },
+    { label: 'List Project Files', prompt: 'List all files and directories in trackrai' }
   ],
   forgeai: [
-    { label: '⚡ Inspect Custom Playbooks', prompt: 'Inspect add_custom_playbooks.py and see what AI agent playbooks are registered' },
-    { label: '🛠️ Admin UI & CSS Check', prompt: 'Read admin.html and app.css to review our dashboard styling' },
-    { label: '🔍 Explore API Endpoints', prompt: 'List the files inside api/ and check the route logic' },
-    { label: '📁 List Workspace Files', prompt: 'List all playbooks and scripts in forgeai' }
+    { label: 'Inspect Custom Playbooks', prompt: 'Inspect add_custom_playbooks.py and see what AI agent playbooks are registered' },
+    { label: 'Admin UI & CSS Check', prompt: 'Read admin.html and app.css to review our dashboard styling' },
+    { label: 'Explore API Endpoints', prompt: 'List the files inside api/ and check the route logic' },
+    { label: 'List Workspace Files', prompt: 'List all playbooks and scripts in forgeai' }
   ],
   'cybersentinel-ai': [
-    { label: '⚡ Vite Build Check', prompt: 'Check package.json and vite.config.ts in cybersentinel-ai' },
-    { label: '🛡️ Inspect Security Engine', prompt: 'Explore src/ and check our cyber defense monitoring components' },
-    { label: '🔍 Audit Server Logic', prompt: 'Inspect server/ and api/ directory files' },
-    { label: '📁 List Workspace Files', prompt: 'List all source files and test results in cybersentinel-ai' }
+    { label: 'Vite Build Check', prompt: 'Check package.json and vite.config.ts in cybersentinel-ai' },
+    { label: 'Inspect Security Engine', prompt: 'Explore src/ and check our cyber defense monitoring components' },
+    { label: 'Audit Server Logic', prompt: 'Inspect server/ and api/ directory files' },
+    { label: 'List Workspace Files', prompt: 'List all source files and test results in cybersentinel-ai' }
   ],
   portfolio: [
-    { label: '📄 Read MOP Documentation', prompt: 'Read Portfolio_MOP_Documentation.md and summarize the architecture' },
-    { label: '🎨 Explore Portfolio Source', prompt: 'List directories in portfolio and inspect portfolio-latest/' },
-    { label: '⚡ Component & Style Audit', prompt: 'Check the components and assets in portfolio-latest' }
+    { label: 'Read MOP Documentation', prompt: 'Read Portfolio_MOP_Documentation.md and summarize the architecture' },
+    { label: 'Explore Portfolio Source', prompt: 'List directories in portfolio and inspect portfolio-latest/' },
+    { label: 'Component & Style Audit', prompt: 'Check the components and assets in portfolio-latest' }
   ],
   resumes: [
-    { label: '📄 List All Resumes', prompt: 'List all resume PDF files in this directory' },
-    { label: '📊 ATS Keyword Match Analysis', prompt: 'Analyze our resume files and suggest technical keywords for SDE and FinTech roles' },
-    { label: '✍️ Tailor for Senior SDE Role', prompt: 'Review SDE_resume.pdf and Razorpay_Resume.pdf to optimize for high-impact technical metrics' }
+    { label: 'List All Resumes', prompt: 'List all resume PDF files in this directory' },
+    { label: 'ATS Keyword Match Analysis', prompt: 'Analyze our resume files and suggest technical keywords for SDE and FinTech roles' },
+    { label: 'Tailor for Senior SDE Role', prompt: 'Review SDE_resume.pdf and Razorpay_Resume.pdf to optimize for high-impact technical metrics' }
   ]
 };
 
@@ -1152,7 +1626,7 @@ const AGENT_CONFIGS = {
     name: 'ARCHITECT',
     title: 'Daily Web Development Agent',
     desc: 'React 19, Next.js 15, TypeScript 5, FastAPI, Component Scaffolding & Code Repair',
-    icon: '🛠️',
+    iconKey: 'code',
     accent: '#22d3ee',
     accent2: '#06b6d4',
     glow: 'rgba(34,211,238,0.18)',
@@ -1171,7 +1645,7 @@ const AGENT_CONFIGS = {
     name: 'SPECTRE',
     title: 'Weekly Offensive Cyber Agent',
     desc: 'Nmap Recon, OWASP CVE Analysis, Post-Quantum Cryptography Audits & Exploit Scripts',
-    icon: '🔒',
+    iconKey: 'shield',
     accent: '#f97316',
     accent2: '#ea580c',
     glow: 'rgba(249,115,22,0.18)',
@@ -1187,6 +1661,25 @@ const AGENT_CONFIGS = {
     ]
   }
 };
+
+// ── Landing Page Operations ────────────────────────────────────────────────────
+function showLandingScreen() {
+  const landing = document.getElementById('landing-screen');
+  if (landing) {
+    landing.classList.remove('hidden');
+    const wsLabel = document.getElementById('landing-ws-name');
+    if (wsLabel) wsLabel.textContent = activeProjectId;
+  }
+}
+
+function enterWorkspace(agent) {
+  setAgent(agent);
+  const landing = document.getElementById('landing-screen');
+  if (landing) {
+    landing.classList.add('hidden');
+  }
+  document.getElementById('prompt-input').focus();
+}
 
 function genUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
@@ -1231,16 +1724,20 @@ function updateProjectUI() {
   if (!activeProjectData) return;
 
   // Sidebar card
-  document.getElementById('sidebar-proj-icon').textContent = activeProjectData.icon || '📁';
+  document.getElementById('sidebar-proj-icon').innerHTML = getIconSvg(activeProjectData.icon || 'shield', 15);
   document.getElementById('sidebar-proj-name').textContent = activeProjectData.name;
 
   // Header chip
-  document.getElementById('chip-proj-icon').textContent = activeProjectData.icon || '📂';
+  document.getElementById('chip-proj-icon').innerHTML = getIconSvg(activeProjectData.icon || 'folder', 13);
   document.getElementById('chip-proj-name').textContent = activeProjectData.name;
 
   // Terminal header
-  document.getElementById('term-proj-icon').textContent = activeProjectData.icon || '⚡';
+  document.getElementById('term-proj-icon').innerHTML = getIconSvg('terminal', 13);
   document.getElementById('term-proj-name').textContent = `${activeProjectData.name} (${activeProjectData.path})`;
+
+  // Landing page label
+  const landingWs = document.getElementById('landing-ws-name');
+  if (landingWs) landingWs.textContent = activeProjectData.name;
 
   // Render project specific chips
   renderCurrentActionChips();
@@ -1248,9 +1745,9 @@ function updateProjectUI() {
 
 function renderCurrentActionChips() {
   const chips = PROJECT_ACTIONS[activeProjectId] || [
-    { label: '📁 List Directory', prompt: 'List all files in the active project directory' },
-    { label: '🔍 Inspect Codebase', prompt: 'Inspect the files and architecture of this project' },
-    { label: '🛠️ Run Tests / Build', prompt: 'Check build or test commands available in this project' }
+    { label: 'List Directory', prompt: 'List all files in the active project directory' },
+    { label: 'Inspect Codebase', prompt: 'Inspect the files and architecture of this project' },
+    { label: 'Run Tests / Build', prompt: 'Check build or test commands available in this project' }
   ];
   renderActionChips(chips);
 }
@@ -1278,13 +1775,13 @@ function renderProjectListModal(projects) {
   let html = '';
 
   if (pinned.length) {
-    html += '<div class="modal-section-title">⭐ Primary Loaded Projects</div><div class="project-grid">';
+    html += '<div class="modal-section-title">Primary Loaded Projects</div><div class="project-grid">';
     html += pinned.map(p => renderProjectCardHtml(p)).join('');
     html += '</div>';
   }
 
   if (others.length) {
-    html += '<div class="modal-section-title" style="margin-top:14px">🔍 Other Detected Projects</div><div class="project-grid">';
+    html += '<div class="modal-section-title" style="margin-top:14px">Other Detected Projects</div><div class="project-grid">';
     html += others.map(p => renderProjectCardHtml(p)).join('');
     html += '</div>';
   }
@@ -1298,11 +1795,11 @@ function renderProjectCardHtml(p) {
   return `
     <div class="project-card-item ${isActive ? 'active' : ''}" onclick="selectProject('${p.id}')">
       <div class="proj-item-left">
-        <span class="proj-item-icon">${p.icon || '📁'}</span>
+        <span class="proj-item-icon">${getIconSvg(p.icon || 'folder', 18)}</span>
         <div style="overflow:hidden">
           <div class="proj-item-name">
             ${p.name}
-            ${isActive ? '<span style="font-size:10px;color:var(--accent)">● ACTIVE</span>' : ''}
+            ${isActive ? '<span style="font-size:10px;color:var(--accent)">ACTIVE</span>' : ''}
           </div>
           <div class="proj-item-desc">${p.description || p.category}</div>
           <div class="proj-item-path" title="${p.path}">${p.path}</div>
@@ -1311,7 +1808,7 @@ function renderProjectCardHtml(p) {
       </div>
       <div>
         <button class="proj-select-btn" onclick="event.stopPropagation();selectProject('${p.id}')">
-          ${isActive ? '✓ Selected' : 'Open Project'}
+          ${isActive ? 'Selected' : 'Open Project'}
         </button>
       </div>
     </div>
@@ -1348,7 +1845,7 @@ async function selectProject(pid) {
       closeProjectModal();
 
       // Notify in chat
-      appendMessage('agent', `### 📂 Switched Active Workspace to **${activeProjectData.name}**\n\n- **Directory**: \`${activeProjectData.path}\`\n- **Tech Stack**: ${(activeProjectData.badges || []).join(', ')}\n\n**${AGENT_CONFIGS[currentAgent].name}** is now oriented inside this workspace. All tool commands, file reads, and code edits will execute in this project's directory.`);
+      appendMessage('agent', `### Switched Active Workspace to **${activeProjectData.name}**\n\n- **Directory**: \`${activeProjectData.path}\`\n- **Tech Stack**: ${(activeProjectData.badges || []).join(', ')}\n\n**${AGENT_CONFIGS[currentAgent].name}** is now oriented inside this workspace. All tool commands, file reads, and code edits will execute in this project's directory.`);
     }
   } catch (e) {
     alert('Failed to switch project: ' + e.message);
@@ -1396,12 +1893,12 @@ function setAgent(agent) {
   document.getElementById('tab-webdev').classList.toggle('active', agent === 'webdev');
   document.getElementById('tab-pentest').classList.toggle('active', agent === 'pentest');
 
-  document.getElementById('agent-icon').textContent = cfg.icon;
+  document.getElementById('agent-icon').innerHTML = getIconSvg(cfg.iconKey, 18);
   document.getElementById('agent-name').textContent = cfg.name;
   document.getElementById('agent-desc').textContent = cfg.desc;
-  document.getElementById('logo-icon').textContent = cfg.icon;
+  document.getElementById('logo-icon').innerHTML = getIconSvg('zap', 16);
 
-  document.getElementById('empty-icon').textContent = cfg.icon;
+  document.getElementById('empty-icon').innerHTML = getIconSvg(cfg.iconKey, 32);
   document.getElementById('empty-title').textContent = `${cfg.name} is ready`;
   document.getElementById('empty-desc').textContent = agent === 'webdev'
     ? 'Your autonomous web development intelligence. Prompt it to scaffold Next.js apps, generate React components, test FastAPI routes, or audit your codebase.'
@@ -1435,7 +1932,7 @@ function submitPrompt(text) {
   sendMessage();
 }
 
-// ── Conversation History ───────────────────────────────────────────────────────
+// ── Conversation History & Context Menu ─────────────────────────────────────────
 function newChat() {
   currentSid = genUUID();
   activeChatIdx = -1;
@@ -1462,6 +1959,78 @@ function deleteChat(idx) {
   renderChatList();
 }
 
+function openChatContextMenu(e, idx) {
+  e.preventDefault();
+  e.stopPropagation();
+  contextMenuChatIdx = idx;
+
+  const menu = document.getElementById('chat-context-menu');
+  menu.classList.remove('hidden');
+
+  const x = Math.min(e.clientX, window.innerWidth - 170);
+  const y = Math.min(e.clientY, window.innerHeight - 100);
+
+  menu.style.left = `${x}px`;
+  menu.style.top = `${y}px`;
+}
+
+function closeChatContextMenu() {
+  const menu = document.getElementById('chat-context-menu');
+  if (menu) menu.classList.add('hidden');
+}
+
+function startRenameChat(idx) {
+  closeChatContextMenu();
+  const targetIdx = (typeof idx === 'number') ? idx : contextMenuChatIdx;
+  if (targetIdx < 0 || targetIdx >= conversations.length) return;
+
+  editingChatIdx = targetIdx;
+  renderChatList();
+}
+
+function handleRenameKey(e, idx) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    saveRename(idx);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    editingChatIdx = -1;
+    renderChatList();
+  }
+}
+
+function saveRename(idx) {
+  if (editingChatIdx !== idx) return;
+  const input = document.getElementById(`chat-input-${idx}`);
+  if (input) {
+    const newTitle = input.value.trim();
+    if (newTitle && conversations[idx]) {
+      conversations[idx].title = newTitle;
+      saveConvos();
+    }
+  }
+  editingChatIdx = -1;
+  renderChatList();
+}
+
+function deleteChatFromMenu() {
+  closeChatContextMenu();
+  if (contextMenuChatIdx >= 0) {
+    deleteChat(contextMenuChatIdx);
+    contextMenuChatIdx = -1;
+  }
+}
+
+window.addEventListener('click', () => {
+  closeChatContextMenu();
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeChatContextMenu();
+  }
+});
+
 function renderChatList() {
   const el = document.getElementById('chat-list');
   if (!conversations.length) {
@@ -1470,13 +2039,34 @@ function renderChatList() {
   }
   el.innerHTML = conversations.slice().reverse().map((c, ri) => {
     const i = conversations.length - 1 - ri;
+    const isEditing = editingChatIdx === i;
     return `
-      <div class="chat-item ${activeChatIdx === i ? 'active' : ''}" onclick="loadChat(${i})">
+      <div class="chat-item ${activeChatIdx === i ? 'active' : ''}" 
+           id="chat-item-${i}"
+           onclick="if(editingChatIdx !== ${i}) loadChat(${i})" 
+           oncontextmenu="openChatContextMenu(event, ${i})">
         <div class="chat-item-dot ${c.agent}"></div>
-        <div class="chat-item-title">${escapeHtml(c.title)}</div>
-        <button class="chat-item-del" onclick="event.stopPropagation();deleteChat(${i})" title="Delete">✕</button>
+        ${isEditing ? `
+          <input type="text" class="chat-title-input" id="chat-input-${i}" value="${escapeHtml(c.title)}"
+                 onclick="event.stopPropagation()"
+                 onkeydown="handleRenameKey(event, ${i})"
+                 onblur="saveRename(${i})" />
+        ` : `
+          <div class="chat-item-title" id="chat-title-${i}" title="Right-click to rename" ondblclick="event.stopPropagation();startRenameChat(${i})">${escapeHtml(c.title)}</div>
+          <button class="chat-item-more" onclick="event.stopPropagation();openChatContextMenu(event, ${i})" title="Chat options">
+            ${getIconSvg('more', 12)}
+          </button>
+        `}
       </div>`;
   }).join('');
+
+  if (editingChatIdx !== -1) {
+    const inp = document.getElementById(`chat-input-${editingChatIdx}`);
+    if (inp) {
+      inp.focus();
+      inp.select();
+    }
+  }
 }
 
 // ── Message Bubbles & Markdown Rendering ──────────────────────────────────────
@@ -1498,9 +2088,9 @@ function processCodeBlocks(container) {
       <span>${lang}</span>
       <div class="code-actions">
         ${['bash', 'sh', 'powershell', 'python'].includes(lang.toLowerCase()) ? `
-          <button class="code-btn" onclick="executeInTerminal(this)">▶ Run in Terminal</button>
+          <button class="code-btn" onclick="executeInTerminal(this)">Run in Terminal</button>
         ` : ''}
-        <button class="code-btn" onclick="copyCode(this)">📋 Copy</button>
+        <button class="code-btn" onclick="copyCode(this)">Copy</button>
       </div>
     `;
     pre.insertBefore(header, el);
@@ -1510,9 +2100,9 @@ function processCodeBlocks(container) {
 function copyCode(btn) {
   const code = btn.closest('pre').querySelector('code').innerText;
   navigator.clipboard.writeText(code).then(() => {
-    btn.textContent = '✓ Copied';
+    btn.textContent = 'Copied';
     btn.classList.add('success');
-    setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('success'); }, 1800);
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('success'); }, 1800);
   });
 }
 
@@ -1525,14 +2115,14 @@ function appendMessage(role, contentText = '') {
 
   const avatar = document.createElement('div');
   avatar.className = 'msg-avatar';
-  avatar.textContent = role === 'user' ? '👤' : AGENT_CONFIGS[currentAgent].icon;
+  avatar.innerHTML = role === 'user' ? getIconSvg('user', 14) : getIconSvg(AGENT_CONFIGS[currentAgent].iconKey, 14);
 
   const body = document.createElement('div');
   body.className = 'msg-body';
 
   const meta = document.createElement('div');
   meta.className = 'msg-meta';
-  meta.textContent = role === 'user' ? 'You' : `${AGENT_CONFIGS[currentAgent].name} • [${activeProjectId}]`;
+  meta.textContent = role === 'user' ? 'You' : `${AGENT_CONFIGS[currentAgent].name} · [${activeProjectId}]`;
 
   const content = document.createElement('div');
   content.className = 'msg-content';
@@ -1595,7 +2185,7 @@ async function sendMessage() {
       id: currentSid,
       agent: currentAgent,
       project: activeProjectId,
-      title: text.length > 40 ? text.slice(0, 40) + '…' : text,
+      title: text.length > 40 ? text.slice(0, 40) + '...' : text,
       messages: [],
       ts: Date.now()
     });
@@ -1653,7 +2243,7 @@ async function sendMessage() {
             const cmdText = ev.args.command || ev.args.path || JSON.stringify(ev.args);
             card.innerHTML = `
               <div class="tool-card-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                <span class="tool-badge-icon">⚡</span>
+                <span class="tool-badge-icon">${getIconSvg('terminal', 12)}</span>
                 <span class="tool-badge-name">${ev.name}</span>
                 <span class="tool-badge-cmd">[${activeProjectId}] ${escapeHtml(cmdText)}</span>
                 <span class="tool-status-pill running"><span class="tool-spinner"></span> Running...</span>
@@ -1838,7 +2428,9 @@ async function checkStatus() {
   fetchProjects();
   checkStatus();
   setInterval(checkStatus, 25000);
-  document.getElementById('prompt-input').focus();
+  
+  // Show landing screen on initial load so user chooses ARCHITECT or SPECTRE
+  showLandingScreen();
 })();
 </script>
 </body>

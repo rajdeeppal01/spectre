@@ -87,7 +87,7 @@ DEFAULT_PROJECTS = {
         "category": "Cyber & PQC",
         "description": "Offensive Security, Post-Quantum Cryptography & AI Agent Workspace",
         "pinned": True,
-        "icon": "🔒"
+        "icon": "shield"
     },
     "trackrai": {
         "id": "trackrai",
@@ -97,7 +97,7 @@ DEFAULT_PROJECTS = {
         "category": "Full-Stack Web App",
         "description": "Next.js 15 frontend, Python backend, Docker compose & query stats",
         "pinned": True,
-        "icon": "⚡"
+        "icon": "zap"
     },
     "forgeai": {
         "id": "forgeai",
@@ -107,7 +107,7 @@ DEFAULT_PROJECTS = {
         "category": "AI Automation",
         "description": "Custom agent playbooks, dashboard UI, onboarding workflows & API",
         "pinned": True,
-        "icon": "🛠️"
+        "icon": "code"
     },
     "cybersentinel-ai": {
         "id": "cybersentinel-ai",
@@ -117,7 +117,7 @@ DEFAULT_PROJECTS = {
         "category": "Security Studio",
         "description": "Vite + React + TypeScript cyber defense & continuous monitoring suite",
         "pinned": True,
-        "icon": "🛡️"
+        "icon": "shield"
     },
     "portfolio": {
         "id": "portfolio",
@@ -127,7 +127,7 @@ DEFAULT_PROJECTS = {
         "category": "Web Portfolio",
         "description": "Personal developer portfolio and responsive web applications",
         "pinned": True,
-        "icon": "💼"
+        "icon": "folder"
     },
     "resumes": {
         "id": "resumes",
@@ -137,7 +137,7 @@ DEFAULT_PROJECTS = {
         "category": "Career & Documents",
         "description": "SDE, Razorpay & technical resumes, career documents and ATS matching",
         "pinned": True,
-        "icon": "📄"
+        "icon": "file"
     }
 }
 
@@ -186,7 +186,7 @@ def _load_projects_registry() -> dict:
                         "category": "Desktop Project",
                         "description": f"Auto-detected project at {item}",
                         "pinned": False,
-                        "icon": "📁"
+                        "icon": "folder"
                     }
         except Exception:
             pass
@@ -240,7 +240,7 @@ def add_custom_project(name: str, path_str: str) -> dict:
         "category": "Custom Project",
         "description": f"User workspace at {target}",
         "pinned": True,
-        "icon": "📁",
+        "icon": "folder",
         "exists": True,
         "badges": detect_project_stack(target),
         "files_count": 0
