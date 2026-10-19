@@ -64,6 +64,7 @@ def _load_env() -> dict:
 
 _ENV = _load_env()
 GEMINI_API_KEY = _ENV.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
+ANTHROPIC_API_KEY = _ENV.get("ANTHROPIC_API_KEY", os.environ.get("ANTHROPIC_API_KEY", ""))
 
 # Multi-model failover pool protects against 429 quota exhaustion and model outages
 MODEL_FAILOVER_POOL = [
@@ -75,6 +76,25 @@ MODEL_FAILOVER_POOL = [
     "gemini-3.5-flash",
 ]
 ACTIVE_MODEL = MODEL_FAILOVER_POOL[0]
+
+# Claude Frontier Models Map
+CLAUDE_MODELS = {
+    "claude-3-7-sonnet": {
+        "id": "claude-3-7-sonnet-20250219",
+        "name": "Claude 3.7 Sonnet",
+        "badge": "Hybrid Reasoning"
+    },
+    "claude-3-5-sonnet": {
+        "id": "claude-3-5-sonnet-20241022",
+        "name": "Claude 3.5 Sonnet",
+        "badge": "High Speed"
+    },
+    "claude-3-opus": {
+        "id": "claude-3-opus-20240229",
+        "name": "Claude 3 Opus",
+        "badge": "Deep Thinking"
+    }
+}
 
 # --- Multi-Project Registry ---------------------------------------------------
 
@@ -547,11 +567,105 @@ def _call_gemini_with_failover(payload: dict) -> tuple[dict | None, str | None]:
     return None, last_err
 
 
-def _stream_agent_task(agent: str, sid: str, user_prompt: str):
-    if not GEMINI_API_KEY:
-        yield {"type": "error", "message": "No Gemini API key found in infrastructure/.env"}
+def _get_local_uncensored_model() -> str | None:
+    """Check running models inside local Ollama (127.0.0.1:11434)."""
+    try:
+        r = _requests.get("http://127.0.0.1:11434/api/tags", timeout=2)
+        if r.status_code == 200:
+            names = [m.get("name", "") for m in r.json().get("models", [])]
+            for candidate in ["spectre:latest", "spectre", "dolphin-mistral:latest", "dolphin-mistral", "dolphin-phi:latest", "dolphin-phi"]:
+                for n in names:
+                    if n == candidate or n.startswith(candidate):
+                        return n
+    except Exception:
+        pass
+    return None
+
+
+def _stream_anthropic_model(model_key: str, system_prompt: str, history: list, sid: str):
+    global ANTHROPIC_API_KEY
+    if not ANTHROPIC_API_KEY:
+        _fresh = _load_env()
+        ANTHROPIC_API_KEY = _fresh.get("ANTHROPIC_API_KEY", os.environ.get("ANTHROPIC_API_KEY", ""))
+
+    model_info = CLAUDE_MODELS.get(model_key, CLAUDE_MODELS["claude-3-7-sonnet"])
+    model_id = model_info["id"]
+
+    if not ANTHROPIC_API_KEY:
+        yield {
+            "type": "text",
+            "text": (
+                f"> ⚠️ **Anthropic API Key Required for {model_info['name']}**\n\n"
+                f"To activate **{model_info['name']}**, add your Anthropic API key to `infrastructure/.env`:\n\n"
+                f"```bash\nANTHROPIC_API_KEY=sk-ant-api03-...\n```\n\n"
+                f"*Tip: You can switch to **Gemini Pro** (active) or **SPECTRE Local (Abliterated)** from the model selector in the top bar.*"
+            )
+        }
         return
 
+    yield {"type": "text", "text": f"> ⚡ *Anthropic Cloud Engine Active (`{model_info['name']}`)*\n\n"}
+
+    claude_messages = []
+    for h in history:
+        role = "assistant" if h.get("role") == "model" else "user"
+        text_part = "".join([p.get("text", "") for p in h.get("parts", []) if "text" in p])
+        if text_part:
+            claude_messages.append({"role": role, "content": text_part})
+
+    headers = {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+    }
+    payload = {
+        "model": model_id,
+        "max_tokens": 4096,
+        "system": system_prompt,
+        "messages": claude_messages,
+        "stream": True
+    }
+
+    try:
+        resp = _requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload, stream=True, timeout=120)
+        if resp.status_code != 200:
+            err_text = resp.text
+            try:
+                err_text = resp.json().get("error", {}).get("message", resp.text)
+            except Exception:
+                pass
+            yield {"type": "error", "message": f"Anthropic API Error ({resp.status_code}): {err_text}"}
+            return
+
+        full_reply = []
+        for line in resp.iter_lines():
+            if not line:
+                continue
+            line_str = line.decode("utf-8", errors="replace") if isinstance(line, bytes) else line
+            if not line_str.startswith("data: "):
+                continue
+            data_raw = line_str[6:].strip()
+            if data_raw == "[DONE]":
+                break
+            try:
+                ev = json.loads(data_raw)
+                if ev.get("type") == "content_block_delta":
+                    delta_text = ev.get("delta", {}).get("text", "")
+                    if delta_text:
+                        full_reply.append(delta_text)
+                        yield {"type": "text", "text": delta_text}
+            except Exception:
+                continue
+
+        full_text = "".join(full_reply)
+        if full_text:
+            with _sessions_lock:
+                history.append({"role": "model", "parts": [{"text": full_text}]})
+                _sessions[sid] = history
+    except Exception as exc:
+        yield {"type": "error", "message": f"Failed to connect to Anthropic: {exc}"}
+
+
+def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: str = "gemini"):
     active_proj = get_active_project()
     active_path = str(get_active_project_path())
 
@@ -571,6 +685,73 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str):
         history = _sessions.setdefault(sid, [])
         history.append({"role": "user", "parts": [{"text": user_prompt}]})
         contents = list(history)
+
+    # 1. Local Offline Abliterated Engine (Ollama spectre:latest)
+    if selected_model == "spectre-local":
+        local_model = _get_local_uncensored_model() or "spectre:latest"
+        try:
+            ollama_messages = [{"role": "system", "content": system_instruction}]
+            for h in history:
+                role = "assistant" if h.get("role") == "model" else "user"
+                text_part = "".join([p.get("text", "") for p in h.get("parts", []) if "text" in p])
+                if text_part:
+                    ollama_messages.append({"role": role, "content": text_part})
+
+            agent_label = "ARCHITECT" if agent == "webdev" else "SPECTRE"
+            yield {"type": "text", "text": f"> 🔒 *{agent_label} using Local Engine (`{local_model}` · 100% Uncensored Offline Sandbox)*\n\n"}
+
+            resp = _requests.post(
+                "http://127.0.0.1:11434/api/chat",
+                json={
+                    "model": local_model,
+                    "messages": ollama_messages,
+                    "stream": True,
+                    "options": {
+                        "temperature": 0.7,
+                        "top_p": 0.95
+                    }
+                },
+                stream=True,
+                timeout=180
+            )
+
+            if resp.status_code == 200:
+                full_reply = []
+                for line in resp.iter_lines():
+                    if not line:
+                        continue
+                    try:
+                        chunk = json.loads(line)
+                        delta = chunk.get("message", {}).get("content", "")
+                        if delta:
+                            full_reply.append(delta)
+                            yield {"type": "text", "text": delta}
+                        if chunk.get("done"):
+                            break
+                    except Exception:
+                        continue
+                full_text = "".join(full_reply)
+                if full_text:
+                    with _sessions_lock:
+                        history.append({"role": "model", "parts": [{"text": full_text}]})
+                        _sessions[sid] = history
+                    return
+            else:
+                yield {"type": "error", "message": f"Local Ollama returned HTTP {resp.status_code}: {resp.text}"}
+                return
+        except Exception as exc:
+            yield {"type": "error", "message": f"Failed to reach Local Ollama at 127.0.0.1:11434 ({exc}). Ensure Ollama is running ('ollama serve' or 'docker compose up -d')."}
+            return
+
+    # 2. Claude Frontier Models (Anthropic)
+    elif selected_model in CLAUDE_MODELS:
+        yield from _stream_anthropic_model(selected_model, system_instruction, history, sid)
+        return
+
+    # 3. Gemini Multi-Model Failover Pool (Default)
+    if not GEMINI_API_KEY:
+        yield {"type": "error", "message": "No Gemini API key found in infrastructure/.env"}
+        return
 
     max_tool_turns = 8
     current_turn = 0
@@ -764,9 +945,12 @@ class _Handler(BaseHTTPRequestHandler):
             active_proj = get_active_project()
             active_path = get_active_project_path()
 
+            local_model = _get_local_uncensored_model()
             self._json_resp({
                 "api_key": bool(GEMINI_API_KEY),
                 "model": ACTIVE_MODEL,
+                "local_model": local_model,
+                "uncensored_ready": bool(local_model),
                 "failover_pool": MODEL_FAILOVER_POOL,
                 "sessions": len(_sessions),
                 "health": score,
@@ -813,6 +997,67 @@ class _Handler(BaseHTTPRequestHandler):
                     "source": f"OS CSPRNG (Fallback: {exc})"
                 })
 
+        elif path == "/api/models":
+            local_model = _get_local_uncensored_model()
+            models_list = [
+                {
+                    "id": "gemini",
+                    "name": "Gemini 2.5 Pro / Flash",
+                    "tag": "Google AI Studio",
+                    "badge": "Active Pool",
+                    "tier": "cloud",
+                    "icon": "sparkles",
+                    "description": "Multi-model failover pool · 1M token context · Live tool execution",
+                    "available": bool(GEMINI_API_KEY)
+                },
+                {
+                    "id": "claude-3-7-sonnet",
+                    "name": "Claude 3.7 Sonnet",
+                    "tag": "Anthropic",
+                    "badge": "Hybrid Reasoning",
+                    "tier": "cloud",
+                    "icon": "zap",
+                    "description": "State-of-the-art hybrid coding, reasoning & system architecture",
+                    "available": bool(ANTHROPIC_API_KEY)
+                },
+                {
+                    "id": "claude-3-5-sonnet",
+                    "name": "Claude 3.5 Sonnet",
+                    "tag": "Anthropic",
+                    "badge": "High Speed",
+                    "tier": "cloud",
+                    "icon": "star",
+                    "description": "Fast full-stack engineering, React 19 & debugging",
+                    "available": bool(ANTHROPIC_API_KEY)
+                },
+                {
+                    "id": "claude-3-opus",
+                    "name": "Claude 3 Opus",
+                    "tag": "Anthropic",
+                    "badge": "Deep Thinking",
+                    "tier": "cloud",
+                    "icon": "brain",
+                    "description": "Maximum deep synthesis, complex logic & security audits",
+                    "available": bool(ANTHROPIC_API_KEY)
+                },
+                {
+                    "id": "spectre-local",
+                    "name": "SPECTRE Local (spectre:latest)",
+                    "tag": "Offline Ollama",
+                    "badge": "100% Uncensored",
+                    "tier": "local",
+                    "icon": "shield",
+                    "description": "Abliterated 8B model · Zero moralizing or refusals · Air-gapped sandbox",
+                    "available": bool(local_model)
+                }
+            ]
+            self._json_resp({
+                "models": models_list,
+                "anthropic_key_set": bool(ANTHROPIC_API_KEY),
+                "gemini_key_set": bool(GEMINI_API_KEY),
+                "local_model": local_model
+            })
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -821,7 +1066,10 @@ class _Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/")
         length = int(self.headers.get("Content-Length", 0))
-        body = json.loads(self.rfile.read(length)) if length else {}
+        try:
+            body = json.loads(self.rfile.read(length)) if length else {}
+        except Exception:
+            body = {}
 
         if path == "/api/chat":
             self._handle_chat_stream(body)
@@ -877,6 +1125,7 @@ class _Handler(BaseHTTPRequestHandler):
         agent = body.get("agent", "webdev")
         message = body.get("message", "").strip()
         sid = body.get("sessionId") or str(uuid.uuid4())
+        model = body.get("model", "gemini")
 
         if not message:
             self._json_resp({"error": "Empty message"}, 400)
@@ -890,7 +1139,7 @@ class _Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
         try:
-            for event in _stream_agent_task(agent, sid, message):
+            for event in _stream_agent_task(agent, sid, message, selected_model=model):
                 payload = json.dumps(event, ensure_ascii=False)
                 self.wfile.write(f"data: {payload}\n\n".encode("utf-8"))
                 self.wfile.flush()

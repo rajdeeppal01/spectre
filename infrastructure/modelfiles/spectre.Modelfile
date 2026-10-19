@@ -5,7 +5,7 @@
 #       It must NEVER be routed to any cloud API.
 # ============================================================
 
-FROM whiterabbitneo2:8b-q4_K_M
+FROM dolphin-mistral
 
 PARAMETER num_gpu 28
 PARAMETER num_thread 6
