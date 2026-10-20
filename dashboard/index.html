@@ -2685,6 +2685,12 @@ function updateModelUI() {
   if (modelInd) {
     modelInd.textContent = cfg.fullName;
   }
+
+  // Sidebar footer status text update
+  const statusText = document.getElementById('status-text');
+  if (statusText && statusText.textContent && !statusText.textContent.includes('Server offline') && !statusText.textContent.includes('Connecting')) {
+    statusText.textContent = `${cfg.name} · [${activeProjectId}]`;
+  }
 }
 
 // Global click-outside listener to close model dropdown
@@ -3196,7 +3202,9 @@ async function checkStatus() {
     const modelInd = document.getElementById('model-indicator');
     if (d.api_key) {
       dot.className = 'status-dot';
-      text.textContent = `${d.model} · [${d.active_project.name}]`;
+      const mCfg = MODELS_CONFIG[currentModel] || MODELS_CONFIG['gemini'];
+      const wsName = d.active_project ? d.active_project.name : activeProjectId;
+      text.textContent = `${mCfg.name} · [${wsName}]`;
     } else {
       dot.className = 'status-dot offline';
       text.textContent = 'No API key set';
