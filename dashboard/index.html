@@ -959,6 +959,42 @@
     }
     #send-btn:hover { transform: scale(1.04); box-shadow: 0 0 20px var(--accent-glow); }
     #send-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+    #send-btn.streaming-stop {
+      background: rgba(239, 68, 68, 0.15) !important;
+      border: 1px solid rgba(239, 68, 68, 0.5) !important;
+      color: #ef4444 !important;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.3) !important;
+      opacity: 1 !important;
+      cursor: pointer !important;
+    }
+    #send-btn.streaming-stop:hover {
+      background: #ef4444 !important;
+      color: #fff !important;
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.6) !important;
+    }
+
+    .thinking-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      font-size: 12px;
+      margin: 4px 0;
+    }
+    .pulse-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulseDotAnim 1.3s infinite ease-in-out;
+    }
+    @keyframes pulseDotAnim {
+      0%, 100% { opacity: 0.3; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.25); }
+    }
 
     .input-hint {
       font-size: 10.5px;
@@ -3338,19 +3374,65 @@ function renderMessages(messages) {
   }
 }
 
+let activeAbortController = null;
+
+function stopGeneration() {
+  if (activeAbortController) {
+    try { activeAbortController.abort(); } catch {}
+    activeAbortController = null;
+  }
+  isStreaming = false;
+  const input = document.getElementById('prompt-input');
+  if (input) input.disabled = false;
+  const sendBtn = document.getElementById('send-btn');
+  if (sendBtn) {
+    sendBtn.disabled = false;
+    sendBtn.classList.remove('streaming-stop');
+    sendBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>`;
+    sendBtn.title = "Send task (Enter)";
+  }
+  const ind = document.getElementById('streaming-thinking-indicator');
+  if (ind) ind.remove();
+}
+
 // ── Send Message & Agentic Tool Execution SSE ──────────────────────────────────
 async function sendMessage() {
-  if (isStreaming) return;
+  if (isStreaming) {
+    stopGeneration();
+    return;
+  }
 
   const input = document.getElementById('prompt-input');
   const text = input.value.trim();
   if (!text) return;
 
+  // If local offline model is selected, verify Ollama before submitting
+  if (currentModel === 'spectre-local') {
+    try {
+      const ping = await fetch('/api/ollama/status');
+      if (ping.ok) {
+        const pdata = await ping.json();
+        if (!pdata.online) {
+          checkOllamaAndPromptDocker();
+          return;
+        }
+      }
+    } catch {}
+  }
+
   input.value = '';
   autoResize(input);
   input.disabled = true;
-  document.getElementById('send-btn').disabled = true;
+
+  const sendBtn = document.getElementById('send-btn');
+  if (sendBtn) {
+    sendBtn.disabled = false;
+    sendBtn.classList.add('streaming-stop');
+    sendBtn.title = 'Stop generation';
+    sendBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>`;
+  }
   isStreaming = true;
+  activeAbortController = new AbortController();
 
   appendMessage('user', text);
 
@@ -3376,6 +3458,15 @@ async function sendMessage() {
   const agentContentEl = appendMessage('agent', '');
   const msgs = document.getElementById('messages');
 
+  // Insert visual thinking indicator
+  const indicator = document.createElement('div');
+  indicator.id = 'streaming-thinking-indicator';
+  indicator.className = 'thinking-indicator';
+  const modelName = MODELS_CONFIG[currentModel]?.name || 'Agent';
+  indicator.innerHTML = `<span class="pulse-dot"></span> <span>${modelName} is processing...</span>`;
+  agentContentEl.appendChild(indicator);
+  msgs.scrollTop = msgs.scrollHeight;
+
   let fullReplyText = '';
   let activeToolCards = {};
 
@@ -3388,7 +3479,8 @@ async function sendMessage() {
         model: currentModel,
         message: text,
         sessionId: currentSid
-      })
+      }),
+      signal: activeAbortController.signal
     });
 
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -3412,6 +3504,10 @@ async function sendMessage() {
 
         try {
           const ev = JSON.parse(raw);
+
+          // Clear thinking indicator on first event
+          const ind = document.getElementById('streaming-thinking-indicator');
+          if (ind) ind.remove();
 
           if (ev.type === 'tool_call') {
             const card = document.createElement('div');
@@ -3471,25 +3567,31 @@ async function sendMessage() {
               agentContentEl.appendChild(textContainer);
             }
             textContainer.innerHTML = renderMarkdown(fullReplyText);
+            msgs.scrollTop = msgs.scrollHeight;
           }
         } catch (e) {}
       }
     }
   } catch (err) {
-    fullReplyText += `\n\n**[Connection Error]** Could not reach the server: \`${err.message}\``;
+    const ind = document.getElementById('streaming-thinking-indicator');
+    if (ind) ind.remove();
+
+    if (err.name === 'AbortError') {
+      fullReplyText += '\n\n*(Generation stopped by user)*';
+    } else {
+      fullReplyText += `\n\n**[Connection Error]** Could not reach the server: \`${err.message}\``;
+    }
     agentContentEl.innerHTML = renderMarkdown(fullReplyText);
+  } finally {
+    if (fullReplyText) {
+      convo.messages.push({ role: 'model', content: fullReplyText });
+      saveConvos();
+    }
+    stopGeneration();
+    input.focus();
   }
-
-  if (fullReplyText) {
-    convo.messages.push({ role: 'model', content: fullReplyText });
-    saveConvos();
-  }
-
-  input.disabled = false;
-  document.getElementById('send-btn').disabled = false;
-  isStreaming = false;
-  input.focus();
 }
+
 
 function clearChat() {
   if (activeChatIdx >= 0) {

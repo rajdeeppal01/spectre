@@ -689,6 +689,25 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
     # 1. Local Offline Abliterated Engine (Ollama spectre:latest)
     if selected_model == "spectre-local":
         local_model = _get_local_uncensored_model() or "spectre:latest"
+
+        # Fast pre-check: verify Ollama is responding before sending preamble
+        try:
+            ping = _requests.get("http://127.0.0.1:11434/api/tags", timeout=2.5)
+            if ping.status_code != 200:
+                raise ConnectionError(f"Ollama returned HTTP {ping.status_code}")
+        except Exception as e:
+            yield {
+                "type": "error",
+                "message": (
+                    f"**Local Engine Offline (127.0.0.1:11434)**\n\n"
+                    f"Docker Desktop or Ollama is closed (`{str(e)}`).\n\n"
+                    f"• **To run locally**: Open Docker Desktop and run:\n"
+                    f"  ```powershell\n  docker compose -f infrastructure\\docker-compose.yml up -d\n  ```\n"
+                    f"• **Or switch model**: Select **Gemini Pro** from the top dropdown for instant execution."
+                )
+            }
+            return
+
         try:
             ollama_messages = [{"role": "system", "content": system_instruction}]
             for h in history:
@@ -700,6 +719,8 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
             agent_label = "ARCHITECT" if agent == "webdev" else "SPECTRE"
             yield {"type": "text", "text": f"> 🔒 *{agent_label} using Local Engine (`{local_model}` · 100% Uncensored Offline Sandbox)*\n\n"}
 
+            # Host has 4GB RTX 3050; setting num_gpu: 0 runs model via 16GB host RAM,
+            # preventing cudaMalloc VRAM OOM crashes and container restarts.
             resp = _requests.post(
                 "http://127.0.0.1:11434/api/chat",
                 json={
@@ -708,11 +729,12 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                     "stream": True,
                     "options": {
                         "temperature": 0.7,
-                        "top_p": 0.95
+                        "top_p": 0.95,
+                        "num_gpu": 0
                     }
                 },
                 stream=True,
-                timeout=180
+                timeout=(5, 90)
             )
 
             if resp.status_code == 200:
@@ -737,17 +759,21 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                         _sessions[sid] = history
                     return
             else:
-                yield {"type": "error", "message": f"Local Ollama returned HTTP {resp.status_code}: {resp.text}"}
+                err_text = resp.text
+                yield {
+                    "type": "error",
+                    "message": (
+                        f"**Local Ollama Error (HTTP {resp.status_code})**: {err_text}\n\n"
+                        f"Try switching to **Gemini Pro** from the top bar for cloud execution."
+                    )
+                }
                 return
         except Exception as exc:
             yield {
                 "type": "error",
                 "message": (
-                    f"**Local Ollama Engine Offline (127.0.0.1:11434)**\n\n"
-                    f"Connection refused because Docker Desktop / Ollama is not running on your computer.\n\n"
-                    f"• **To run locally**: Open Docker Desktop and run:\n"
-                    f"  ```powershell\n  docker compose -f infrastructure\\docker-compose.yml up -d\n  ```\n"
-                    f"• **Or switch model**: Select **Gemini Pro** from the top dropdown for instant cloud execution."
+                    f"**Local Ollama Connection Error**: `{str(exc)}`\n\n"
+                    f"Ensure Docker Desktop is open and Ollama is active. Or switch to **Gemini Pro** from the top bar."
                 )
             }
             return
