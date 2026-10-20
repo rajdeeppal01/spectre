@@ -56,3 +56,4 @@ scans/*.json
 tmp/
 temp/
 scratch/
+test-dashboard/

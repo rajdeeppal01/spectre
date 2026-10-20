@@ -740,7 +740,16 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                 yield {"type": "error", "message": f"Local Ollama returned HTTP {resp.status_code}: {resp.text}"}
                 return
         except Exception as exc:
-            yield {"type": "error", "message": f"Failed to reach Local Ollama at 127.0.0.1:11434 ({exc}). Ensure Ollama is running ('ollama serve' or 'docker compose up -d')."}
+            yield {
+                "type": "error",
+                "message": (
+                    f"**Local Ollama Engine Offline (127.0.0.1:11434)**\n\n"
+                    f"Connection refused because Docker Desktop / Ollama is not running on your computer.\n\n"
+                    f"• **To run locally**: Open Docker Desktop and run:\n"
+                    f"  ```powershell\n  docker compose -f infrastructure\\docker-compose.yml up -d\n  ```\n"
+                    f"• **Or switch model**: Select **Gemini Pro** from the top dropdown for instant cloud execution."
+                )
+            }
             return
 
     # 2. Claude Frontier Models (Anthropic)
@@ -1058,6 +1067,15 @@ class _Handler(BaseHTTPRequestHandler):
                 "local_model": local_model
             })
 
+        elif path == "/api/ollama/status":
+            local_model = _get_local_uncensored_model()
+            docker_exe = Path(r"C:\Program Files\Docker\Docker\Docker Desktop.exe")
+            self._json_resp({
+                "online": bool(local_model),
+                "model": local_model,
+                "docker_installed": docker_exe.exists()
+            })
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -1073,6 +1091,37 @@ class _Handler(BaseHTTPRequestHandler):
 
         if path == "/api/chat":
             self._handle_chat_stream(body)
+
+        elif path == "/api/docker/start":
+            docker_exe = Path(r"C:\Program Files\Docker\Docker\Docker Desktop.exe")
+            launched_desktop = False
+            if docker_exe.exists():
+                try:
+                    subprocess.Popen([str(docker_exe)], creationflags=subprocess.DETACHED_PROCESS if sys.platform == "win32" else 0)
+                    launched_desktop = True
+                except Exception as exc:
+                    print(f"[!] Could not launch Docker Desktop: {exc}")
+
+            def _start_compose():
+                import time
+                time.sleep(3)
+                try:
+                    compose_file = ROOT / "infrastructure" / "docker-compose.yml"
+                    subprocess.run(
+                        ["docker", "compose", "-f", str(compose_file), "up", "-d", "ollama"],
+                        capture_output=True,
+                        text=True,
+                        timeout=60
+                    )
+                except Exception:
+                    pass
+
+            threading.Thread(target=_start_compose, daemon=True).start()
+            self._json_resp({
+                "ok": True,
+                "launched_desktop": launched_desktop,
+                "message": "Starting Docker Desktop and Ollama container..."
+            })
 
         elif path == "/api/projects/select":
             pid = body.get("id", "").strip()

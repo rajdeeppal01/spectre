@@ -1457,6 +1457,115 @@
     .help-persona-box.arch .help-features-list li svg { color: #22d3ee; }
     .help-persona-box.spec .help-features-list li svg { color: #f97316; }
 
+    /* ── Docker Offline Engine Prompt Modal ────────────────────────────── */
+    .modal-docker-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(34, 197, 94, 0.14);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      color: #4ade80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .docker-status-card {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .docker-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .docker-status-badge.offline {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+    .docker-status-badge.online {
+      background: rgba(34, 197, 94, 0.14);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      color: #4ade80;
+    }
+    .docker-status-text {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .docker-launch-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-bottom: 14px;
+    }
+    .docker-action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 11px 16px;
+      border-radius: 9px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .docker-action-btn.primary {
+      background: #22c55e;
+      border: none;
+      color: #080811;
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.35);
+    }
+    .docker-action-btn.primary:hover {
+      background: #4ade80;
+      box-shadow: 0 0 28px rgba(34, 197, 94, 0.55);
+      transform: translateY(-1px);
+    }
+    .docker-action-btn.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border2);
+      color: var(--text);
+    }
+    .docker-action-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.10);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .docker-hint-box {
+      background: #080812;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+    }
+    .docker-switch-back-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    .docker-switch-back-btn:hover {
+      color: #fff;
+    }
+
     /* ── Context Menu ───────────────────────────────────────────────────────── */
     .context-menu {
       position: fixed;
@@ -1956,6 +2065,62 @@
   </div>
 </div>
 
+<!-- ── DOCKER / OFFLINE ENGINE LAUNCH MODAL ──────────────────────────────── -->
+<div id="docker-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeDockerModal()">
+  <div class="modal-dialog" style="max-width: 540px;">
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-docker-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <h3>Start Local Offline Engine</h3>
+          <p>SPECTRE 100% Uncensored Sandbox (127.0.0.1:11434)</p>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeDockerModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body" style="padding: 20px 24px;">
+      <div class="docker-status-card">
+        <div class="docker-status-badge offline" id="docker-modal-status-badge">
+          <span class="status-dot offline"></span>
+          <span id="docker-modal-status-label">Docker Desktop / Ollama is Closed</span>
+        </div>
+        <p class="docker-status-text" id="docker-modal-desc-text">
+          You selected <strong>SPECTRE Local (spectre:latest)</strong>. This model runs air-gapped on your computer via Docker. To process tasks locally, please open Docker Desktop.
+        </p>
+      </div>
+
+      <div class="docker-launch-actions">
+        <button class="docker-action-btn primary" id="btn-start-docker" onclick="startDockerService()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span id="start-docker-text">Open Docker Desktop & Start Ollama</span>
+        </button>
+        <button class="docker-action-btn secondary" onclick="copyDockerCommand(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>Copy PowerShell Start Command</span>
+        </button>
+      </div>
+
+      <div class="docker-hint-box" id="docker-cmd-box" title="Click to copy" onclick="copyDockerCommand(this)" style="cursor:pointer">
+        <code>docker compose -f infrastructure\docker-compose.yml up -d</code>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; padding: 14px 24px; border-top: 1px solid var(--border); background: var(--surface);">
+      <button class="docker-switch-back-btn" onclick="selectModel('gemini'); closeDockerModal();">
+        Switch Back to Gemini Pro (Cloud)
+      </button>
+      <button onclick="closeDockerModal()" style="padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font-size:12px;">
+        Dismiss
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
    SPECTRE MULTI-PROJECT ANTIGRAVITY ENGINE
@@ -2348,6 +2513,215 @@ function closeHelpModal() {
   if (modal) modal.classList.add('hidden');
 }
 
+let dockerPollInterval = null;
+
+function openDockerModal() {
+  const modal = document.getElementById('docker-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeDockerModal() {
+  const modal = document.getElementById('docker-modal');
+  if (modal) modal.classList.add('hidden');
+  if (dockerPollInterval) {
+    clearInterval(dockerPollInterval);
+    dockerPollInterval = null;
+  }
+}
+
+async function checkOllamaAndPromptDocker() {
+  const badge = document.getElementById('docker-modal-status-badge');
+  const label = document.getElementById('docker-modal-status-label');
+  const desc = document.getElementById('docker-modal-desc-text');
+  const btn = document.getElementById('btn-start-docker');
+  const btnText = document.getElementById('start-docker-text');
+
+  // Immediately show modal prompt
+  openDockerModal();
+
+  try {
+    const res = await fetch('/api/ollama/status');
+    if (!res.ok) throw new Error('Status check failed');
+    const data = await res.json();
+    if (data.online) {
+      if (badge) {
+        badge.className = 'docker-status-badge online';
+        badge.style.color = '#4ade80';
+        badge.style.background = 'rgba(74, 222, 128, 0.12)';
+        badge.style.borderColor = 'rgba(74, 222, 128, 0.3)';
+      }
+      if (label) {
+        label.textContent = `Docker & Ollama Online (${data.model || 'spectre:latest'})`;
+      }
+      if (desc) {
+        desc.innerHTML = `Docker Desktop and the local Ollama engine are <strong>running and connected</strong>. Your offline uncensored model (<code>${data.model || 'spectre:latest'}</code>) is ready for completely air-gapped tasks.`;
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.style.background = 'rgba(74, 222, 128, 0.2)';
+        btn.style.color = '#4ade80';
+        btn.style.border = '1px solid rgba(74, 222, 128, 0.4)';
+        btn.onclick = () => closeDockerModal();
+      }
+      if (btnText) {
+        btnText.textContent = '✓ Docker & Ollama Ready — Continue';
+      }
+    } else {
+      if (badge) {
+        badge.className = 'docker-status-badge offline';
+        badge.style.color = '#ef4444';
+        badge.style.background = 'rgba(239, 68, 68, 0.12)';
+        badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+      }
+      if (label) {
+        label.textContent = 'Docker Desktop / Ollama is Closed';
+      }
+      if (desc) {
+        desc.innerHTML = `You selected <strong>SPECTRE Local (spectre:latest)</strong>. This model runs air-gapped on your computer via Docker. To process tasks locally, please open Docker Desktop.`;
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        btn.style.background = 'linear-gradient(135deg, #0ea5e9, #0284c7)';
+        btn.style.color = '#ffffff';
+        btn.style.border = 'none';
+        btn.onclick = () => startDockerService();
+      }
+      if (btnText) {
+        btnText.textContent = 'Open Docker Desktop & Start Ollama';
+      }
+    }
+  } catch (err) {
+    console.warn('[DockerCheck] Status error:', err);
+    if (badge) {
+      badge.className = 'docker-status-badge offline';
+      badge.style.color = '#ef4444';
+      badge.style.background = 'rgba(239, 68, 68, 0.12)';
+      badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+    }
+    if (label) {
+      label.textContent = 'Docker Desktop / Ollama is Closed';
+    }
+    if (desc) {
+      desc.innerHTML = `You selected <strong>SPECTRE Local (spectre:latest)</strong>. This model runs air-gapped on your computer via Docker. To process tasks locally, please open Docker Desktop.`;
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.style.background = 'linear-gradient(135deg, #0ea5e9, #0284c7)';
+      btn.style.color = '#ffffff';
+      btn.style.border = 'none';
+      btn.onclick = () => startDockerService();
+    }
+    if (btnText) {
+      btnText.textContent = 'Open Docker Desktop & Start Ollama';
+    }
+  }
+}
+
+async function startDockerService() {
+  const btn = document.getElementById('btn-start-docker');
+  const btnText = document.getElementById('start-docker-text');
+  const badge = document.getElementById('docker-modal-status-badge');
+  const label = document.getElementById('docker-modal-status-label');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'wait';
+  }
+  if (btnText) {
+    btnText.textContent = 'Starting Docker Desktop & Ollama...';
+  }
+  if (label) {
+    label.textContent = 'Launching Docker Desktop engine...';
+  }
+
+  try {
+    const res = await fetch('/api/docker/start', { method: 'POST' });
+    const data = await res.json();
+    console.log('[DockerLaunch]', data);
+  } catch (e) {
+    console.warn('[DockerLaunch] Error triggering docker start:', e);
+  }
+
+  if (dockerPollInterval) clearInterval(dockerPollInterval);
+  let attempts = 0;
+  dockerPollInterval = setInterval(async () => {
+    attempts++;
+    try {
+      const res = await fetch('/api/ollama/status');
+      if (res.ok) {
+        const status = await res.json();
+        if (status.online) {
+          clearInterval(dockerPollInterval);
+          dockerPollInterval = null;
+
+          if (badge) {
+            badge.className = 'docker-status-badge online';
+            badge.style.color = '#4ade80';
+            badge.style.background = 'rgba(74, 222, 128, 0.12)';
+            badge.style.borderColor = 'rgba(74, 222, 128, 0.3)';
+          }
+          if (label) {
+            label.textContent = `Ollama Online (${status.model || 'spectre:latest'})`;
+          }
+          if (btn) {
+            btn.style.opacity = '1';
+            btn.style.background = 'rgba(74, 222, 128, 0.2)';
+            btn.style.color = '#4ade80';
+            btn.style.border = '1px solid rgba(74, 222, 128, 0.4)';
+          }
+          if (btnText) {
+            btnText.textContent = '✓ Docker & Ollama Ready!';
+          }
+
+          setTimeout(() => {
+            closeDockerModal();
+          }, 1500);
+          return;
+        }
+      }
+    } catch {}
+
+    if (attempts >= 30) {
+      clearInterval(dockerPollInterval);
+      dockerPollInterval = null;
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+      }
+      if (btnText) {
+        btnText.textContent = 'Retry Starting Docker';
+      }
+      if (label) {
+        label.textContent = 'Docker start taking longer than usual... Check Docker Desktop window';
+      }
+    }
+  }, 2000);
+}
+
+function copyDockerCommand(btn) {
+  const cmd = 'docker compose -f infrastructure\\\\docker-compose.yml up -d';
+  navigator.clipboard.writeText(cmd).then(() => {
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> <span style="color:#4ade80">Copied to Clipboard!</span>`;
+      setTimeout(() => {
+        btn.innerHTML = origHtml;
+      }, 2000);
+    }
+  }).catch(() => {
+    prompt('Copy command:', cmd);
+  });
+}
+
+
 function genUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
     const r = Math.random() * 16 | 0;
@@ -2655,6 +3029,10 @@ function selectModel(modelKey) {
   localStorage.setItem('spectre_selected_model', modelKey);
   updateModelUI();
   closeModelDropdown();
+
+  if (modelKey === 'spectre-local') {
+    checkOllamaAndPromptDocker();
+  }
 }
 
 function updateModelUI() {
@@ -2822,6 +3200,9 @@ window.addEventListener('click', () => {
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeChatContextMenu();
+    closeHelpModal();
+    closeDockerModal();
+    closeModelDropdown();
   }
 });
 
