@@ -1256,7 +1256,7 @@ def _parse_react_tool_call(content: str) -> tuple[str | None, dict | None]:
     return None, None
 
 
-def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: str = "gemini"):
+def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: str = "gemini", autopilot: bool = True):
     active_proj = get_active_project()
     active_path = str(get_active_project_path())
 
@@ -1266,8 +1266,19 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
         f"- Project Name: {active_proj['name']}\n"
         f"- Root Path: {active_path}\n"
         f"- Stack Tags: {', '.join(active_proj.get('badges', []))}\n"
-        f"All your tool actions (run_command, write_file, replace_in_file, read_file, grep_search, list_directory) execute inside this active project's directory."
+        f"All your tool actions (run_command, write_file, replace_in_file, read_file, grep_search, list_directory, search_web, verify_build, handoff_to_spectre) execute inside this active project's directory."
     )
+
+    if autopilot:
+        project_context += (
+            f"\n\n[⚡ AUTOPILOT MODE ACTIVATED - MANDATORY OPERATIONAL PROTOCOL]:\n"
+            f"- AUTOPILOT IS ON: The user has granted full, unconditional pre-approval for all actions and tool calls.\n"
+            f"- All tool permissions (running shell commands, writing/overwriting files, code patches, installing packages, tests, and builds) are AUTOMATICALLY ALLOWED.\n"
+            f"- CRITICAL: NEVER stop, wait, or ask the user for permission, approval, confirmation, or whether to continue (e.g. 'Should I run this?', 'Allow me to edit this file?', 'May I install this package?').\n"
+            f"- Proactively execute tools in sequence to complete the entire requested objective.\n"
+            f"- If a build error, lint failure, or command failure occurs, immediately use your tools to fix it, re-verify with verify_build, and keep going autonomously.\n"
+            f"- Only stop when the requested task is completely implemented, verified, and functioning."
+        )
 
     # Check for custom rules in active workspace (.spectre_rules.md, AGENTS.md, GEMINI.md, etc.)
     rules_candidates = [
@@ -1315,6 +1326,9 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
     if activated_skill:
         yield {"type": "text", "text": f"> ⚡ *Skill Activated: `{activated_skill['name']}`* (`skills/{activated_skill['id']}/SKILL.md`)\n\n"}
 
+    if autopilot:
+        yield {"type": "text", "text": f"> ⚡ *Autopilot Mode Engaged* · Zero permission pauses · Full autonomous execution.\n\n"}
+
     # 1. Local Offline Abliterated Engine (Ollama spectre:latest) with Autonomous Agentic Loop
     if selected_model == "spectre-local":
         local_model = _get_local_uncensored_model() or "spectre:latest"
@@ -1348,7 +1362,7 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
             agent_label = "ARCHITECT" if agent == "webdev" else "SPECTRE"
             yield {"type": "text", "text": f"> 🔒 *{agent_label} using Local Autonomous Engine (`{local_model}` · 100% Uncensored Offline Sandbox)*\n\n"}
 
-            max_tool_turns = 8
+            max_tool_turns = 25 if autopilot else 8
             current_turn = 0
             full_reply_accumulated = []
 
@@ -1503,7 +1517,7 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
         yield {"type": "error", "message": "No Gemini API key found in infrastructure/.env"}
         return
 
-    max_tool_turns = 8
+    max_tool_turns = 25 if autopilot else 8
     current_turn = 0
 
     while current_turn < max_tool_turns:
@@ -1933,6 +1947,7 @@ class _Handler(BaseHTTPRequestHandler):
         message = body.get("message", "").strip()
         sid = body.get("sessionId") or str(uuid.uuid4())
         model = body.get("model", "gemini")
+        autopilot = bool(body.get("autopilot", True))
 
         if not message:
             self._json_resp({"error": "Empty message"}, 400)
@@ -1946,7 +1961,7 @@ class _Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
         try:
-            for event in _stream_agent_task(agent, sid, message, selected_model=model):
+            for event in _stream_agent_task(agent, sid, message, selected_model=model, autopilot=autopilot):
                 payload = json.dumps(event, ensure_ascii=False)
                 self.wfile.write(f"data: {payload}\n\n".encode("utf-8"))
                 self.wfile.flush()

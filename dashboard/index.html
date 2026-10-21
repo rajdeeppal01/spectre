@@ -1332,6 +1332,129 @@
       box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
+    /* Autopilot Mode Toggle */
+    .autopilot-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .autopilot-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.07);
+    }
+    .autopilot-toggle-btn.active {
+      background: rgba(34, 211, 238, 0.12);
+      border-color: rgba(34, 211, 238, 0.45);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.2);
+    }
+    .autopilot-bolt {
+      font-size: 12px;
+      line-height: 1;
+      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
+      transition: transform 0.2s ease;
+    }
+    .autopilot-toggle-btn.active .autopilot-bolt {
+      color: #22d3ee;
+      animation: pulseBolt 2s infinite ease-in-out;
+    }
+    .autopilot-toggle-btn:not(.active) .autopilot-bolt {
+      filter: grayscale(1);
+      opacity: 0.5;
+    }
+    @keyframes pulseBolt {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.4)); }
+      50% { transform: scale(1.18); filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.8)); }
+    }
+    .autopilot-label {
+      font-family: var(--font);
+      font-size: 11px;
+      font-weight: 600;
+      color: #e2e8f0;
+      letter-spacing: 0.2px;
+    }
+    .autopilot-toggle-btn.active .autopilot-label {
+      color: #fff;
+    }
+    .autopilot-status {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+    }
+    .autopilot-toggle-btn.active .autopilot-status {
+      background: rgba(34, 211, 238, 0.25);
+      color: #22d3ee;
+      border: 1px solid rgba(34, 211, 238, 0.4);
+    }
+    .autopilot-toggle-btn:not(.active) .autopilot-status {
+      background: rgba(255, 255, 255, 0.05);
+      color: #64748b;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Tool Permission Bar (When Autopilot is OFF) */
+    .tool-permission-bar {
+      margin-bottom: 8px;
+      padding: 7px 11px;
+      border-radius: 6px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .perm-text {
+      font-size: 11px;
+      color: #fde68a;
+    }
+    .perm-text strong {
+      color: #fff;
+      font-family: var(--mono);
+    }
+    .perm-btns {
+      display: flex;
+      gap: 6px;
+    }
+    .perm-allow-btn {
+      padding: 3px 8px;
+      font-size: 10.5px;
+      font-weight: 600;
+      border-radius: 4px;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #4ade80;
+      cursor: pointer;
+    }
+    .perm-allow-btn:hover {
+      background: rgba(34, 197, 94, 0.35);
+      color: #fff;
+    }
+    .perm-auto-btn {
+      padding: 3px 9px;
+      font-size: 10.5px;
+      font-weight: 600;
+      border-radius: 4px;
+      background: rgba(34, 211, 238, 0.2);
+      border: 1px solid rgba(34, 211, 238, 0.45);
+      color: #22d3ee;
+      cursor: pointer;
+    }
+    .perm-auto-btn:hover {
+      background: rgba(34, 211, 238, 0.35);
+      color: #fff;
+    }
+
     #prompt-input {
       flex: 1;
       background: transparent;
@@ -2437,6 +2560,13 @@
           </div>
         </div>
 
+        <!-- Autopilot Mode Toggle -->
+        <div class="autopilot-toggle-btn active" id="autopilot-toggle" onclick="toggleAutopilot()" title="Autopilot Mode: When enabled, all permissions (running commands, writing files, installing packages) are automatically allowed without pausing">
+          <span class="autopilot-bolt">⚡</span>
+          <span class="autopilot-label">Autopilot</span>
+          <span class="autopilot-status" id="autopilot-status">ON</span>
+        </div>
+
         <!-- Skills Slash Command Autocomplete Popup -->
         <div id="skills-popup" class="skills-popup hidden">
           <div class="skills-popup-header">
@@ -2577,9 +2707,16 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             <span>Antigravity Engine & Agentic Tools Reference</span>
           </div>
-          <span class="help-commands-badge" style="color:var(--accent);border-color:var(--accent);">6 Core Upgrades</span>
+          <span class="help-commands-badge" style="color:var(--accent);border-color:var(--accent);">7 Core Upgrades</span>
         </div>
         <div class="help-commands-grid">
+          <div class="help-command-card">
+            <div class="help-command-top">
+              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">⚡ Autopilot Mode</span></div>
+              <span class="model-tag-badge active-tag">Zero Interruption</span>
+            </div>
+            <div class="help-command-desc">Toggle ON to automatically approve all tool permissions. Shell commands, file writes, code edits, and installs proceed continuously with zero permission pauses or confirmation dialogs.</div>
+          </div>
           <div class="help-command-card">
             <div class="help-command-top">
               <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">Live Visual Diff & Undo</span></div>
@@ -3810,6 +3947,7 @@ function updateModelUI() {
   if (statusText && statusText.textContent && !statusText.textContent.includes('Server offline') && !statusText.textContent.includes('Connecting')) {
     statusText.textContent = `${cfg.name} · [${activeProjectId}]`;
   }
+  if (typeof updateAutopilotUI === 'function') updateAutopilotUI();
 }
 
 // Global click-outside listener to close model dropdown
@@ -4190,7 +4328,8 @@ async function sendMessage() {
         agent: currentAgent,
         model: currentModel,
         message: text,
-        sessionId: currentSid
+        sessionId: currentSid,
+        autopilot: isAutopilotEnabled
       }),
       signal: activeAbortController.signal
     });
@@ -4260,19 +4399,35 @@ async function sendMessage() {
               cmdSummary = JSON.stringify(args);
             }
 
+            const pillHtml = isAutopilotEnabled
+              ? `<span class="tool-status-pill running"><span class="tool-spinner"></span> ⚡ Auto-Approved</span>`
+              : `<span class="tool-status-pill running"><span class="tool-spinner"></span> Running...</span>`;
+
+            const permBarHtml = !isAutopilotEnabled
+              ? `<div class="tool-permission-bar" id="perm-${ev.id}">
+                   <span class="perm-text">Permission requested for <strong>${ev.name}</strong></span>
+                   <div class="perm-btns">
+                     <button class="perm-allow-btn" onclick="allowToolAction('${ev.id}')">Allow</button>
+                     <button class="perm-auto-btn" onclick="enableAutopilotAndProceed('${ev.id}')">⚡ Turn On Autopilot (Always Allow)</button>
+                   </div>
+                 </div>`
+              : '';
+
             card.innerHTML = `
               <div class="tool-card-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
                 <span class="tool-badge-icon">${getIconSvg(iconName, 12)}</span>
                 <span class="tool-badge-name">${ev.name}</span>
                 <span class="tool-badge-cmd">[${activeProjectId}] ${escapeHtml(cmdSummary)}</span>
-                <span class="tool-status-pill running"><span class="tool-spinner"></span> Running...</span>
+                ${pillHtml}
               </div>
               <div class="tool-card-body">
-                <pre class="tool-output">Executing in ${activeProjectId}...</pre>
+                ${permBarHtml}
+                <pre class="tool-output">${isAutopilotEnabled ? `⚡ Autopilot: Pre-approved. Executing in ${activeProjectId}...` : `Executing in ${activeProjectId}...`}</pre>
               </div>
             `;
             agentContentEl.appendChild(card);
             activeToolCards[ev.id || ev.name] = card;
+            if (!isAutopilotEnabled) pendingToolApprovals[ev.id] = true;
             msgs.scrollTop = msgs.scrollHeight;
           }
           else if (ev.type === 'tool_result') {
@@ -4639,6 +4794,58 @@ function handleKey(e) {
   }
 }
 
+// ── Autopilot Mode & Permission Manager ────────────────────────────────────────
+let isAutopilotEnabled = localStorage.getItem('spectre_autopilot') !== 'false';
+let pendingToolApprovals = {};
+
+function toggleAutopilot() {
+  isAutopilotEnabled = !isAutopilotEnabled;
+  localStorage.setItem('spectre_autopilot', isAutopilotEnabled);
+  updateAutopilotUI();
+  if (isAutopilotEnabled) {
+    showToast('⚡ Autopilot Engaged: All tool permissions automatically allowed', 'success');
+    Object.keys(pendingToolApprovals).forEach(id => {
+      allowToolAction(id);
+    });
+  } else {
+    showToast('🛡️ Step-by-Step Mode: Actions will request manual confirmation', 'info');
+  }
+}
+
+function updateAutopilotUI() {
+  const btn = document.getElementById('autopilot-toggle');
+  const statusEl = document.getElementById('autopilot-status');
+  const hintEl = document.getElementById('model-indicator');
+
+  if (btn) btn.classList.toggle('active', isAutopilotEnabled);
+  if (statusEl) statusEl.textContent = isAutopilotEnabled ? 'ON' : 'OFF';
+
+  if (hintEl) {
+    const mCfg = MODELS_CONFIG[currentModel] || MODELS_CONFIG['gemini'];
+    const apText = isAutopilotEnabled 
+      ? '<span style="color:#22d3ee;font-weight:600">⚡ Autopilot: ON (Pre-approved)</span>' 
+      : '<span style="color:#f59e0b;font-weight:600">🛡️ Autopilot: OFF (Manual approval)</span>';
+    hintEl.innerHTML = `${mCfg.name} · ${apText}`;
+  }
+}
+
+function allowToolAction(callId) {
+  const bar = document.getElementById(`perm-${callId}`);
+  if (bar) {
+    bar.innerHTML = `<span style="color:#4ade80;font-size:11px;">✓ Permission granted</span>`;
+    setTimeout(() => bar.remove(), 1200);
+  }
+  delete pendingToolApprovals[callId];
+}
+
+function enableAutopilotAndProceed(callId) {
+  isAutopilotEnabled = true;
+  localStorage.setItem('spectre_autopilot', 'true');
+  updateAutopilotUI();
+  showToast('⚡ Autopilot Mode Activated: All permissions granted!', 'success');
+  allowToolAction(callId);
+}
+
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 180) + 'px';
@@ -4676,6 +4883,7 @@ async function checkStatus() {
   updateModelUI();
   fetchProjects();
   loadAvailableSkills();
+  updateAutopilotUI();
   checkStatus();
   setInterval(checkStatus, 25000);
   
