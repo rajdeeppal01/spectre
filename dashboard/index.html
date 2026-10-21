@@ -2324,8 +2324,8 @@ const SVG_ICONS = {
   copy: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
   edit: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
   more: `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`,
-  portal: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
-  check: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`
+  check: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  search: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`
 };
 
 function getIconSvg(name, size = 14) {
@@ -3847,12 +3847,37 @@ async function sendMessage() {
             const card = document.createElement('div');
             card.className = 'tool-card running';
             card.id = `tool-${ev.id}`;
-            const cmdText = ev.args.command || ev.args.path || JSON.stringify(ev.args);
+
+            let iconName = 'terminal';
+            let cmdSummary = '';
+            const args = ev.args || {};
+            if (ev.name === 'run_command') {
+              iconName = 'terminal';
+              cmdSummary = args.command || '';
+            } else if (ev.name === 'write_file') {
+              iconName = 'file';
+              cmdSummary = `write ${args.path || ''}`;
+            } else if (ev.name === 'replace_in_file') {
+              iconName = 'edit';
+              cmdSummary = `patch ${args.path || ''}`;
+            } else if (ev.name === 'read_file') {
+              iconName = 'file';
+              cmdSummary = `read ${args.path || ''}`;
+            } else if (ev.name === 'grep_search') {
+              iconName = 'search';
+              cmdSummary = `search "${args.query || ''}" in ${args.path || '.'}`;
+            } else if (ev.name === 'list_directory') {
+              iconName = 'folder';
+              cmdSummary = `list ${args.path || '.'}`;
+            } else {
+              cmdSummary = JSON.stringify(args);
+            }
+
             card.innerHTML = `
               <div class="tool-card-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                <span class="tool-badge-icon">${getIconSvg('terminal', 12)}</span>
+                <span class="tool-badge-icon">${getIconSvg(iconName, 12)}</span>
                 <span class="tool-badge-name">${ev.name}</span>
-                <span class="tool-badge-cmd">[${activeProjectId}] ${escapeHtml(cmdText)}</span>
+                <span class="tool-badge-cmd">[${activeProjectId}] ${escapeHtml(cmdSummary)}</span>
                 <span class="tool-status-pill running"><span class="tool-spinner"></span> Running...</span>
               </div>
               <div class="tool-card-body">

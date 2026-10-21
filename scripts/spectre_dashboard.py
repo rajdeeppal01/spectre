@@ -22,6 +22,7 @@ Active Workspace Projects Pre-loaded:
 import argparse
 import json
 import os
+import re
 import sys
 import time
 import uuid
@@ -279,20 +280,24 @@ def add_custom_project(name: str, path_str: str) -> dict:
 
 SYSTEM_PROMPTS = {
     "webdev": """\
-You are ARCHITECT, an elite autonomous web development agent inside the local Antigravity workspace.
-You actively complete full-stack development tasks using your tools rather than just giving advice.
+You are ARCHITECT, an elite autonomous web development and software engineering agent inside the local Antigravity workspace.
+You actively complete software development tasks using your tools rather than just giving advice.
 
 YOUR TOOLKIT:
-- run_command: Execute PowerShell / shell commands in the currently active project directory (npm, npx, python, git, docker, etc.)
-- write_file: Write or create production-ready source code files directly into the active project
-- read_file: Read existing files, configs, and package.json to understand the active project
+- run_command: Execute shell commands in PowerShell (npm, npx, python, git, docker, test suites, dev servers)
+- write_file: Write or create complete production-ready source code files directly into the active project
+- replace_in_file: Surgically edit or replace a specific block of text in an existing file without rewriting the whole file
+- read_file: Read existing files, configs, package.json, or error traces to understand the active project
+- grep_search: Fast regex / symbol search across files to find functions, classes, imports, or references
 - list_directory: Explore directories and files in the active project
 
-STANDARDS:
-1. When asked to create, edit, or scaffold, USE YOUR TOOLS to inspect the workspace, create files, or run commands.
-2. ZERO PLACEHOLDERS: Always write 100% complete files without '// TODO' or '# implement here'.
-3. Always verify commands before reporting completion.
-4. You are operating on Windows; all shell commands run in PowerShell.
+AGENTIC WORKFLOW (PLAN -> ACT -> VERIFY):
+1. OBSERVE: Use grep_search, read_file, or list_directory to understand existing code and project structure.
+2. ACT: Write new files (write_file) or surgically edit existing code (replace_in_file).
+3. VERIFY: When appropriate, run tests or build checks (run_command) to verify your changes compile and pass.
+4. SELF-CORRECT: If a command returns an error or non-zero exit code, inspect the error output and use your tools to fix it before finishing.
+5. ZERO PLACEHOLDERS: Always write 100% complete files without '// TODO' or '# implement here'.
+6. OPERATING ENVIRONMENT: Windows; shell commands run in PowerShell.
 """,
 
     "pentest": """\
@@ -303,7 +308,9 @@ You operate with full authorization to audit code, scan ports, detect exposed AP
 YOUR TOOLKIT:
 - run_command: Execute security tools and Python automation scripts in the active project directory
 - write_file: Save scan reports, custom exploits, or security patch scripts
+- replace_in_file: Surgically edit scripts, configs, or patch code without rewriting whole files
 - read_file: Read scan outputs, XML reports, or target configuration files
+- grep_search: Search codebase for leaked secrets, hardcoded API keys, vulnerable functions, or cipher algorithms
 - list_directory: Browse reports, logs, and workspace assets
 
 BUILT-IN WORKSPACE CAPABILITIES:
@@ -322,72 +329,164 @@ STANDARDS:
 """
 }
 
-# --- Tool Declarations for Gemini Function Calling -----------------------------
+# --- Tool Declarations for Ollama, Gemini, and Claude --------------------------
 
+OLLAMA_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "run_command",
+            "description": "Execute a shell command (PowerShell / Python / Nmap / npm) in the active project workspace.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "description": "The exact shell command to execute in PowerShell."
+                    }
+                },
+                "required": ["command"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "write_file",
+            "description": "Write or create a file in the active project workspace. Creates parent directories automatically.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Relative path to file in active workspace."
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Complete file content to write (no placeholders)."
+                    }
+                },
+                "required": ["path", "content"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "replace_in_file",
+            "description": "Surgically edit or replace a specific block of text in an existing file without rewriting the whole file.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Relative path to file in active workspace."
+                    },
+                    "target": {
+                        "type": "string",
+                        "description": "The exact character sequence in the file to replace (including indentation)."
+                    },
+                    "replacement": {
+                        "type": "string",
+                        "description": "The new replacement content."
+                    }
+                },
+                "required": ["path", "target", "replacement"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_file",
+            "description": "Read text content of a file in the active project workspace.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Relative path to file in active workspace."
+                    }
+                },
+                "required": ["path"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "grep_search",
+            "description": "Fast regex search across files in the active workspace to locate function definitions, symbols, or text patterns.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Search string or regular expression."
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Directory or file to search in (default is '.')."
+                    },
+                    "case_sensitive": {
+                        "type": "boolean",
+                        "description": "Whether search is case-sensitive (default false)."
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "list_directory",
+            "description": "List files and subdirectories in the active project workspace folder.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Relative directory path (e.g. '.' or 'src' or 'api'). Default is '.'"
+                    }
+                }
+            }
+        }
+    }
+]
+
+# Convert to Gemini Function Declarations
 GEMINI_TOOLS = [
     {
         "functionDeclarations": [
             {
-                "name": "run_command",
-                "description": "Execute a shell command (PowerShell / Python / Nmap / npm) in the active project workspace. Use this to run scans, automation scripts, tests, web servers, or file operations.",
+                "name": t["function"]["name"],
+                "description": t["function"]["description"],
                 "parameters": {
                     "type": "OBJECT",
                     "properties": {
-                        "command": {
-                            "type": "STRING",
-                            "description": "The exact shell command to execute in PowerShell."
+                        k: {
+                            "type": "BOOLEAN" if v.get("type") == "boolean" else "STRING",
+                            "description": v.get("description", "")
                         }
+                        for k, v in t["function"]["parameters"].get("properties", {}).items()
                     },
-                    "required": ["command"]
-                }
-            },
-            {
-                "name": "write_file",
-                "description": "Write or create a file in the active project workspace. Creates parent directories automatically.",
-                "parameters": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "path": {
-                            "type": "STRING",
-                            "description": "Relative path to file in active workspace (e.g. 'src/components/Header.tsx' or 'reports/scan.txt')."
-                        },
-                        "content": {
-                            "type": "STRING",
-                            "description": "Complete file content to write (no placeholders)."
-                        }
-                    },
-                    "required": ["path", "content"]
-                }
-            },
-            {
-                "name": "read_file",
-                "description": "Read text content of a file in the active project workspace.",
-                "parameters": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "path": {
-                            "type": "STRING",
-                            "description": "Relative path to file in active workspace."
-                        }
-                    },
-                    "required": ["path"]
-                }
-            },
-            {
-                "name": "list_directory",
-                "description": "List files and subdirectories in the active project workspace folder.",
-                "parameters": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "path": {
-                            "type": "STRING",
-                            "description": "Relative directory path (e.g. '.' or 'src' or 'api'). Default is '.'"
-                        }
-                    }
+                    "required": t["function"]["parameters"].get("required", [])
                 }
             }
+            for t in OLLAMA_TOOLS
         ]
     }
+]
+
+# Convert to Anthropic Tool Definitions
+CLAUDE_TOOLS = [
+    {
+        "name": t["function"]["name"],
+        "description": t["function"]["description"],
+        "input_schema": t["function"]["parameters"]
+    }
+    for t in OLLAMA_TOOLS
 ]
 
 # --- Safe Tool Execution Engine Scoped to Active Project -----------------------
@@ -458,6 +557,49 @@ def _exec_write_file(rel_path: str, content: str) -> dict:
             "path": rel_path
         }
 
+def _exec_replace_in_file(rel_path: str, target: str, replacement: str) -> dict:
+    t0 = time.time()
+    try:
+        target_path = _safe_resolve_path(rel_path)
+        if not target_path.exists():
+            return {
+                "output": f"Error: File '{rel_path}' does not exist in active project.",
+                "exit_code": 1,
+                "duration": round(time.time() - t0, 2),
+                "path": rel_path
+            }
+        content = target_path.read_text(encoding="utf-8", errors="replace")
+        if target not in content:
+            return {
+                "output": f"Error: Target string not found in '{rel_path}'. Verify exact characters and whitespace.",
+                "exit_code": 1,
+                "duration": round(time.time() - t0, 2),
+                "path": rel_path
+            }
+        occurrences = content.count(target)
+        if occurrences > 1:
+            return {
+                "output": f"Error: Target string occurs {occurrences} times in '{rel_path}'. Include more surrounding lines to make the target replacement unique.",
+                "exit_code": 1,
+                "duration": round(time.time() - t0, 2),
+                "path": rel_path
+            }
+        new_content = content.replace(target, replacement, 1)
+        target_path.write_text(new_content, encoding="utf-8", errors="replace")
+        return {
+            "output": f"Successfully replaced {len(target)} chars with {len(replacement)} chars in '{rel_path}'.",
+            "exit_code": 0,
+            "duration": round(time.time() - t0, 2),
+            "path": rel_path
+        }
+    except Exception as exc:
+        return {
+            "output": f"Failed to replace in file '{rel_path}': {exc}",
+            "exit_code": 1,
+            "duration": round(time.time() - t0, 2),
+            "path": rel_path
+        }
+
 def _exec_read_file(rel_path: str) -> dict:
     t0 = time.time()
     try:
@@ -486,6 +628,72 @@ def _exec_read_file(rel_path: str) -> dict:
             "exit_code": 1,
             "duration": round(time.time() - t0, 2),
             "path": rel_path
+        }
+
+def _exec_grep_search(query: str, path: str = ".", case_sensitive: bool = False) -> dict:
+    t0 = time.time()
+    try:
+        base = _safe_resolve_path(path or ".")
+        if not base.exists():
+            return {"output": f"Path '{path}' not found.", "exit_code": 1, "duration": round(time.time() - t0, 2)}
+        
+        flags = 0 if case_sensitive else re.IGNORECASE
+        try:
+            pattern = re.compile(query, flags)
+        except re.error:
+            pattern = re.compile(re.escape(query), flags)
+
+        matches = []
+        ignored_dirs = {".git", "node_modules", "__pycache__", ".venv", "venv", ".next", "dist", "build", ".cache"}
+        max_results = 40
+        active_root = get_active_project_path()
+
+        target_files = []
+        if base.is_file():
+            target_files = [base]
+        else:
+            for root, dirs, files in os.walk(str(base)):
+                dirs[:] = [d for d in dirs if d not in ignored_dirs and not d.startswith(".")]
+                for file in files:
+                    if file.startswith(".") or file.endswith((".pyc", ".png", ".jpg", ".jpeg", ".ico", ".pdf", ".zip", ".tar", ".gz", ".exe", ".bin", ".mp4", ".webp")):
+                        continue
+                    fp = Path(root) / file
+                    try:
+                        if fp.stat().st_size <= 2 * 1024 * 1024:
+                            target_files.append(fp)
+                    except Exception:
+                        continue
+
+        for f in target_files:
+            try:
+                rel_f = str(f.relative_to(active_root))
+            except Exception:
+                rel_f = str(f)
+            try:
+                with open(f, "r", encoding="utf-8", errors="replace") as fh:
+                    for line_num, line in enumerate(fh, 1):
+                        if pattern.search(line):
+                            matches.append(f"{rel_f}:{line_num}: {line.strip()[:180]}")
+                            if len(matches) >= max_results:
+                                break
+            except Exception:
+                continue
+            if len(matches) >= max_results:
+                break
+
+        out = "\n".join(matches) if matches else f"No matches found for '{query}' in '{path}'"
+        if len(matches) >= max_results:
+            out += f"\n... (Results capped at {max_results} matches)"
+        return {
+            "output": out,
+            "exit_code": 0,
+            "duration": round(time.time() - t0, 2)
+        }
+    except Exception as exc:
+        return {
+            "output": f"Search error: {exc}",
+            "exit_code": 1,
+            "duration": round(time.time() - t0, 2)
         }
 
 def _exec_list_dir(rel_path: str = ".") -> dict:
@@ -522,8 +730,12 @@ def _dispatch_tool(name: str, args: dict) -> dict:
         return _exec_run_command(args.get("command", ""))
     elif name == "write_file":
         return _exec_write_file(args.get("path", ""), args.get("content", ""))
+    elif name == "replace_in_file":
+        return _exec_replace_in_file(args.get("path", ""), args.get("target", ""), args.get("replacement", ""))
     elif name == "read_file":
         return _exec_read_file(args.get("path", ""))
+    elif name == "grep_search":
+        return _exec_grep_search(args.get("query", ""), args.get("path", "."), args.get("case_sensitive", False))
     elif name == "list_directory":
         return _exec_list_dir(args.get("path", "."))
     else:
@@ -665,6 +877,42 @@ def _stream_anthropic_model(model_key: str, system_prompt: str, history: list, s
         yield {"type": "error", "message": f"Failed to connect to Anthropic: {exc}"}
 
 
+def _parse_react_tool_call(content: str) -> tuple[str | None, dict | None]:
+    """Fallback parser for local models that output markdown tool calls instead of JSON tool_calls."""
+    # Pattern 1: ```tool:name\n{json}\n```
+    m = re.search(r'```(?:tool:)?(\w+)\s*\n(\{.*?\})\s*```', content, re.DOTALL)
+    if m:
+        tname = m.group(1).strip()
+        try:
+            targs = json.loads(m.group(2))
+            return tname, targs
+        except Exception:
+            pass
+
+    # Pattern 2: ```json\n{"name": "...", "arguments": {...}}\n```
+    m = re.search(r'```(?:json)?\s*\n(\{\s*"name":\s*"(\w+)".*?\})\s*```', content, re.DOTALL)
+    if m:
+        try:
+            parsed = json.loads(m.group(1))
+            return parsed.get("name"), parsed.get("arguments", parsed.get("parameters", {}))
+        except Exception:
+            pass
+
+    # Pattern 3: Action: tool_name\nCommand/Args: ...
+    m = re.search(r'Action:\s*(\w+)\s*\n(?:Command|Action Input|Args|Path):\s*(.+)', content, re.IGNORECASE)
+    if m:
+        tname = m.group(1).strip()
+        arg_val = m.group(2).strip()
+        if tname == "run_command":
+            return tname, {"command": arg_val}
+        elif tname in ("read_file", "list_directory"):
+            return tname, {"path": arg_val}
+        elif tname == "grep_search":
+            return tname, {"query": arg_val}
+
+    return None, None
+
+
 def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: str = "gemini"):
     active_proj = get_active_project()
     active_path = str(get_active_project_path())
@@ -675,8 +923,26 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
         f"- Project Name: {active_proj['name']}\n"
         f"- Root Path: {active_path}\n"
         f"- Stack Tags: {', '.join(active_proj.get('badges', []))}\n"
-        f"All your tool actions (run_command, write_file, read_file, list_directory) execute inside this active project's directory."
+        f"All your tool actions (run_command, write_file, replace_in_file, read_file, grep_search, list_directory) execute inside this active project's directory."
     )
+
+    # Check for custom rules in active workspace (.spectre_rules.md, AGENTS.md, GEMINI.md, etc.)
+    rules_candidates = [
+        Path(active_path) / ".spectre_rules.md",
+        Path(active_path) / "AGENTS.md",
+        Path(active_path) / "GEMINI.md",
+        Path(active_path) / ".spectre" / "rules.md",
+        ROOT / "infrastructure" / "rules.md"
+    ]
+    for rc in rules_candidates:
+        if rc.exists():
+            try:
+                rc_text = rc.read_text(encoding="utf-8", errors="replace").strip()
+                if rc_text:
+                    project_context += f"\n\n[CUSTOM WORKSPACE RULES & CODING GUIDELINES ({rc.name})]:\n{rc_text}\n"
+                    break
+            except Exception:
+                pass
 
     base_system = SYSTEM_PROMPTS.get(agent, SYSTEM_PROMPTS["webdev"])
     system_instruction = base_system + project_context
@@ -686,7 +952,7 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
         history.append({"role": "user", "parts": [{"text": user_prompt}]})
         contents = list(history)
 
-    # 1. Local Offline Abliterated Engine (Ollama spectre:latest)
+    # 1. Local Offline Abliterated Engine (Ollama spectre:latest) with Autonomous Agentic Loop
     if selected_model == "spectre-local":
         local_model = _get_local_uncensored_model() or "spectre:latest"
 
@@ -717,57 +983,137 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                     ollama_messages.append({"role": role, "content": text_part})
 
             agent_label = "ARCHITECT" if agent == "webdev" else "SPECTRE"
-            yield {"type": "text", "text": f"> 🔒 *{agent_label} using Local Engine (`{local_model}` · 100% Uncensored Offline Sandbox)*\n\n"}
+            yield {"type": "text", "text": f"> 🔒 *{agent_label} using Local Autonomous Engine (`{local_model}` · 100% Uncensored Offline Sandbox)*\n\n"}
 
-            # Host has 4GB RTX 3050; setting num_gpu: 0 runs model via 16GB host RAM,
-            # preventing cudaMalloc VRAM OOM crashes and container restarts.
-            resp = _requests.post(
-                "http://127.0.0.1:11434/api/chat",
-                json={
-                    "model": local_model,
-                    "messages": ollama_messages,
-                    "stream": True,
-                    "options": {
-                        "temperature": 0.7,
-                        "top_p": 0.95,
-                        "num_gpu": 0
+            max_tool_turns = 8
+            current_turn = 0
+            full_reply_accumulated = []
+
+            while current_turn < max_tool_turns:
+                current_turn += 1
+
+                resp = _requests.post(
+                    "http://127.0.0.1:11434/api/chat",
+                    json={
+                        "model": local_model,
+                        "messages": ollama_messages,
+                        "tools": OLLAMA_TOOLS,
+                        "stream": False,
+                        "options": {
+                            "temperature": 0.3,
+                            "top_p": 0.95,
+                            "num_gpu": 0
+                        }
+                    },
+                    timeout=(5, 120)
+                )
+
+                if resp.status_code != 200:
+                    err_text = resp.text
+                    yield {
+                        "type": "error",
+                        "message": (
+                            f"**Local Ollama Error (HTTP {resp.status_code})**: {err_text}\n\n"
+                            f"Try switching to **Gemini Pro** from the top bar for cloud execution."
+                        )
                     }
-                },
-                stream=True,
-                timeout=(5, 90)
-            )
-
-            if resp.status_code == 200:
-                full_reply = []
-                for line in resp.iter_lines():
-                    if not line:
-                        continue
-                    try:
-                        chunk = json.loads(line)
-                        delta = chunk.get("message", {}).get("content", "")
-                        if delta:
-                            full_reply.append(delta)
-                            yield {"type": "text", "text": delta}
-                        if chunk.get("done"):
-                            break
-                    except Exception:
-                        continue
-                full_text = "".join(full_reply)
-                if full_text:
-                    with _sessions_lock:
-                        history.append({"role": "model", "parts": [{"text": full_text}]})
-                        _sessions[sid] = history
                     return
-            else:
-                err_text = resp.text
-                yield {
-                    "type": "error",
-                    "message": (
-                        f"**Local Ollama Error (HTTP {resp.status_code})**: {err_text}\n\n"
-                        f"Try switching to **Gemini Pro** from the top bar for cloud execution."
-                    )
-                }
-                return
+
+                res_data = resp.json()
+                msg = res_data.get("message", {})
+                content = msg.get("content", "")
+                native_tool_calls = msg.get("tool_calls", [])
+
+                if native_tool_calls:
+                    if content:
+                        yield {"type": "text", "text": content + "\n\n"}
+                        full_reply_accumulated.append(content)
+
+                    ollama_messages.append({
+                        "role": "assistant",
+                        "content": content or "",
+                        "tool_calls": native_tool_calls
+                    })
+
+                    for tc in native_tool_calls:
+                        fn = tc.get("function", {})
+                        tname = fn.get("name", "")
+                        targs = fn.get("arguments", {})
+                        if isinstance(targs, str):
+                            try:
+                                targs = json.loads(targs)
+                            except Exception:
+                                targs = {}
+
+                        call_id = str(uuid.uuid4())
+                        yield {
+                            "type": "tool_call",
+                            "name": tname,
+                            "args": targs,
+                            "id": call_id
+                        }
+
+                        result = _dispatch_tool(tname, targs)
+
+                        yield {
+                            "type": "tool_result",
+                            "name": tname,
+                            "output": result.get("output", ""),
+                            "exit_code": result.get("exit_code", 0),
+                            "duration": result.get("duration", 0.0),
+                            "id": call_id
+                        }
+
+                        ollama_messages.append({
+                            "role": "tool",
+                            "content": result.get("output", "")
+                        })
+
+                else:
+                    # Check ReAct fallback
+                    fallback_name, fallback_args = _parse_react_tool_call(content)
+                    if fallback_name and fallback_name in [t["function"]["name"] for t in OLLAMA_TOOLS]:
+                        if content:
+                            yield {"type": "text", "text": content + "\n\n"}
+                            full_reply_accumulated.append(content)
+
+                        call_id = str(uuid.uuid4())
+                        yield {
+                            "type": "tool_call",
+                            "name": fallback_name,
+                            "args": fallback_args,
+                            "id": call_id
+                        }
+
+                        result = _dispatch_tool(fallback_name, fallback_args)
+
+                        yield {
+                            "type": "tool_result",
+                            "name": fallback_name,
+                            "output": result.get("output", ""),
+                            "exit_code": result.get("exit_code", 0),
+                            "duration": result.get("duration", 0.0),
+                            "id": call_id
+                        }
+
+                        ollama_messages.append({"role": "assistant", "content": content})
+                        ollama_messages.append({
+                            "role": "user",
+                            "content": f"[Tool Execution Result for {fallback_name} (Exit {result.get('exit_code', 0)})]:\n{result.get('output', '')}\n\nReview this result and take the next action or provide your final response."
+                        })
+                    else:
+                        # Final response produced
+                        if content:
+                            yield {"type": "text", "text": content}
+                            full_reply_accumulated.append(content)
+                        break
+
+            final_text = "\n\n".join(full_reply_accumulated) if full_reply_accumulated else "(Task execution completed)"
+            with _sessions_lock:
+                history.append({"role": "model", "parts": [{"text": final_text}]})
+                _sessions[sid] = history
+            return
+
         except Exception as exc:
             yield {
                 "type": "error",
