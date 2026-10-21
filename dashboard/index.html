@@ -1036,6 +1036,278 @@
       cursor: pointer;
     }
 
+    /* Visual Diff Viewer & Rollback Snapshot */
+    .tool-diff-container {
+      margin-top: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #040408;
+    }
+    .tool-diff-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .diff-title {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: #94a3b8;
+    }
+    .diff-revert-btn {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .diff-revert-btn:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.28);
+      border-color: #f87171;
+      color: #fff;
+    }
+    .diff-revert-btn.reverted {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: rgba(34, 197, 94, 0.35);
+      color: #4ade80;
+      cursor: default;
+    }
+    .tool-diff-pre {
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.5;
+      padding: 8px 10px;
+      max-height: 240px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin: 0;
+    }
+    .diff-line-add {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      display: block;
+      padding: 0 4px;
+      margin: 0 -4px;
+    }
+    .diff-line-del {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      display: block;
+      padding: 0 4px;
+      margin: 0 -4px;
+    }
+    .diff-line-hunk {
+      color: #38bdf8;
+      display: block;
+      font-weight: 600;
+      padding: 2px 4px;
+      margin: 0 -4px;
+    }
+
+    /* Live Web Preview Drawer */
+    #preview-drawer {
+      height: 380px;
+      background: #090912;
+      border-top: 1px solid var(--border2);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: height 0.25s ease;
+      position: relative;
+    }
+    #preview-drawer.collapsed {
+      height: 0;
+      border-top: none;
+      overflow: hidden;
+    }
+    #preview-header {
+      padding: 7px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .preview-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .preview-address-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 280px;
+    }
+    .preview-port-chips {
+      display: flex;
+      gap: 4px;
+    }
+    .preview-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: #94a3b8;
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .preview-chip:hover, .preview-chip.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    #preview-url-input {
+      flex: 1;
+      background: #050509;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: #e2e8f0;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 8px;
+      outline: none;
+    }
+    #preview-url-input:focus {
+      border-color: var(--accent);
+    }
+    .preview-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .preview-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    #preview-frame-container {
+      flex: 1;
+      position: relative;
+      background: #030306;
+      display: flex;
+    }
+    #preview-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+    }
+    .preview-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      background: #080811;
+      color: #64748b;
+      font-size: 12px;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .preview-hint.hidden { opacity: 0; }
+
+    /* Skills Slash Command Autocomplete Popup */
+    .skills-popup {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      max-width: 520px;
+      background: #0d0d1a;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.6);
+      z-index: 100;
+      overflow: hidden;
+      animation: popupSlide 0.15s ease-out;
+    }
+    .skills-popup-header {
+      padding: 7px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+    }
+    .skills-count {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: normal;
+    }
+    .skills-popup-list {
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .skill-opt-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .skill-opt-item:hover, .skill-opt-item.selected {
+      background: var(--accent-dim);
+    }
+    .skill-opt-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .skill-opt-cmd {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .skill-opt-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .skill-opt-desc {
+      font-size: 10.5px;
+      color: #94a3b8;
+      line-height: 1.35;
+      margin-left: 2px;
+    }
+
     /* Input Box */
     #input-area {
       padding: 12px 20px 16px;
@@ -1966,6 +2238,10 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           Help
         </button>
+        <button class="header-btn" id="btn-preview-toggle" onclick="togglePreview()" title="Toggle Live Web Preview (:3000, :5173, :8000)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Preview
+        </button>
         <button class="header-btn" id="btn-terminal-toggle" onclick="toggleTerminal()" title="Toggle Terminal Drawer">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
           Terminal
@@ -1991,6 +2267,43 @@
         <h2 id="empty-title">ARCHITECT is ready</h2>
         <p id="empty-desc">Your autonomous web development intelligence. Prompt it to scaffold Next.js apps, generate React components, test FastAPI routes, or audit your codebase.</p>
         <div class="quick-prompts" id="quick-prompts"></div>
+      </div>
+    </div>
+
+    <!-- Live Web Preview Drawer (Collapsible) -->
+    <div id="preview-drawer" class="collapsed">
+      <div id="preview-header">
+        <div class="preview-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span>Live Web Preview</span>
+        </div>
+        <div class="preview-address-bar">
+          <div class="preview-port-chips">
+            <button class="preview-chip active" onclick="setPreviewUrl('http://localhost:3000')">:3000</button>
+            <button class="preview-chip" onclick="setPreviewUrl('http://localhost:5173')">:5173</button>
+            <button class="preview-chip" onclick="setPreviewUrl('http://localhost:8000')">:8000</button>
+          </div>
+          <input type="text" id="preview-url-input" value="http://localhost:3000" onkeydown="if(event.key==='Enter') navigatePreview()" placeholder="http://localhost:3000" />
+          <button class="preview-btn" onclick="navigatePreview()" title="Navigate to URL">Go</button>
+          <button class="preview-btn" onclick="refreshPreview()" title="Reload Frame">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+          <button class="preview-btn" onclick="openPreviewInNewTab()" title="Open in Browser Tab">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </button>
+        </div>
+        <div style="margin-left:auto;">
+          <button class="code-btn" onclick="togglePreview()">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Close
+          </button>
+        </div>
+      </div>
+      <div id="preview-frame-container">
+        <iframe id="preview-iframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        <div id="preview-empty-hint" class="preview-hint">
+          <p>Dev server frame is ready. Run <code>npm run dev</code> or select a port chip above to preview your web application.</p>
+        </div>
       </div>
     </div>
 
@@ -2124,12 +2437,21 @@
           </div>
         </div>
 
+        <!-- Skills Slash Command Autocomplete Popup -->
+        <div id="skills-popup" class="skills-popup hidden">
+          <div class="skills-popup-header">
+            <span>AVAILABLE WORKFLOW SKILLS (Type /command)</span>
+            <span class="skills-count" id="skills-count-badge">0 skills</span>
+          </div>
+          <div id="skills-popup-list" class="skills-popup-list"></div>
+        </div>
+
         <textarea
           id="prompt-input"
-          placeholder="Ask ARCHITECT to build, scaffold, or test..."
+          placeholder="Ask ARCHITECT to build, scaffold, or test... (type / for skills)"
           rows="1"
           onkeydown="handleKey(event)"
-          oninput="autoResize(this)"
+          oninput="autoResize(this); checkSkillsTrigger(this);"
         ></textarea>
         <button id="send-btn" onclick="sendMessage()" title="Send task (Enter)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
@@ -2245,6 +2567,61 @@
         </div>
         <div class="help-commands-grid" id="help-commands-list">
           <!-- Dynamically populated by updateHelpCommandsList() with full descriptions -->
+        </div>
+      </div>
+
+      <!-- Antigravity Engine Capabilities & Tools Reference -->
+      <div class="help-commands-container" style="margin-top:14px;">
+        <div class="help-commands-header">
+          <div class="help-commands-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>Antigravity Engine & Agentic Tools Reference</span>
+          </div>
+          <span class="help-commands-badge" style="color:var(--accent);border-color:var(--accent);">6 Core Upgrades</span>
+        </div>
+        <div class="help-commands-grid">
+          <div class="help-command-card">
+            <div class="help-command-top">
+              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">Live Visual Diff & Undo</span></div>
+              <span class="model-tag-badge active-tag">Automatic</span>
+            </div>
+            <div class="help-command-desc">Whenever ARCHITECT or SPECTRE writes or edits a file, unified diffs with green (+) additions and red (-) deletions appear inline with a one-click "Revert Changes" snapshot button.</div>
+          </div>
+          <div class="help-command-card">
+            <div class="help-command-top">
+              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">Live Web Preview Drawer</span></div>
+              <span class="model-tag-badge active-tag">Header / Drawer</span>
+            </div>
+            <div class="help-command-desc">Slide-out browser preview drawer with instant port quick-chips (:3000 Next.js, :5173 Vite, :8000 FastAPI), address bar, refresh, and pop-out controls.</div>
+          </div>
+          <div class="help-command-card">
+            <div class="help-command-top">
+              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">Build & Verify Loop</span></div>
+              <code>verify_build</code>
+            </div>
+            <div class="help-command-desc">Autonomous compiler self-healing. Runs TypeScript type checks, npm builds, or python compilation checks and self-repairs any detected errors until passing.</div>
+          </div>
+          <div class="help-command-card">
+            <div class="help-command-top">
+              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">Live Web & Docs Search</span></div>
+              <code>search_web</code>
+            </div>
+            <div class="help-command-desc">Searches live online documentation, APIs, and CVE databases via SearXNG or DuckDuckGo fallback directly from within the chat loop.</div>
+          </div>
+          <div class="help-command-card">
+            <div class="help-command-top">
+              <div class="help-command-label"><span style="color:#f97316;font-weight:700">Red/Blue Team Handoff</span></div>
+              <code>handoff_to_spectre</code>
+            </div>
+            <div class="help-command-desc">ARCHITECT automatically invokes SPECTRE red-team scans to audit modified code for hardcoded secrets, private keys, exposed tokens, or security vulnerabilities.</div>
+          </div>
+          <div class="help-command-card">
+            <div class="help-command-top">
+              <div class="help-command-label"><span style="color:#a855f7;font-weight:700">Skills Slash Engine</span></div>
+              <code>/command</code>
+            </div>
+            <div class="help-command-desc">Type / in the prompt to activate specialized skills (e.g. /nextjs-scaffold, /pqc-audit, /secure-api) from the skills/ folder with frontmatter prompt injection.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -3246,6 +3623,7 @@ async function selectProject(pid) {
       activeProjectId = pid;
       activeProjectData = data.active;
       updateProjectUI();
+      loadAvailableSkills();
       closeProjectModal();
 
       // Notify in chat
@@ -3869,6 +4247,15 @@ async function sendMessage() {
             } else if (ev.name === 'list_directory') {
               iconName = 'folder';
               cmdSummary = `list ${args.path || '.'}`;
+            } else if (ev.name === 'search_web') {
+              iconName = 'search';
+              cmdSummary = `web search "${args.query || ''}"`;
+            } else if (ev.name === 'verify_build') {
+              iconName = 'shield';
+              cmdSummary = `compile & build check (${args.check_type || 'auto'})`;
+            } else if (ev.name === 'handoff_to_spectre') {
+              iconName = 'shield';
+              cmdSummary = `red-team security audit (${args.target_paths || '.'})`;
             } else {
               cmdSummary = JSON.stringify(args);
             }
@@ -3902,6 +4289,23 @@ async function sendMessage() {
               }
               const pre = card.querySelector('.tool-output');
               if (pre) pre.textContent = ev.output;
+
+              // Live Visual Diff & Rollback Snapshot Rendering
+              if (ev.diff) {
+                const body = card.querySelector('.tool-card-body');
+                if (body && !card.querySelector('.tool-diff-container')) {
+                  const diffDiv = document.createElement('div');
+                  diffDiv.className = 'tool-diff-container';
+                  diffDiv.innerHTML = `
+                    <div class="tool-diff-header">
+                      <span class="diff-title">Visual Diff & Rollback Snapshot (${escapeHtml(ev.path || 'file')})</span>
+                      ${ev.snapshot_id ? `<button class="diff-revert-btn" onclick="revertSnapshot('${ev.snapshot_id}', this)">Revert Changes</button>` : ''}
+                    </div>
+                    <pre class="tool-diff-pre">${formatDiffHtml(ev.diff)}</pre>
+                  `;
+                  body.appendChild(diffDiv);
+                }
+              }
             }
             msgs.scrollTop = msgs.scrollHeight;
           }
@@ -4021,10 +4425,216 @@ function executeInTerminal(btn) {
   runTerminalInput();
 }
 
+// ── Live Web Preview Drawer Functions ──────────────────────────────────────────
+function togglePreview(targetUrl) {
+  const drawer = document.getElementById('preview-drawer');
+  const btn = document.getElementById('btn-preview-toggle');
+  drawer.classList.toggle('collapsed');
+  const isOpen = !drawer.classList.contains('collapsed');
+  if (btn) btn.classList.toggle('active-btn', isOpen);
+  if (isOpen) {
+    if (targetUrl) {
+      setPreviewUrl(targetUrl);
+    } else {
+      const input = document.getElementById('preview-url-input');
+      if (input && (!input.value || input.value === 'about:blank')) {
+        setPreviewUrl('http://localhost:3000');
+      } else if (input) {
+        navigatePreview();
+      }
+    }
+  }
+}
+
+function setPreviewUrl(url) {
+  const input = document.getElementById('preview-url-input');
+  if (input) input.value = url;
+  document.querySelectorAll('.preview-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.textContent.includes(url.split(':').pop()));
+  });
+  navigatePreview();
+}
+
+function navigatePreview() {
+  const input = document.getElementById('preview-url-input');
+  const iframe = document.getElementById('preview-iframe');
+  const hint = document.getElementById('preview-empty-hint');
+  let url = (input.value || '').trim();
+  if (!url) url = 'http://localhost:3000';
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'http://' + url;
+    input.value = url;
+  }
+  if (iframe) {
+    iframe.src = url;
+    if (hint) hint.classList.add('hidden');
+  }
+}
+
+function refreshPreview() {
+  const iframe = document.getElementById('preview-iframe');
+  if (iframe && iframe.src && iframe.src !== 'about:blank') {
+    iframe.src = iframe.src;
+  } else {
+    navigatePreview();
+  }
+}
+
+function openPreviewInNewTab() {
+  const input = document.getElementById('preview-url-input');
+  const url = (input.value || 'http://localhost:3000').trim();
+  window.open(url, '_blank');
+}
+
+// ── Visual Diff Formatter & Rollback System ──────────────────────────────────
+function formatDiffHtml(diffText) {
+  if (!diffText) return '';
+  const lines = diffText.split('\n');
+  return lines.map(line => {
+    const esc = escapeHtml(line);
+    if (line.startsWith('+++') || line.startsWith('---')) {
+      return `<span class="diff-line-hunk">${esc}</span>`;
+    } else if (line.startsWith('+')) {
+      return `<span class="diff-line-add">${esc}</span>`;
+    } else if (line.startsWith('-')) {
+      return `<span class="diff-line-del">${esc}</span>`;
+    } else if (line.startsWith('@@')) {
+      return `<span class="diff-line-hunk">${esc}</span>`;
+    }
+    return `<span>${esc}</span>`;
+  }).join('\n');
+}
+
+async function revertSnapshot(snapshotId, btn) {
+  if (!snapshotId || (btn && btn.disabled)) return;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Reverting...';
+  }
+  try {
+    const res = await fetch('/api/file/revert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ snapshotId: snapshotId })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      if (btn) {
+        btn.textContent = '✓ Reverted';
+        btn.classList.add('reverted');
+      }
+      showToast(data.message || 'File changes successfully reverted!', 'success');
+    } else {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Revert Failed';
+      }
+      showToast(data.error || 'Revert failed', 'error');
+    }
+  } catch (err) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Revert Error';
+    }
+    showToast('Failed to revert: ' + err.message, 'error');
+  }
+}
+
+// ── Skills Slash Command Autocomplete ─────────────────────────────────────────
+let _availableSkills = [];
+
+async function loadAvailableSkills() {
+  try {
+    const res = await fetch('/api/skills');
+    const data = await res.json();
+    _availableSkills = data.skills || [];
+    const countBadge = document.getElementById('skills-count-badge');
+    if (countBadge) countBadge.textContent = `${_availableSkills.length} skills`;
+  } catch (err) {
+    console.warn('Failed to load skills:', err);
+  }
+}
+
+function checkSkillsTrigger(input) {
+  const popup = document.getElementById('skills-popup');
+  const list = document.getElementById('skills-popup-list');
+  if (!popup || !list) return;
+
+  const val = input.value;
+  const cursorPos = input.selectionStart || val.length;
+  const textBefore = val.slice(0, cursorPos);
+  const match = textBefore.match(/(?:^|\s)\/([a-zA-Z0-9_\-]*)$/);
+
+  if (!match) {
+    popup.classList.add('hidden');
+    return;
+  }
+
+  const query = match[1].toLowerCase();
+  const filtered = _availableSkills.filter(s => 
+    s.id.toLowerCase().includes(query) || s.name.toLowerCase().includes(query)
+  );
+
+  if (!filtered.length) {
+    popup.classList.add('hidden');
+    return;
+  }
+
+  list.innerHTML = filtered.map((s, idx) => `
+    <div class="skill-opt-item ${idx === 0 ? 'selected' : ''}" onclick="applySkillOption('${s.id}')">
+      <div class="skill-opt-top">
+        <span class="skill-opt-cmd">/${s.id}</span>
+        <span class="skill-opt-title">${escapeHtml(s.name)}</span>
+      </div>
+      <div class="skill-opt-desc">${escapeHtml(s.description || '')}</div>
+    </div>
+  `).join('');
+
+  popup.classList.remove('hidden');
+}
+
+function applySkillOption(skillId) {
+  const input = document.getElementById('prompt-input');
+  const popup = document.getElementById('skills-popup');
+  if (!input) return;
+
+  const val = input.value;
+  const cursorPos = input.selectionStart || val.length;
+  const before = val.slice(0, cursorPos);
+  const after = val.slice(cursorPos);
+  const replacedBefore = before.replace(/(?:^|\s)\/([a-zA-Z0-9_\-]*)$/, ` /${skillId} `);
+
+  input.value = (replacedBefore + after).trimStart();
+  if (popup) popup.classList.add('hidden');
+  input.focus();
+  autoResize(input);
+}
+
 // ── Input Helpers ─────────────────────────────────────────────────────────────
 function handleKey(e) {
+  const popup = document.getElementById('skills-popup');
+  if (popup && !popup.classList.contains('hidden')) {
+    if (e.key === 'Escape') {
+      popup.classList.add('hidden');
+      return;
+    }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const first = popup.querySelector('.skill-opt-item');
+      if (first) first.click();
+      return;
+    }
+  }
+
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
+    if (popup && !popup.classList.contains('hidden')) {
+      const first = popup.querySelector('.skill-opt-item');
+      if (first) {
+        first.click();
+        return;
+      }
+    }
     sendMessage();
   }
 }
@@ -4065,6 +4675,7 @@ async function checkStatus() {
   setAgent('webdev');
   updateModelUI();
   fetchProjects();
+  loadAvailableSkills();
   checkStatus();
   setInterval(checkStatus, 25000);
   

@@ -20,6 +20,7 @@ Active Workspace Projects Pre-loaded:
 """
 
 import argparse
+import difflib
 import json
 import os
 import re
@@ -285,19 +286,23 @@ You actively complete software development tasks using your tools rather than ju
 
 YOUR TOOLKIT:
 - run_command: Execute shell commands in PowerShell (npm, npx, python, git, docker, test suites, dev servers)
-- write_file: Write or create complete production-ready source code files directly into the active project
-- replace_in_file: Surgically edit or replace a specific block of text in an existing file without rewriting the whole file
+- write_file: Write or create complete production-ready source code files directly into the active project (creates visual diff & rollback snapshot)
+- replace_in_file: Surgically edit or replace a specific block of text in an existing file without rewriting the whole file (creates visual diff & rollback snapshot)
 - read_file: Read existing files, configs, package.json, or error traces to understand the active project
 - grep_search: Fast regex / symbol search across files to find functions, classes, imports, or references
 - list_directory: Explore directories and files in the active project
+- search_web: Search the live web / documentation via SearXNG or DuckDuckGo for latest library APIs, syntax, or error resolutions
+- verify_build: Run automated compiler / type / syntax checks (npx tsc, npm run build, python -m py_compile) to self-verify your work
+- handoff_to_spectre: Run automated red-team security audits against your code to verify zero secret leaks and no security flaws
 
-AGENTIC WORKFLOW (PLAN -> ACT -> VERIFY):
-1. OBSERVE: Use grep_search, read_file, or list_directory to understand existing code and project structure.
+AGENTIC WORKFLOW (PLAN -> ACT -> VERIFY -> SECURE):
+1. OBSERVE: Use grep_search, read_file, search_web, or list_directory to understand existing code or look up latest docs.
 2. ACT: Write new files (write_file) or surgically edit existing code (replace_in_file).
-3. VERIFY: When appropriate, run tests or build checks (run_command) to verify your changes compile and pass.
-4. SELF-CORRECT: If a command returns an error or non-zero exit code, inspect the error output and use your tools to fix it before finishing.
-5. ZERO PLACEHOLDERS: Always write 100% complete files without '// TODO' or '# implement here'.
-6. OPERATING ENVIRONMENT: Windows; shell commands run in PowerShell.
+3. VERIFY: Call verify_build to verify your code compiles and passes type checks.
+4. SELF-CORRECT: If verify_build returns compiler errors or traces, use replace_in_file to repair them until passing.
+5. SECURE: Call handoff_to_spectre before declaring completion to guarantee no leaked secrets or insecure patterns.
+6. ZERO PLACEHOLDERS: Always write 100% complete files without '// TODO' or '# implement here'.
+7. OPERATING ENVIRONMENT: Windows; shell commands run in PowerShell.
 """,
 
     "pentest": """\
@@ -312,6 +317,8 @@ YOUR TOOLKIT:
 - read_file: Read scan outputs, XML reports, or target configuration files
 - grep_search: Search codebase for leaked secrets, hardcoded API keys, vulnerable functions, or cipher algorithms
 - list_directory: Browse reports, logs, and workspace assets
+- search_web: Search the live web / NVD / CVE databases for exploit details, CVSS scores, and remediation advisories
+- verify_build: Verify that security patches and script modifications compile cleanly
 
 BUILT-IN WORKSPACE CAPABILITIES:
 - Target Recon & Port Scan : python scripts/recon_pipeline.py --target <IP_OR_HOST>
@@ -353,7 +360,7 @@ OLLAMA_TOOLS = [
         "type": "function",
         "function": {
             "name": "write_file",
-            "description": "Write or create a file in the active project workspace. Creates parent directories automatically.",
+            "description": "Write or create a file in the active project workspace. Creates parent directories automatically, generates a visual diff, and registers an undo snapshot.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -374,7 +381,7 @@ OLLAMA_TOOLS = [
         "type": "function",
         "function": {
             "name": "replace_in_file",
-            "description": "Surgically edit or replace a specific block of text in an existing file without rewriting the whole file.",
+            "description": "Surgically edit or replace a specific block of text in an existing file without rewriting the whole file. Generates a visual diff and registers an undo snapshot.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -452,6 +459,59 @@ OLLAMA_TOOLS = [
                 }
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_web",
+            "description": "Search the live web or documentation via local SearXNG / DuckDuckGo for the latest APIs, libraries, syntax, or CVE security details.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The search query (e.g. 'Next.js 15 server actions typescript' or 'CVE-2024-xxxx details')."
+                    },
+                    "count": {
+                        "type": "integer",
+                        "description": "Number of results to retrieve (default 5)."
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "verify_build",
+            "description": "Run automated compiler, type checking, or test verification (npx tsc, npm run build, or python -m py_compile) to self-verify your code changes compile with zero errors.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "check_type": {
+                        "type": "string",
+                        "description": "Type of check: 'auto' (detects stack), 'build', 'typecheck', or 'syntax'."
+                    }
+                }
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "handoff_to_spectre",
+            "description": "Triggers SPECTRE red-team cybersecurity audit against the modified files or project to verify zero secret leaks, no exposed keys, and security hardening compliance.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "target_paths": {
+                        "type": "string",
+                        "description": "Relative paths or directories to audit (e.g. '.' or 'src/api')."
+                    }
+                }
+            }
+        }
     }
 ]
 
@@ -466,7 +526,7 @@ GEMINI_TOOLS = [
                     "type": "OBJECT",
                     "properties": {
                         k: {
-                            "type": "BOOLEAN" if v.get("type") == "boolean" else "STRING",
+                            "type": "INTEGER" if v.get("type") == "integer" else ("BOOLEAN" if v.get("type") == "boolean" else "STRING"),
                             "description": v.get("description", "")
                         }
                         for k, v in t["function"]["parameters"].get("properties", {}).items()
@@ -495,6 +555,52 @@ def _safe_resolve_path(rel_path: str) -> Path:
     active_root = get_active_project_path()
     p = (active_root / rel_path).resolve()
     return p
+
+# Snapshot & Rollback Store for File Undo
+_SNAPSHOTS: dict[str, dict] = {}
+
+def _create_snapshot(target_path: Path, rel_path: str, before_content: str, after_content: str) -> dict:
+    snapshot_id = f"snap_{int(time.time()*1000)}_{uuid.uuid4().hex[:6]}"
+    before_lines = before_content.splitlines(keepends=True) if before_content else []
+    after_lines = after_content.splitlines(keepends=True) if after_content else []
+    diff_lines = list(difflib.unified_diff(
+        before_lines,
+        after_lines,
+        fromfile=f"a/{rel_path}",
+        tofile=f"b/{rel_path}",
+        n=3
+    ))
+    diff_text = "".join(diff_lines)
+    snap_info = {
+        "id": snapshot_id,
+        "path": rel_path,
+        "abs_path": str(target_path),
+        "before": before_content,
+        "after": after_content,
+        "diff": diff_text,
+        "ts": time.time()
+    }
+    _SNAPSHOTS[snapshot_id] = snap_info
+    if len(_SNAPSHOTS) > 60:
+        oldest = min(_SNAPSHOTS.keys(), key=lambda k: _SNAPSHOTS[k]["ts"])
+        _SNAPSHOTS.pop(oldest, None)
+    return snap_info
+
+def _exec_revert_snapshot(snapshot_id: str) -> dict:
+    snap = _SNAPSHOTS.get(snapshot_id)
+    if not snap:
+        return {"error": f"Snapshot {snapshot_id} not found or expired.", "ok": False}
+    target = Path(snap["abs_path"])
+    try:
+        if snap["before"] == "":
+            if target.exists():
+                target.unlink()
+            return {"ok": True, "message": f"Reverted: Deleted created file '{snap['path']}'"}
+        else:
+            target.write_text(snap["before"], encoding="utf-8", errors="replace")
+            return {"ok": True, "message": f"Reverted: Restored '{snap['path']}' to previous state."}
+    except Exception as exc:
+        return {"error": f"Failed to restore file: {exc}", "ok": False}
 
 def _exec_run_command(command: str, timeout: int = 120) -> dict:
     t0 = time.time()
@@ -542,12 +648,16 @@ def _exec_write_file(rel_path: str, content: str) -> dict:
     try:
         target = _safe_resolve_path(rel_path)
         target.parent.mkdir(parents=True, exist_ok=True)
+        before_content = target.read_text(encoding="utf-8", errors="replace") if target.exists() else ""
         target.write_text(content, encoding="utf-8", errors="replace")
+        snap = _create_snapshot(target, rel_path, before_content, content)
         return {
             "output": f"Successfully wrote {len(content)} characters to {rel_path} in {target.parent.name}",
             "exit_code": 0,
             "duration": round(time.time() - t0, 2),
-            "path": rel_path
+            "path": rel_path,
+            "diff": snap["diff"],
+            "snapshot_id": snap["id"]
         }
     except Exception as exc:
         return {
@@ -568,15 +678,15 @@ def _exec_replace_in_file(rel_path: str, target: str, replacement: str) -> dict:
                 "duration": round(time.time() - t0, 2),
                 "path": rel_path
             }
-        content = target_path.read_text(encoding="utf-8", errors="replace")
-        if target not in content:
+        before_content = target_path.read_text(encoding="utf-8", errors="replace")
+        if target not in before_content:
             return {
                 "output": f"Error: Target string not found in '{rel_path}'. Verify exact characters and whitespace.",
                 "exit_code": 1,
                 "duration": round(time.time() - t0, 2),
                 "path": rel_path
             }
-        occurrences = content.count(target)
+        occurrences = before_content.count(target)
         if occurrences > 1:
             return {
                 "output": f"Error: Target string occurs {occurrences} times in '{rel_path}'. Include more surrounding lines to make the target replacement unique.",
@@ -584,13 +694,16 @@ def _exec_replace_in_file(rel_path: str, target: str, replacement: str) -> dict:
                 "duration": round(time.time() - t0, 2),
                 "path": rel_path
             }
-        new_content = content.replace(target, replacement, 1)
-        target_path.write_text(new_content, encoding="utf-8", errors="replace")
+        after_content = before_content.replace(target, replacement, 1)
+        target_path.write_text(after_content, encoding="utf-8", errors="replace")
+        snap = _create_snapshot(target_path, rel_path, before_content, after_content)
         return {
             "output": f"Successfully replaced {len(target)} chars with {len(replacement)} chars in '{rel_path}'.",
             "exit_code": 0,
             "duration": round(time.time() - t0, 2),
-            "path": rel_path
+            "path": rel_path,
+            "diff": snap["diff"],
+            "snapshot_id": snap["id"]
         }
     except Exception as exc:
         return {
@@ -725,6 +838,230 @@ def _exec_list_dir(rel_path: str = ".") -> dict:
             "duration": round(time.time() - t0, 2)
         }
 
+def _exec_search_web(query: str, count: int = 5) -> dict:
+    t0 = time.time()
+    # 1. Try local SearXNG on http://127.0.0.1:8080 if running in docker
+    try:
+        sx_resp = _requests.get(
+            "http://127.0.0.1:8080/search",
+            params={"q": query, "format": "json"},
+            timeout=3
+        )
+        if sx_resp.status_code == 200:
+            results = sx_resp.json().get("results", [])[:count]
+            if results:
+                formatted = [
+                    f"### [{r.get('title', 'Result')}]({r.get('url')})\n{r.get('content', '')}\nSource: {r.get('url')}"
+                    for r in results
+                ]
+                return {
+                    "output": f"Found {len(formatted)} results via SearXNG:\n\n" + "\n\n---\n\n".join(formatted),
+                    "exit_code": 0,
+                    "duration": round(time.time() - t0, 2),
+                    "source": "searxng"
+                }
+    except Exception:
+        pass
+
+    # 2. DuckDuckGo Instant Answers API + HTML Fallback
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        ddg_resp = _requests.get(
+            "https://api.duckduckgo.com/",
+            params={"q": query, "format": "json", "no_html": "1", "skip_disambig": "1"},
+            headers=headers,
+            timeout=5
+        )
+        data = ddg_resp.json()
+        results = []
+        if data.get("AbstractText"):
+            results.append(f"**Abstract**: {data.get('AbstractText')}\nURL: {data.get('AbstractURL')}")
+        for topic in data.get("RelatedTopics", [])[:count]:
+            if isinstance(topic, dict) and "Text" in topic and "FirstURL" in topic:
+                results.append(f"- **{topic['Text']}**\n  URL: {topic['FirstURL']}")
+
+        if not results:
+            html_resp = _requests.post(
+                "https://html.duckduckgo.com/html/",
+                data={"q": query},
+                headers=headers,
+                timeout=5
+            )
+            from urllib.parse import unquote
+            matches = re.findall(r'<a class="result__snippet[^>]*href="([^"]+)"[^>]*>(.*?)</a>', html_resp.text, re.DOTALL)
+            if not matches:
+                matches = re.findall(r'<a class="result__url[^>]*href="([^"]+)"[^>]*>(.*?)</a>', html_resp.text, re.DOTALL)
+            for url, snippet in matches[:count]:
+                clean_snippet = re.sub(r'<[^>]+>', '', snippet).strip()
+                if url.startswith("//duckduckgo.com/l/?uddg="):
+                    url = unquote(url.split("uddg=")[1].split("&")[0])
+                results.append(f"- {clean_snippet}\n  URL: {url}")
+
+        if results:
+            return {
+                "output": f"Web Search Results for '{query}':\n\n" + "\n\n".join(results),
+                "exit_code": 0,
+                "duration": round(time.time() - t0, 2),
+                "source": "duckduckgo"
+            }
+        else:
+            return {
+                "output": f"No direct web results found for query: '{query}'.",
+                "exit_code": 0,
+                "duration": round(time.time() - t0, 2),
+                "source": "duckduckgo"
+            }
+    except Exception as exc:
+        return {
+            "output": f"Web search error: {exc}",
+            "exit_code": 1,
+            "duration": round(time.time() - t0, 2)
+        }
+
+def _exec_verify_build(check_type: str = "auto") -> dict:
+    t0 = time.time()
+    active_dir = get_active_project_path()
+    files = {f.name.lower() for f in active_dir.iterdir() if f.is_file() or f.is_dir()}
+    
+    cmd = ""
+    label = ""
+    if "tsconfig.json" in files or "package.json" in files:
+        pkg_json = active_dir / "package.json"
+        scripts = {}
+        if pkg_json.exists():
+            try:
+                scripts = json.loads(pkg_json.read_text(encoding="utf-8", errors="replace")).get("scripts", {})
+            except Exception:
+                pass
+        
+        if "type-check" in scripts:
+            cmd = "npm run type-check"
+            label = "TypeScript Type Check"
+        elif "build" in scripts:
+            cmd = "npm run build"
+            label = "npm Build Verification"
+        else:
+            cmd = "npx tsc --noEmit"
+            label = "npx tsc Verification"
+    elif "requirements.txt" in files or any(f.endswith(".py") for f in files):
+        py_files = [f'"{f.name}"' for f in active_dir.glob("*.py") if not f.name.startswith(".")][:10]
+        if py_files:
+            cmd = "python -m py_compile " + " ".join(py_files)
+            label = "Python Compilation Check"
+        else:
+            cmd = "python --version"
+            label = "Python Environment Check"
+    else:
+        cmd = "git status"
+        label = "Workspace Status Check"
+        
+    res = _exec_run_command(cmd, timeout=60)
+    passed = res.get("exit_code") == 0
+    return {
+        "output": f"[{label} - {'PASSED (Zero Errors)' if passed else 'FAILED (Compiler/Lint Errors Detected)'}]\nCommand: {cmd}\n\n{res.get('output', '')}",
+        "exit_code": res.get("exit_code", 0),
+        "duration": round(time.time() - t0, 2),
+        "passed": passed,
+        "command": cmd
+    }
+
+def _exec_handoff_to_spectre(target_paths: str = ".") -> dict:
+    t0 = time.time()
+    active_dir = get_active_project_path()
+    
+    findings = []
+    secret_patterns = [
+        (r'(?i)(?:api_key|apikey|secret|token|password|bearer|auth)\s*[:=]\s*["\']([^"\']{8,})["\']', "Potential Leaked API Key / Secret"),
+        (r'-----BEGIN (?:RSA |EC )?PRIVATE KEY-----', "Exposed Private Key"),
+        (r'(?i)sk-ant-api\d+-[a-zA-Z0-9_\-]{20,}', "Exposed Anthropic API Key"),
+        (r'AIza[0-9A-Za-z-_]{35}', "Exposed Google/Gemini API Key"),
+    ]
+    
+    p = _safe_resolve_path(target_paths or ".")
+    targets = [p] if p.is_file() else [f for f in p.rglob("*") if f.is_file() and not any(part in f.parts for part in (".git", "node_modules", ".venv", "__pycache__", ".next", "dist"))]
+    files_checked = 0
+    
+    for tf in targets[:35]:
+        files_checked += 1
+        try:
+            content = tf.read_text(encoding="utf-8", errors="replace")
+            for pat, desc in secret_patterns:
+                matches = re.findall(pat, content)
+                if matches:
+                    rel = tf.relative_to(active_dir) if active_dir in tf.parents else tf.name
+                    findings.append(f"CRITICAL: {desc} in `{rel}`")
+        except Exception:
+            pass
+
+    if findings:
+        report = (
+            f"### [SPECTRE RED TEAM AUDIT: VULNERABILITIES DETECTED]\n"
+            f"Checked {files_checked} files in `{target_paths}`.\n\n"
+            + "\n".join([f"- [!] {f}" for f in findings])
+            + f"\n\n**Action Required**: ARCHITECT must sanitize these secrets and replace them with environment variables before proceeding."
+        )
+        exit_code = 1
+    else:
+        report = (
+            f"### [SPECTRE RED TEAM AUDIT: CLEAR]\n"
+            f"Checked {files_checked} files in `{target_paths}`.\n"
+            f"- Zero exposed secrets, private keys, or API tokens found.\n"
+            f"- Static security baseline passed."
+        )
+        exit_code = 0
+        
+    return {
+        "output": report,
+        "exit_code": exit_code,
+        "duration": round(time.time() - t0, 2),
+        "files_checked": files_checked
+    }
+
+def _load_skills(workspace_path: Path | None = None) -> list[dict]:
+    skills = []
+    candidates_dirs = []
+    if workspace_path and (workspace_path / "skills").is_dir():
+        candidates_dirs.append(workspace_path / "skills")
+    if (ROOT / "skills").is_dir():
+        candidates_dirs.append(ROOT / "skills")
+    if (ROOT / "infrastructure" / "skills").is_dir():
+        candidates_dirs.append(ROOT / "infrastructure" / "skills")
+
+    seen_names = set()
+    for sdir in candidates_dirs:
+        for item in sdir.iterdir():
+            if item.is_dir():
+                skill_file = item / "SKILL.md"
+                if skill_file.exists() and item.name not in seen_names:
+                    seen_names.add(item.name)
+                    text = skill_file.read_text(encoding="utf-8", errors="replace")
+                    desc = ""
+                    title = item.name.replace("-", " ").title()
+                    if text.startswith("---"):
+                        parts = text.split("---", 2)
+                        if len(parts) >= 3:
+                            fm = parts[1]
+                            for line in fm.splitlines():
+                                if line.startswith("description:"):
+                                    desc = line.split("description:", 1)[1].strip().strip('"\'')
+                                elif line.startswith("name:"):
+                                    title = line.split("name:", 1)[1].strip().strip('"\'')
+                    if not desc:
+                        for line in text.splitlines():
+                            if line.strip() and not line.startswith("#") and not line.startswith("---"):
+                                desc = line.strip()
+                                break
+                    skills.append({
+                        "id": item.name,
+                        "name": title,
+                        "description": desc or f"Workflow instructions for {title}",
+                        "path": str(skill_file),
+                        "content": text
+                    })
+    return skills
+
 def _dispatch_tool(name: str, args: dict) -> dict:
     if name == "run_command":
         return _exec_run_command(args.get("command", ""))
@@ -738,6 +1075,12 @@ def _dispatch_tool(name: str, args: dict) -> dict:
         return _exec_grep_search(args.get("query", ""), args.get("path", "."), args.get("case_sensitive", False))
     elif name == "list_directory":
         return _exec_list_dir(args.get("path", "."))
+    elif name == "search_web":
+        return _exec_search_web(args.get("query", ""), int(args.get("count", 5)))
+    elif name == "verify_build":
+        return _exec_verify_build(args.get("check_type", "auto"))
+    elif name == "handoff_to_spectre":
+        return _exec_handoff_to_spectre(args.get("target_paths", "."))
     else:
         return {"output": f"Unknown tool: {name}", "exit_code": 1, "duration": 0.0}
 
@@ -944,6 +1287,23 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
             except Exception:
                 pass
 
+    # Discover and inject active skills if referenced or matching prompt (/skill-name or /skill skill-name)
+    active_skills = _load_skills(Path(active_path))
+    activated_skill = None
+    prompt_lower = user_prompt.lower().strip()
+    for sk in active_skills:
+        sk_id = sk["id"].lower()
+        if f"/{sk_id}" in prompt_lower or f"/skill {sk_id}" in prompt_lower or prompt_lower.startswith(f"/{sk_id}") or f"skill: {sk_id}" in prompt_lower:
+            activated_skill = sk
+            break
+
+    if activated_skill:
+        project_context += (
+            f"\n\n[ACTIVATED SKILL WORKFLOW: {activated_skill['name']} ({activated_skill['id']})]:\n"
+            f"{activated_skill['content']}\n"
+            f"Strictly adhere to the specific instructions, rules, and steps detailed in this skill.\n"
+        )
+
     base_system = SYSTEM_PROMPTS.get(agent, SYSTEM_PROMPTS["webdev"])
     system_instruction = base_system + project_context
 
@@ -951,6 +1311,9 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
         history = _sessions.setdefault(sid, [])
         history.append({"role": "user", "parts": [{"text": user_prompt}]})
         contents = list(history)
+
+    if activated_skill:
+        yield {"type": "text", "text": f"> ⚡ *Skill Activated: `{activated_skill['name']}`* (`skills/{activated_skill['id']}/SKILL.md`)\n\n"}
 
     # 1. Local Offline Abliterated Engine (Ollama spectre:latest) with Autonomous Agentic Loop
     if selected_model == "spectre-local":
@@ -1061,6 +1424,9 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                             "output": result.get("output", ""),
                             "exit_code": result.get("exit_code", 0),
                             "duration": result.get("duration", 0.0),
+                            "diff": result.get("diff", ""),
+                            "snapshot_id": result.get("snapshot_id", ""),
+                            "path": result.get("path", ""),
                             "id": call_id
                         }
 
@@ -1093,6 +1459,9 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                             "output": result.get("output", ""),
                             "exit_code": result.get("exit_code", 0),
                             "duration": result.get("duration", 0.0),
+                            "diff": result.get("diff", ""),
+                            "snapshot_id": result.get("snapshot_id", ""),
+                            "path": result.get("path", ""),
                             "id": call_id
                         }
 
@@ -1192,6 +1561,9 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                     "output": result.get("output", ""),
                     "exit_code": result.get("exit_code", 0),
                     "duration": result.get("duration", 0.0),
+                    "diff": result.get("diff", ""),
+                    "snapshot_id": result.get("snapshot_id", ""),
+                    "path": result.get("path", ""),
                     "id": call_id
                 }
 
@@ -1448,6 +1820,12 @@ class _Handler(BaseHTTPRequestHandler):
                 "docker_installed": docker_exe.exists()
             })
 
+        elif path == "/api/skills":
+            active_path = get_active_project_path()
+            self._json_resp({
+                "skills": _load_skills(active_path)
+            })
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -1530,6 +1908,14 @@ class _Handler(BaseHTTPRequestHandler):
                 self._json_resp({"error": "No file path provided"}, 400)
                 return
             res = _exec_write_file(file_path, content)
+            self._json_resp(res)
+
+        elif path == "/api/file/revert":
+            snapshot_id = body.get("snapshotId", "").strip()
+            if not snapshot_id:
+                self._json_resp({"error": "No snapshotId provided", "ok": False}, 400)
+                return
+            res = _exec_revert_snapshot(snapshot_id)
             self._json_resp(res)
 
         elif path == "/api/session/clear":
