@@ -308,24 +308,53 @@
 
     #agent-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
 
-    /* Workspace chip in header */
+    /* Workspace / Project Chip (Left of Model Selector in Prompt Box) */
     .workspace-chip {
-      margin-left: 10px;
-      padding: 4px 10px;
-      background: rgba(255,255,255,0.035);
-      border: 1px solid var(--border);
-      border-radius: 7px;
+      height: 36px;
+      box-sizing: border-box;
+      padding: 6px 11px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border2);
+      border-radius: 9px;
       display: flex;
       align-items: center;
       gap: 6px;
       font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #e2e8f0;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
+      user-select: none;
     }
-    .workspace-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-    .chip-switch-arrow { font-size: 9px; color: var(--accent); }
+    .workspace-chip:hover {
+      border-color: var(--accent);
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 14px var(--accent-glow);
+    }
+    .workspace-chip #chip-proj-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+    .workspace-chip #chip-proj-name {
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .chip-switch-arrow {
+      font-size: 9px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+    .workspace-chip:hover .chip-switch-arrow {
+      color: var(--accent);
+    }
 
     /* ── Model Selector Pill (Left of Prompt Box) ─────────────────────────── */
     .model-selector-wrapper {
@@ -1828,12 +1857,7 @@
         </div>
       </div>
 
-      <!-- Workspace Chip in Header -->
-      <div class="workspace-chip" onclick="openProjectModal()" title="Switch active project workspace">
-        <span id="chip-proj-icon"></span>
-        <span id="chip-proj-name">spectre</span>
-        <span class="chip-switch-arrow"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
-      </div>
+
 
 
 
@@ -1897,6 +1921,13 @@
     <!-- Prompt Input Area -->
     <div id="input-area">
       <div id="input-box">
+        <!-- Workspace / Project Switcher Chip (Left of Model Selector) -->
+        <div class="workspace-chip" onclick="openProjectModal()" title="Switch active project workspace">
+          <span id="chip-proj-icon"></span>
+          <span id="chip-proj-name">spectre</span>
+          <span class="chip-switch-arrow"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
+        </div>
+
         <!-- Model Selector Pill & Dropdown (Left of Prompt Box) -->
         <div class="model-selector-wrapper">
           <div class="model-selector-pill" id="model-selector-pill" onclick="toggleModelDropdown(event)" title="Select active intelligence model">
