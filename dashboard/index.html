@@ -306,7 +306,7 @@
       letter-spacing: 0.04em;
     }
 
-    #agent-desc { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    #agent-desc { display: none; }
 
     /* Workspace / Project Chip (Left of Model Selector in Prompt Box) */
     .workspace-chip {
@@ -570,16 +570,112 @@
     .header-btn:hover { border-color: var(--accent-glow); color: var(--text); background: var(--border); }
     .header-btn.active-btn { background: var(--accent-dim); color: var(--accent); border-color: var(--accent-glow); }
 
-    /* Action Chips Bar */
+    /* Action Chips Bar - Hidden from Main View, Moved into Help Modal */
     #quick-actions-bar {
-      padding: 9px 20px;
-      background: var(--panel);
-      border-bottom: 1px solid var(--border);
+      display: none !important;
+    }
+
+    /* Command Guide & Reference Styles (Inside Help Modal) */
+    .help-commands-container {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .help-commands-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .help-commands-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
       display: flex;
       align-items: center;
       gap: 7px;
-      overflow-x: auto;
-      flex-shrink: 0;
+    }
+    .help-commands-badge {
+      font-size: 10px;
+      font-family: var(--mono);
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(34, 211, 238, 0.12);
+      color: #22d3ee;
+      border: 1px solid rgba(34, 211, 238, 0.25);
+    }
+    .help-commands-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .help-command-card {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .help-command-card:hover {
+      background: rgba(255, 255, 255, 0.045);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    .help-command-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .help-command-label {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .help-command-run-btn {
+      padding: 3px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(34, 211, 238, 0.10);
+      color: #22d3ee;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .help-command-run-btn:hover {
+      background: rgba(34, 211, 238, 0.22);
+      border-color: rgba(34, 211, 238, 0.45);
+      transform: translateY(-1px);
+    }
+    .help-command-desc {
+      font-size: 11.5px;
+      color: #94a3b8;
+      line-height: 1.45;
+    }
+    .help-command-code {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      background: #06060c;
+      border: 1px solid var(--border);
+      padding: 3px 7px;
+      border-radius: 5px;
+      color: #38bdf8;
+      display: inline-block;
+      margin-top: 3px;
+      word-break: break-all;
     }
 
     .action-chip {
@@ -2137,6 +2233,20 @@
           </ul>
         </div>
       </div>
+
+      <!-- Workspace Command Guides & Action Reference -->
+      <div class="help-commands-container">
+        <div class="help-commands-header">
+          <div class="help-commands-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            <span>Workspace Action Commands & Execution Guide</span>
+          </div>
+          <span class="help-commands-badge" id="help-commands-active-ws">Active: spectre</span>
+        </div>
+        <div class="help-commands-grid" id="help-commands-list">
+          <!-- Dynamically populated by updateHelpCommandsList() with full descriptions -->
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -2240,40 +2350,160 @@ let activeProjectData = null;
 
 const PROJECT_ACTIONS = {
   spectre: [
-    { label: 'Nmap Recon Scan', prompt: 'Run a target recon scan on 127.0.0.1 using python scripts/recon_pipeline.py --target 127.0.0.1' },
-    { label: 'PQC Quantum Audit', prompt: 'Run python scripts/pqc_audit.py --path . to audit our codebase for quantum-vulnerable cryptography' },
-    { label: 'ANU Quantum Keys', prompt: 'Generate a live quantum-seeded AES-256-GCM key bundle using python scripts/quantum_rng.py --aes-key' },
-    { label: 'Run Doctor Health', prompt: 'Run python scripts/spectre_doctor.py to check workspace health and missing dependencies' },
-    { label: 'Continuous Security Guard', prompt: 'Inspect our files for secrets and common vulnerabilities using continuous security' }
+    {
+      label: 'Nmap Recon Scan',
+      cmd: 'python scripts/recon_pipeline.py --target 127.0.0.1',
+      prompt: 'Run a target recon scan on 127.0.0.1 using python scripts/recon_pipeline.py --target 127.0.0.1',
+      desc: 'Performs non-intrusive network host discovery and port enumeration against local services, identifying exposed ports and active network listeners.'
+    },
+    {
+      label: 'PQC Quantum Audit',
+      cmd: 'python scripts/pqc_audit.py --path .',
+      prompt: 'Run python scripts/pqc_audit.py --path . to audit our codebase for quantum-vulnerable cryptography',
+      desc: 'Scans the repository codebase for legacy cryptography (RSA, ECC, Diffie-Hellman) that is vulnerable to Shor\'s algorithm, checking compliance with NIST Post-Quantum standards (ML-KEM / Kyber).'
+    },
+    {
+      label: 'ANU Quantum Keys',
+      cmd: 'python scripts/quantum_rng.py --aes-key',
+      prompt: 'Generate a live quantum-seeded AES-256-GCM key bundle using python scripts/quantum_rng.py --aes-key',
+      desc: 'Retrieves authentic vacuum quantum fluctuation entropy from the ANU Quantum Random Numbers service and derives a cryptographically secure 256-bit AES-GCM encryption key.'
+    },
+    {
+      label: 'Run Doctor Health',
+      cmd: 'python scripts/spectre_doctor.py',
+      prompt: 'Run python scripts/spectre_doctor.py to check workspace health and missing dependencies',
+      desc: 'Runs full diagnostics on the Python virtualenv, checks required system packages (Nmap, OpenSSL, liboqs), validates API keys, and reports system readiness.'
+    },
+    {
+      label: 'Continuous Security Guard',
+      cmd: 'Continuous secret audit & static security checks',
+      prompt: 'Inspect our files for secrets and common vulnerabilities using continuous security',
+      desc: 'Audits tracked repository files for accidentally leaked API credentials, unmasked private keys, insecure cipher configurations, and common OWASP code patterns.'
+    }
   ],
   trackrai: [
-    { label: 'Check Next.js Frontend', prompt: 'Inspect frontend-next/package.json and check the Next.js 15 App router structure' },
-    { label: 'Run query_stats.py', prompt: 'Run python query_stats.py to analyze our query stats' },
-    { label: 'Docker Compose Status', prompt: 'Check the docker-compose.yml services in trackrai' },
-    { label: 'Audit Backend Routes', prompt: 'Explore backend directory and check API route definitions' },
-    { label: 'List Project Files', prompt: 'List all files and directories in trackrai' }
+    {
+      label: 'Check Next.js Frontend',
+      cmd: 'Inspect frontend-next/package.json & app structure',
+      prompt: 'Inspect frontend-next/package.json and check the Next.js 15 App router structure',
+      desc: 'Reviews dependencies, TypeScript configs, and route layouts inside the Next.js 15 App Router web client.'
+    },
+    {
+      label: 'Run query_stats.py',
+      cmd: 'python query_stats.py',
+      prompt: 'Run python query_stats.py to analyze our query stats',
+      desc: 'Processes database telemetry and reports response times, slow queries, and optimization suggestions.'
+    },
+    {
+      label: 'Docker Compose Status',
+      cmd: 'Inspect docker-compose.yml',
+      prompt: 'Check the docker-compose.yml services in trackrai',
+      desc: 'Verifies running containers, port mappings, Redis caching, and persistent database volumes.'
+    },
+    {
+      label: 'Audit Backend Routes',
+      cmd: 'FastAPI / Express route audit',
+      prompt: 'Explore backend directory and check API route definitions',
+      desc: 'Inspects route controllers, request validation models, and authentication middleware.'
+    },
+    {
+      label: 'List Project Files',
+      cmd: 'List directory tree',
+      prompt: 'List all files and directories in trackrai',
+      desc: 'Displays the structural hierarchy of files and directories across frontend and backend services.'
+    }
   ],
   forgeai: [
-    { label: 'Inspect Custom Playbooks', prompt: 'Inspect add_custom_playbooks.py and see what AI agent playbooks are registered' },
-    { label: 'Admin UI & CSS Check', prompt: 'Read admin.html and app.css to review our dashboard styling' },
-    { label: 'Explore API Endpoints', prompt: 'List the files inside api/ and check the route logic' },
-    { label: 'List Workspace Files', prompt: 'List all playbooks and scripts in forgeai' }
+    {
+      label: 'Inspect Custom Playbooks',
+      cmd: 'Inspect add_custom_playbooks.py',
+      prompt: 'Inspect add_custom_playbooks.py and see what AI agent playbooks are registered',
+      desc: 'Reviews custom AI workflow playbooks, execution pipelines, and agent trigger events.'
+    },
+    {
+      label: 'Admin UI & CSS Check',
+      cmd: 'Inspect admin.html & app.css',
+      prompt: 'Read admin.html and app.css to review our dashboard styling',
+      desc: 'Audits HTML semantic structure, layout styling, and CSS variables for the Admin Console.'
+    },
+    {
+      label: 'Explore API Endpoints',
+      cmd: 'Inspect api/ routes',
+      prompt: 'List the files inside api/ and check the route logic',
+      desc: 'Examines API routing functions, handler logic, and response serialization.'
+    },
+    {
+      label: 'List Workspace Files',
+      cmd: 'List workspace scripts',
+      prompt: 'List all playbooks and scripts in forgeai',
+      desc: 'Surfaces all available automation playbooks, utilities, and configuration files.'
+    }
   ],
   'cybersentinel-ai': [
-    { label: 'Vite Build Check', prompt: 'Check package.json and vite.config.ts in cybersentinel-ai' },
-    { label: 'Inspect Security Engine', prompt: 'Explore src/ and check our cyber defense monitoring components' },
-    { label: 'Audit Server Logic', prompt: 'Inspect server/ and api/ directory files' },
-    { label: 'List Workspace Files', prompt: 'List all source files and test results in cybersentinel-ai' }
+    {
+      label: 'Vite Build Check',
+      cmd: 'Inspect package.json & vite.config.ts',
+      prompt: 'Check package.json and vite.config.ts in cybersentinel-ai',
+      desc: 'Verifies Vite bundler plugins, dev server port configs, and TypeScript build scripts.'
+    },
+    {
+      label: 'Inspect Security Engine',
+      cmd: 'Inspect src/ defense modules',
+      prompt: 'Explore src/ and check our cyber defense monitoring components',
+      desc: 'Analyzes threat detection logic, real-time alert dispatchers, and state management.'
+    },
+    {
+      label: 'Audit Server Logic',
+      cmd: 'Inspect server/ and api/',
+      prompt: 'Inspect server/ and api/ directory files',
+      desc: 'Reviews server-side request pipelines, rate-limiting rules, and websocket event buses.'
+    },
+    {
+      label: 'List Workspace Files',
+      cmd: 'List source & test files',
+      prompt: 'List all source files and test results in cybersentinel-ai',
+      desc: 'Shows test coverage reports, configuration trees, and core source modules.'
+    }
   ],
   portfolio: [
-    { label: 'Read MOP Documentation', prompt: 'Read Portfolio_MOP_Documentation.md and summarize the architecture' },
-    { label: 'Explore Portfolio Source', prompt: 'List directories in portfolio and inspect portfolio-latest/' },
-    { label: 'Component & Style Audit', prompt: 'Check the components and assets in portfolio-latest' }
+    {
+      label: 'Read MOP Documentation',
+      cmd: 'Read Portfolio_MOP_Documentation.md',
+      prompt: 'Read Portfolio_MOP_Documentation.md and summarize the architecture',
+      desc: 'Reads the Method of Procedure documentation and provides a clear structural summary.'
+    },
+    {
+      label: 'Explore Portfolio Source',
+      cmd: 'Inspect portfolio-latest/',
+      prompt: 'List directories in portfolio and inspect portfolio-latest/',
+      desc: 'Navigates the portfolio source tree, inspecting layout templates and content assets.'
+    },
+    {
+      label: 'Component & Style Audit',
+      cmd: 'Check UI components & CSS',
+      prompt: 'Check the components and assets in portfolio-latest',
+      desc: 'Audits visual components, responsiveness, color tokens, and responsive typography.'
+    }
   ],
   resumes: [
-    { label: 'List All Resumes', prompt: 'List all resume PDF files in this directory' },
-    { label: 'ATS Keyword Match Analysis', prompt: 'Analyze our resume files and suggest technical keywords for SDE and FinTech roles' },
-    { label: 'Tailor for Senior SDE Role', prompt: 'Review SDE_resume.pdf and Razorpay_Resume.pdf to optimize for high-impact technical metrics' }
+    {
+      label: 'List All Resumes',
+      cmd: 'List PDF files',
+      prompt: 'List all resume PDF files in this directory',
+      desc: 'Enumerates all stored PDF resume versions and timestamped variants.'
+    },
+    {
+      label: 'ATS Keyword Match Analysis',
+      cmd: 'ATS keyword optimization audit',
+      prompt: 'Analyze our resume files and suggest technical keywords for SDE and FinTech roles',
+      desc: 'Parses document terminology and compares against modern ATS screening criteria for SDE & FinTech.'
+    },
+    {
+      label: 'Tailor for Senior SDE Role',
+      cmd: 'Review SDE & Razorpay resumes',
+      prompt: 'Review SDE_resume.pdf and Razorpay_Resume.pdf to optimize for high-impact technical metrics',
+      desc: 'Extracts metrics, quantified impact statements, and leadership highlights to refine for senior roles.'
+    }
   ]
 };
 
@@ -2581,12 +2811,69 @@ function enterWorkspace(agent) {
 
 function openHelpModal() {
   const modal = document.getElementById('help-modal');
-  if (modal) modal.classList.remove('hidden');
+  if (modal) {
+    modal.classList.remove('hidden');
+    renderHelpCommandsList();
+  }
 }
 
 function closeHelpModal() {
   const modal = document.getElementById('help-modal');
   if (modal) modal.classList.add('hidden');
+}
+
+function renderHelpCommandsList() {
+  const listEl = document.getElementById('help-commands-list');
+  const badgeEl = document.getElementById('help-commands-active-ws');
+  if (!listEl) return;
+
+  const currentProj = activeProjectData ? activeProjectData.name : activeProjectId;
+  if (badgeEl) {
+    badgeEl.textContent = `Active Workspace: ${currentProj}`;
+  }
+
+  const actions = PROJECT_ACTIONS[activeProjectId] || [
+    {
+      label: 'List Directory',
+      cmd: 'dir / ls',
+      prompt: 'List all files in the active project directory',
+      desc: 'Prints all files, directories, and structural elements of this workspace.'
+    },
+    {
+      label: 'Inspect Codebase',
+      cmd: 'Inspect architecture',
+      prompt: 'Inspect the files and architecture of this project',
+      desc: 'Audits core config files, entrypoints, and library dependencies.'
+    },
+    {
+      label: 'Run Tests / Build',
+      cmd: 'Run test or build scripts',
+      prompt: 'Check build or test commands available in this project',
+      desc: 'Checks package.json or python test suites and executes validations.'
+    }
+  ];
+
+  listEl.innerHTML = actions.map(act => `
+    <div class="help-command-card">
+      <div class="help-command-top">
+        <div class="help-command-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span>${escapeHtml(act.label)}</span>
+        </div>
+        <button class="help-command-run-btn" onclick="executeHelpCommand('${escapeHtml(act.prompt)}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run in Chat
+        </button>
+      </div>
+      <div class="help-command-desc">${escapeHtml(act.desc || act.prompt)}</div>
+      ${act.cmd ? `<div class="help-command-code"><code>${escapeHtml(act.cmd)}</code></div>` : ''}
+    </div>
+  `).join('');
+}
+
+function executeHelpCommand(promptText) {
+  closeHelpModal();
+  submitPrompt(promptText);
 }
 
 let dockerPollInterval = null;
@@ -3157,11 +3444,18 @@ document.addEventListener('click', (e) => {
 
 function renderActionChips(chips) {
   const bar = document.getElementById('quick-actions-bar');
-  bar.innerHTML = chips.map(c => `
-    <button class="action-chip" onclick="submitPrompt('${escapeHtml(c.prompt)}')">
-      ${c.label}
-    </button>
-  `).join('');
+  if (bar) {
+    bar.innerHTML = chips.map(c => `
+      <button class="action-chip" onclick="submitPrompt('${escapeHtml(c.prompt)}')">
+        ${c.label}
+      </button>
+    `).join('');
+  }
+  // Also keep help modal command list synchronized if help modal is open
+  const helpModal = document.getElementById('help-modal');
+  if (helpModal && !helpModal.classList.contains('hidden')) {
+    renderHelpCommandsList();
+  }
 }
 
 function renderQuickPrompts(prompts) {
