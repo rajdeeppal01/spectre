@@ -119,7 +119,8 @@ DEFAULT_PROJECTS = {
         "category": "Full-Stack Web App",
         "description": "Next.js 15 frontend, Python backend, Docker compose & query stats",
         "pinned": True,
-        "icon": "zap"
+        "icon": "zap",
+        "preview_url": "https://trackrai.in"
     },
     "forgeai": {
         "id": "forgeai",
@@ -129,7 +130,8 @@ DEFAULT_PROJECTS = {
         "category": "AI Automation",
         "description": "Custom agent playbooks, dashboard UI, onboarding workflows & API",
         "pinned": True,
-        "icon": "code"
+        "icon": "code",
+        "preview_url": "https://forgeai-rose.vercel.app"
     },
     "cybersentinel-ai": {
         "id": "cybersentinel-ai",
@@ -213,11 +215,18 @@ def _load_projects_registry() -> dict:
         except Exception:
             pass
 
-    # Annotate with real existence, file counts, and tech badges
+    # Annotate with real existence, file counts, tech badges, and preview URLs
     for pid, pdata in projects.items():
         ppath = Path(pdata["path"])
         pdata["exists"] = ppath.exists()
         pdata["badges"] = detect_project_stack(ppath)
+        if "preview_url" not in pdata:
+            if pid == "forgeai" or pdata.get("name") == "forgeai":
+                pdata["preview_url"] = "https://forgeai-rose.vercel.app"
+            elif pid == "trackrai" or pdata.get("name") == "trackrai":
+                pdata["preview_url"] = "https://trackrai.in"
+            else:
+                pdata["preview_url"] = "http://localhost:3000"
         try:
             if pdata["exists"]:
                 pdata["files_count"] = len([f for f in ppath.iterdir() if f.is_file()])

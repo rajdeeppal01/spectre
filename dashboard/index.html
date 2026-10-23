@@ -2527,10 +2527,10 @@
       <div id="preview-header">
         <div class="preview-title">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          <span>Live Web Preview</span>
+          <span id="preview-title-text">Live Web Preview</span>
         </div>
         <div class="preview-address-bar">
-          <div class="preview-port-chips">
+          <div class="preview-port-chips" id="preview-port-chips">
             <button class="preview-chip active" onclick="setPreviewUrl('http://localhost:3000')">:3000</button>
             <button class="preview-chip" onclick="setPreviewUrl('http://localhost:5173')">:5173</button>
             <button class="preview-chip" onclick="setPreviewUrl('http://localhost:8000')">:8000</button>
@@ -3674,6 +3674,11 @@ function updateProjectUI() {
   const landingWs = document.getElementById('landing-ws-name');
   if (landingWs) landingWs.textContent = activeProjectData.name;
 
+  // Update Live Web Preview for active project
+  if (typeof updatePreviewDrawerForProject === 'function') {
+    updatePreviewDrawerForProject(activeProjectData);
+  }
+
   // Render project specific chips
   renderCurrentActionChips();
 }
@@ -4608,6 +4613,58 @@ function executeInTerminal(btn) {
 }
 
 // ── Live Web Preview Drawer Functions ──────────────────────────────────────────
+const PROJECT_PREVIEWS = {
+  'forgeai': 'https://forgeai-rose.vercel.app',
+  'trackrai': 'https://trackrai.in'
+};
+
+function getProjectPreviewUrl(pData) {
+  if (!pData) return 'http://localhost:3000';
+  if (pData.preview_url) return pData.preview_url;
+  const key = (pData.id || pData.name || '').toLowerCase();
+  if (PROJECT_PREVIEWS[key]) return PROJECT_PREVIEWS[key];
+  return 'http://localhost:3000';
+}
+
+function updatePreviewDrawerForProject(pData) {
+  const url = getProjectPreviewUrl(pData);
+  const isLive = url.startsWith('https://') || (url.startsWith('http://') && !url.includes('localhost'));
+  const chipsContainer = document.getElementById('preview-port-chips');
+  const input = document.getElementById('preview-url-input');
+  const titleText = document.getElementById('preview-title-text');
+
+  if (titleText) {
+    titleText.textContent = isLive ? `Live Web Preview — ${pData ? pData.name : ''}` : 'Live Web Preview';
+  }
+
+  if (chipsContainer) {
+    if (isLive) {
+      chipsContainer.innerHTML = `
+        <button class="preview-chip active" onclick="setPreviewUrl('${url}')">🌐 Live App</button>
+        <button class="preview-chip" onclick="setPreviewUrl('http://localhost:3000')">:3000</button>
+        <button class="preview-chip" onclick="setPreviewUrl('http://localhost:5173')">:5173</button>
+        <button class="preview-chip" onclick="setPreviewUrl('http://localhost:8000')">:8000</button>
+      `;
+    } else {
+      chipsContainer.innerHTML = `
+        <button class="preview-chip active" onclick="setPreviewUrl('http://localhost:3000')">:3000</button>
+        <button class="preview-chip" onclick="setPreviewUrl('http://localhost:5173')">:5173</button>
+        <button class="preview-chip" onclick="setPreviewUrl('http://localhost:8000')">:8000</button>
+      `;
+    }
+  }
+
+  if (input) {
+    input.value = url;
+    input.placeholder = url;
+  }
+
+  const drawer = document.getElementById('preview-drawer');
+  if (drawer && !drawer.classList.contains('collapsed')) {
+    setPreviewUrl(url);
+  }
+}
+
 function togglePreview(targetUrl) {
   const drawer = document.getElementById('preview-drawer');
   const btn = document.getElementById('btn-preview-toggle');
@@ -4615,16 +4672,9 @@ function togglePreview(targetUrl) {
   const isOpen = !drawer.classList.contains('collapsed');
   if (btn) btn.classList.toggle('active-btn', isOpen);
   if (isOpen) {
-    if (targetUrl) {
-      setPreviewUrl(targetUrl);
-    } else {
-      const input = document.getElementById('preview-url-input');
-      if (input && (!input.value || input.value === 'about:blank')) {
-        setPreviewUrl('http://localhost:3000');
-      } else if (input) {
-        navigatePreview();
-      }
-    }
+    const projUrl = getProjectPreviewUrl(activeProjectData);
+    const target = targetUrl || projUrl;
+    setPreviewUrl(target);
   }
 }
 
@@ -4632,7 +4682,9 @@ function setPreviewUrl(url) {
   const input = document.getElementById('preview-url-input');
   if (input) input.value = url;
   document.querySelectorAll('.preview-chip').forEach(chip => {
-    chip.classList.toggle('active', chip.textContent.includes(url.split(':').pop()));
+    const isLiveChip = chip.textContent.includes('Live App') && (url.startsWith('https://') || !url.includes('localhost'));
+    const isPortChip = !isLiveChip && chip.textContent.includes(url.split(':').pop().split('/')[0]);
+    chip.classList.toggle('active', isLiveChip || isPortChip);
   });
   navigatePreview();
 }
@@ -4642,7 +4694,10 @@ function navigatePreview() {
   const iframe = document.getElementById('preview-iframe');
   const hint = document.getElementById('preview-empty-hint');
   let url = (input.value || '').trim();
-  if (!url) url = 'http://localhost:3000';
+  if (!url) {
+    url = getProjectPreviewUrl(activeProjectData);
+    input.value = url;
+  }
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     url = 'http://' + url;
     input.value = url;
@@ -4664,7 +4719,7 @@ function refreshPreview() {
 
 function openPreviewInNewTab() {
   const input = document.getElementById('preview-url-input');
-  const url = (input.value || 'http://localhost:3000').trim();
+  const url = (input && input.value ? input.value : getProjectPreviewUrl(activeProjectData)).trim();
   window.open(url, '_blank');
 }
 
