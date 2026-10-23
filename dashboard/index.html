@@ -2540,6 +2540,9 @@
           <button class="preview-btn" onclick="refreshPreview()" title="Reload Frame">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           </button>
+          <button class="preview-btn" onclick="saveCurrentPreviewUrl()" title="Save as default URL for this project">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
           <button class="preview-btn" onclick="openPreviewInNewTab()" title="Open in Browser Tab">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </button>
@@ -4614,33 +4617,65 @@ function executeInTerminal(btn) {
 
 // ── Live Web Preview Drawer Functions ──────────────────────────────────────────
 const PROJECT_PREVIEWS = {
+  'portfolio': 'https://rajdeeppal01.github.io/portfolio/',
+  'resumes': 'https://rajdeeppal01.github.io/portfolio/',
   'forgeai': 'https://forgeai-rose.vercel.app',
-  'trackrai': 'https://trackrai.in'
+  'trackrai': 'https://trackrai.in',
+  'synthscan': 'https://synthscan-psi.vercel.app',
+  'vapordrop': 'https://vapordrop-iota.vercel.app',
+  'zeroclaw-hub': 'https://zeroclaw-hub.vercel.app',
+  'zeroclaw': 'https://zeroclaw-hub.vercel.app',
+  'cywar': 'https://cywar.vercel.app',
+  'cybercouncil-frontend': 'https://cybercouncil-frontend.vercel.app',
+  'cybercouncil-backend': 'http://localhost:8000',
+  'secureonboard': 'https://secureonboard.vercel.app',
+  'alfredthebuttler': 'https://alfredthebuttler.vercel.app',
+  'q': 'https://q-vert-eight.vercel.app',
+  'phonedrop': 'http://localhost:3000',
+  'daikin-command-center': 'http://localhost:3000',
+  'hyperframes': 'http://localhost:3000',
+  'cybersentinel-ai': 'http://localhost:5173',
+  'spectre': 'http://localhost:5050'
 };
 
 function getProjectPreviewUrl(pData) {
   if (!pData) return 'http://localhost:3000';
-  if (pData.preview_url) return pData.preview_url;
-  const key = (pData.id || pData.name || '').toLowerCase();
+  const key = (pData.id || pData.name || activeProjectId || '').toLowerCase().trim();
+  
+  // 1. Saved custom preference in localStorage
+  const saved = localStorage.getItem('spectre_preview_' + key);
+  if (saved && saved.trim()) return saved.trim();
+
+  // 2. Direct live URL from pData if valid production URL (not default localhost)
+  if (pData.preview_url && pData.preview_url !== 'http://localhost:3000' && pData.preview_url !== 'localhost:3000' && pData.preview_url.trim()) {
+    return pData.preview_url.trim();
+  }
+
+  // 3. Known project mapping (GitHub Pages / Vercel / Live domain)
   if (PROJECT_PREVIEWS[key]) return PROJECT_PREVIEWS[key];
+
+  // 4. Default fallback
   return 'http://localhost:3000';
 }
 
 function updatePreviewDrawerForProject(pData) {
   const url = getProjectPreviewUrl(pData);
-  const isLive = url.startsWith('https://') || (url.startsWith('http://') && !url.includes('localhost'));
+  const isLive = url.startsWith('https://') || (url.startsWith('http://') && !url.includes('localhost') && !url.includes('127.0.0.1'));
+  const isGitHub = url.includes('github.io');
   const chipsContainer = document.getElementById('preview-port-chips');
   const input = document.getElementById('preview-url-input');
   const titleText = document.getElementById('preview-title-text');
+  const projName = pData ? (pData.name || pData.id) : (activeProjectId || '');
 
   if (titleText) {
-    titleText.textContent = isLive ? `Live Web Preview — ${pData ? pData.name : ''}` : 'Live Web Preview';
+    titleText.textContent = isLive ? `Live Web Preview — ${projName}` : `Live Web Preview — ${projName}`;
   }
 
   if (chipsContainer) {
+    const liveChipLabel = isGitHub ? '🌐 GitHub Pages' : '🌐 Live App';
     if (isLive) {
       chipsContainer.innerHTML = `
-        <button class="preview-chip active" onclick="setPreviewUrl('${url}')">🌐 Live App</button>
+        <button class="preview-chip active" onclick="setPreviewUrl('${url}')">${liveChipLabel}</button>
         <button class="preview-chip" onclick="setPreviewUrl('http://localhost:3000')">:3000</button>
         <button class="preview-chip" onclick="setPreviewUrl('http://localhost:5173')">:5173</button>
         <button class="preview-chip" onclick="setPreviewUrl('http://localhost:8000')">:8000</button>
@@ -4682,7 +4717,7 @@ function setPreviewUrl(url) {
   const input = document.getElementById('preview-url-input');
   if (input) input.value = url;
   document.querySelectorAll('.preview-chip').forEach(chip => {
-    const isLiveChip = chip.textContent.includes('Live App') && (url.startsWith('https://') || !url.includes('localhost'));
+    const isLiveChip = (chip.textContent.includes('Live App') || chip.textContent.includes('GitHub Pages')) && (url.startsWith('https://') || (!url.includes('localhost') && !url.includes('127.0.0.1')));
     const isPortChip = !isLiveChip && chip.textContent.includes(url.split(':').pop().split('/')[0]);
     chip.classList.toggle('active', isLiveChip || isPortChip);
   });
@@ -4693,14 +4728,14 @@ function navigatePreview() {
   const input = document.getElementById('preview-url-input');
   const iframe = document.getElementById('preview-iframe');
   const hint = document.getElementById('preview-empty-hint');
-  let url = (input.value || '').trim();
+  let url = (input && input.value ? input.value : '').trim();
   if (!url) {
     url = getProjectPreviewUrl(activeProjectData);
-    input.value = url;
+    if (input) input.value = url;
   }
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = 'http://' + url;
-    input.value = url;
+    url = 'https://' + url;
+    if (input) input.value = url;
   }
   if (iframe) {
     iframe.src = url;
@@ -4715,6 +4750,19 @@ function refreshPreview() {
   } else {
     navigatePreview();
   }
+}
+
+function saveCurrentPreviewUrl() {
+  const input = document.getElementById('preview-url-input');
+  const url = (input ? input.value : '').trim();
+  if (!url) return;
+  const key = (activeProjectId || (activeProjectData && (activeProjectData.id || activeProjectData.name)) || 'spectre').toLowerCase().trim();
+  localStorage.setItem('spectre_preview_' + key, url);
+  if (activeProjectData) activeProjectData.preview_url = url;
+  if (typeof showToast === 'function') {
+    showToast(`Saved default URL for [${key}]: ${url}`, 'success');
+  }
+  updatePreviewDrawerForProject(activeProjectData);
 }
 
 function openPreviewInNewTab() {

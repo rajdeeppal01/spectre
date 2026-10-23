@@ -149,9 +149,10 @@ DEFAULT_PROJECTS = {
         "title": "Developer Portfolio",
         "path": r"C:\Users\rajde\OneDrive\Desktop\projects\portfolio",
         "category": "Web Portfolio",
-        "description": "Personal developer portfolio and responsive web applications",
+        "description": "Personal developer portfolio hosted on GitHub Pages",
         "pinned": True,
-        "icon": "folder"
+        "icon": "folder",
+        "preview_url": "https://rajdeeppal01.github.io/portfolio/"
     },
     "resumes": {
         "id": "resumes",
@@ -161,7 +162,8 @@ DEFAULT_PROJECTS = {
         "category": "Career & Documents",
         "description": "SDE, Razorpay & technical resumes, career documents and ATS matching",
         "pinned": True,
-        "icon": "file"
+        "icon": "file",
+        "preview_url": "https://rajdeeppal01.github.io/portfolio/"
     }
 }
 
@@ -215,17 +217,47 @@ def _load_projects_registry() -> dict:
         except Exception:
             pass
 
+    # Map of verified live URLs for known projects
+    LIVE_URL_MAP = {
+        "portfolio": "https://rajdeeppal01.github.io/portfolio/",
+        "forgeai": "https://forgeai-rose.vercel.app",
+        "trackrai": "https://trackrai.in",
+        "synthscan": "https://synthscan-psi.vercel.app",
+        "vapordrop": "https://vapordrop-iota.vercel.app",
+        "zeroclaw-hub": "https://zeroclaw-hub.vercel.app",
+        "cywar": "https://cywar.vercel.app",
+        "cybercouncil-frontend": "https://cybercouncil-frontend.vercel.app",
+        "secureonboard": "https://secureonboard.vercel.app",
+        "alfredthebuttler": "https://alfredthebuttler.vercel.app",
+        "q": "https://q-vert-eight.vercel.app",
+        "resumes": "https://rajdeeppal01.github.io/portfolio/"
+    }
+
     # Annotate with real existence, file counts, tech badges, and preview URLs
     for pid, pdata in projects.items():
         ppath = Path(pdata["path"])
         pdata["exists"] = ppath.exists()
         pdata["badges"] = detect_project_stack(ppath)
-        if "preview_url" not in pdata:
-            if pid == "forgeai" or pdata.get("name") == "forgeai":
-                pdata["preview_url"] = "https://forgeai-rose.vercel.app"
-            elif pid == "trackrai" or pdata.get("name") == "trackrai":
-                pdata["preview_url"] = "https://trackrai.in"
-            else:
+        if "preview_url" not in pdata or not pdata.get("preview_url") or pdata.get("preview_url") == "http://localhost:3000":
+            low_id = pid.lower()
+            low_name = str(pdata.get("name", "")).lower()
+            if low_id in LIVE_URL_MAP:
+                pdata["preview_url"] = LIVE_URL_MAP[low_id]
+            elif low_name in LIVE_URL_MAP:
+                pdata["preview_url"] = LIVE_URL_MAP[low_name]
+            elif (ppath / ".git" / "config").exists():
+                try:
+                    cfg_text = (ppath / ".git" / "config").read_text(encoding="utf-8", errors="replace")
+                    if "rajdeeppal01/portfolio" in cfg_text:
+                        pdata["preview_url"] = "https://rajdeeppal01.github.io/portfolio/"
+                    elif "rajdeeppal01/" in cfg_text:
+                        import re
+                        m = re.search(r"github\.com[:/]rajdeeppal01/([a-zA-Z0-9_\-]+)", cfg_text)
+                        if m:
+                            pdata["preview_url"] = f"https://rajdeeppal01.github.io/{m.group(1)}/"
+                except Exception:
+                    pass
+            if "preview_url" not in pdata:
                 pdata["preview_url"] = "http://localhost:3000"
         try:
             if pdata["exists"]:
