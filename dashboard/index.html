@@ -308,104 +308,71 @@
 
     #agent-desc { display: none; }
 
-    /* Workspace / Project Chip (Left of Model Selector in Prompt Box) */
-    .workspace-chip {
-      height: 36px;
-      box-sizing: border-box;
-      padding: 6px 11px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border2);
+    /* Sidebar Control Cards (Model & Autopilot Switchers) */
+    .sidebar-ctrl-card {
+      margin-top: 7px;
+      padding: 7px 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
       border-radius: 9px;
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-family: var(--mono);
-      font-size: 11.5px;
-      font-weight: 600;
-      color: #e2e8f0;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      flex-shrink: 0;
-      user-select: none;
-    }
-    .workspace-chip:hover {
-      border-color: var(--accent);
-      color: #fff;
-      background: rgba(255, 255, 255, 0.08);
-      box-shadow: 0 0 14px var(--accent-glow);
-    }
-    .workspace-chip #chip-proj-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent);
-    }
-    .workspace-chip #chip-proj-name {
-      font-weight: 600;
-      color: #fff;
-      white-space: nowrap;
-    }
-    .chip-switch-arrow {
-      font-size: 9px;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      transition: color 0.2s;
-    }
-    .workspace-chip:hover .chip-switch-arrow {
-      color: var(--accent);
-    }
-
-    /* ── Model Selector Pill (Left of Prompt Box) ─────────────────────────── */
-    .model-selector-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-    }
-
-    .model-selector-pill {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 6px 11px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border2);
-      border-radius: 9px;
-      color: #e2e8f0;
-      font-family: var(--font);
-      font-size: 11.5px;
-      font-weight: 600;
+      justify-content: space-between;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       user-select: none;
-      height: 36px;
       box-sizing: border-box;
     }
-    .model-selector-pill:hover, .model-selector-pill.open {
+    .sidebar-ctrl-card:hover, .sidebar-ctrl-card.open {
+      background: rgba(255, 255, 255, 0.06);
       border-color: var(--accent);
-      background: rgba(255, 255, 255, 0.08);
       box-shadow: 0 0 14px var(--accent-glow);
     }
-    .model-pill-icon {
+    .sidebar-ctrl-left {
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 8px;
+      overflow: hidden;
+      min-width: 0;
+    }
+    .sidebar-ctrl-icon {
       width: 18px;
       height: 18px;
-      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: var(--accent);
+      flex-shrink: 0;
     }
-    .model-pill-info {
+    .sidebar-ctrl-info {
+      overflow: hidden;
+      min-width: 0;
+    }
+    .sidebar-ctrl-label {
+      font-size: 8.5px;
+      color: var(--muted2);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+    .sidebar-ctrl-name {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #fff;
+      font-family: var(--font);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+    .sidebar-ctrl-right {
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-shrink: 0;
     }
-    .model-pill-name {
-      font-weight: 600;
-      color: #fff;
-      white-space: nowrap;
-    }
+
     .model-pill-badge {
       font-family: var(--mono);
       font-size: 9.5px;
@@ -421,25 +388,70 @@
       color: var(--muted);
       transition: transform 0.2s;
     }
-    .model-selector-pill.open .model-pill-arrow {
+    .sidebar-ctrl-card.open .model-pill-arrow {
       transform: rotate(180deg);
       color: var(--accent);
     }
 
-    /* Model Dropdown Menu (Opens Upward Above Prompt Box) */
+    /* Autopilot Card in Sidebar */
+    .autopilot-sidebar-card {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .autopilot-sidebar-card.active {
+      background: rgba(34, 211, 238, 0.09);
+      border-color: rgba(34, 211, 238, 0.4);
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
+    }
+    .autopilot-sidebar-card.active:hover {
+      background: rgba(34, 211, 238, 0.16);
+      border-color: var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .autopilot-bolt {
+      font-size: 13px;
+      line-height: 1;
+      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
+      transition: transform 0.2s ease;
+    }
+    .autopilot-sidebar-card.active .autopilot-bolt {
+      color: #22d3ee;
+      animation: pulseBolt 2s infinite ease-in-out;
+    }
+    .autopilot-sidebar-card:not(.active) .autopilot-bolt {
+      filter: grayscale(1);
+      opacity: 0.5;
+    }
+    .autopilot-status {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+    }
+    .autopilot-sidebar-card.active .autopilot-status {
+      background: rgba(34, 211, 238, 0.25);
+      color: #22d3ee;
+      border: 1px solid rgba(34, 211, 238, 0.4);
+    }
+    .autopilot-sidebar-card:not(.active) .autopilot-status {
+      background: rgba(255, 255, 255, 0.05);
+      color: #64748b;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Model Dropdown Menu (Fixed Flyout to the Right of Sidebar) */
     .model-dropdown {
-      position: absolute;
-      bottom: calc(100% + 10px);
-      left: 0;
+      position: fixed;
       width: 380px;
       background: rgba(13, 13, 24, 0.98);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border: 1px solid var(--border2);
       border-radius: 12px;
-      box-shadow: 0 -16px 48px rgba(0,0,0,0.85), 0 0 24px rgba(34,211,238,0.15);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.85), 0 0 24px rgba(34,211,238,0.2);
       padding: 8px;
-      z-index: 9500;
+      z-index: 99999;
       display: flex;
       flex-direction: column;
       gap: 3px;
@@ -2316,6 +2328,123 @@
           SPECTRE
         </button>
       </div>
+
+      <!-- Intelligence Model Switcher Card (Sidebar) -->
+      <div class="sidebar-ctrl-card" id="model-selector-pill" onclick="toggleModelDropdown(event)" title="Click to switch intelligence model">
+        <div class="sidebar-ctrl-left">
+          <span class="sidebar-ctrl-icon" id="model-pill-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </span>
+          <div class="sidebar-ctrl-info">
+            <div class="sidebar-ctrl-label">INTELLIGENCE MODEL</div>
+            <div class="sidebar-ctrl-name" id="model-pill-name">Gemini Pro</div>
+          </div>
+        </div>
+        <div class="sidebar-ctrl-right">
+          <span class="model-pill-badge" id="model-pill-badge">Cloud</span>
+          <svg class="model-pill-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <!-- Autopilot Mode Toggle Card (Sidebar) -->
+      <div class="sidebar-ctrl-card autopilot-sidebar-card active" id="autopilot-toggle" onclick="toggleAutopilot()" title="Autopilot Mode: When enabled, all permissions (running commands, writing files, installing packages) are automatically allowed without pausing">
+        <div class="sidebar-ctrl-left">
+          <span class="sidebar-ctrl-icon autopilot-bolt">⚡</span>
+          <div class="sidebar-ctrl-info">
+            <div class="sidebar-ctrl-label">AUTOPILOT MODE</div>
+            <div class="sidebar-ctrl-name">Auto-Execution</div>
+          </div>
+        </div>
+        <div class="sidebar-ctrl-right">
+          <span class="autopilot-status" id="autopilot-status">ON</span>
+        </div>
+      </div>
+
+      <!-- Dropdown Menu (Fixed Flyout to the Right of Sidebar) -->
+      <div id="model-dropdown-menu" class="model-dropdown hidden" onclick="event.stopPropagation()">
+        <div class="model-dropdown-header">
+          <span>SELECT INTELLIGENCE MODEL</span>
+          <span class="model-dropdown-status" id="model-dropdown-status">5 Models</span>
+        </div>
+
+        <div class="model-group-section">
+          <div class="model-group-label">FRONTIER CLOUD TIER</div>
+          
+          <div class="model-opt-item active" id="opt-gemini" onclick="selectModel('gemini')">
+            <div class="model-opt-icon gemini">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="model-opt-meta">
+              <div class="model-opt-title">
+                <span>Gemini 2.5 Pro / Flash</span>
+                <span class="model-tag-badge active-tag">Active Pool</span>
+              </div>
+              <div class="model-opt-sub">1M token context · Multi-model failover · Live tool calling</div>
+            </div>
+            <span class="model-opt-check">✓</span>
+          </div>
+
+          <div class="model-opt-item" id="opt-claude-3-7-sonnet" onclick="selectModel('claude-3-7-sonnet')">
+            <div class="model-opt-icon claude">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="model-opt-meta">
+              <div class="model-opt-title">
+                <span>Claude 3.7 Sonnet</span>
+                <span class="model-tag-badge hybrid-tag">Hybrid Reasoning</span>
+              </div>
+              <div class="model-opt-sub">Anthropic frontier coding · Architecture synthesis & deep logic</div>
+            </div>
+            <span class="model-opt-check">✓</span>
+          </div>
+
+          <div class="model-opt-item" id="opt-claude-3-5-sonnet" onclick="selectModel('claude-3-5-sonnet')">
+            <div class="model-opt-icon claude">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <div class="model-opt-meta">
+              <div class="model-opt-title">
+                <span>Claude 3.5 Sonnet</span>
+                <span class="model-tag-badge fast-tag">High Speed</span>
+              </div>
+              <div class="model-opt-sub">Rapid full-stack engineering, React 19 & FastAPI generation</div>
+            </div>
+            <span class="model-opt-check">✓</span>
+          </div>
+
+          <div class="model-opt-item" id="opt-claude-3-opus" onclick="selectModel('claude-3-opus')">
+            <div class="model-opt-icon opus">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="model-opt-meta">
+              <div class="model-opt-title">
+                <span>Claude 3 Opus</span>
+                <span class="model-tag-badge opus-tag">Deep Thinking</span>
+              </div>
+              <div class="model-opt-sub">Maximum deep reasoning, STEM analysis & complex security audits</div>
+            </div>
+            <span class="model-opt-check">✓</span>
+          </div>
+        </div>
+
+        <div class="model-group-section" style="margin-top:6px; padding-top:6px; border-top: 1px solid var(--border);">
+          <div class="model-group-label">OFFLINE AIR-GAPPED ENGINE</div>
+
+          <div class="model-opt-item" id="opt-spectre-local" onclick="selectModel('spectre-local')">
+            <div class="model-opt-icon local">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="model-opt-meta">
+              <div class="model-opt-title">
+                <span>SPECTRE Local (spectre:latest)</span>
+                <span class="model-tag-badge uncensored-tag">100% Uncensored</span>
+              </div>
+              <div class="model-opt-sub">Offline abliterated 8B · Zero moralizing / refusals · Both WebDev & Pentest</div>
+            </div>
+            <span class="model-opt-check">✓</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- New Chat Button -->
@@ -2453,120 +2582,6 @@
     <!-- Prompt Input Area -->
     <div id="input-area">
       <div id="input-box">
-        <!-- Workspace / Project Switcher Chip (Left of Model Selector) -->
-        <div class="workspace-chip" onclick="openProjectModal()" title="Switch active project workspace">
-          <span id="chip-proj-icon"></span>
-          <span id="chip-proj-name">spectre</span>
-          <span class="chip-switch-arrow"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></span>
-        </div>
-
-        <!-- Model Selector Pill & Dropdown (Left of Prompt Box) -->
-        <div class="model-selector-wrapper">
-          <div class="model-selector-pill" id="model-selector-pill" onclick="toggleModelDropdown(event)" title="Select active intelligence model">
-            <span class="model-pill-icon" id="model-pill-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            </span>
-            <div class="model-pill-info">
-              <span class="model-pill-name" id="model-pill-name">Gemini Pro</span>
-              <span class="model-pill-badge" id="model-pill-badge">Cloud</span>
-            </div>
-            <svg class="model-pill-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-
-          <!-- Dropdown Menu (Pops Upwards) -->
-          <div id="model-dropdown-menu" class="model-dropdown hidden" onclick="event.stopPropagation()">
-            <div class="model-dropdown-header">
-              <span>SELECT INTELLIGENCE MODEL</span>
-              <span class="model-dropdown-status" id="model-dropdown-status">5 Models</span>
-            </div>
-
-            <div class="model-group-section">
-              <div class="model-group-label">FRONTIER CLOUD TIER</div>
-              
-              <div class="model-opt-item active" id="opt-gemini" onclick="selectModel('gemini')">
-                <div class="model-opt-icon gemini">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                </div>
-                <div class="model-opt-meta">
-                  <div class="model-opt-title">
-                    <span>Gemini 2.5 Pro / Flash</span>
-                    <span class="model-tag-badge active-tag">Active Pool</span>
-                  </div>
-                  <div class="model-opt-sub">1M token context · Multi-model failover · Live tool calling</div>
-                </div>
-                <span class="model-opt-check">✓</span>
-              </div>
-
-              <div class="model-opt-item" id="opt-claude-3-7-sonnet" onclick="selectModel('claude-3-7-sonnet')">
-                <div class="model-opt-icon claude">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                </div>
-                <div class="model-opt-meta">
-                  <div class="model-opt-title">
-                    <span>Claude 3.7 Sonnet</span>
-                    <span class="model-tag-badge hybrid-tag">Hybrid Reasoning</span>
-                  </div>
-                  <div class="model-opt-sub">Anthropic frontier coding · Architecture synthesis & deep logic</div>
-                </div>
-                <span class="model-opt-check">✓</span>
-              </div>
-
-              <div class="model-opt-item" id="opt-claude-3-5-sonnet" onclick="selectModel('claude-3-5-sonnet')">
-                <div class="model-opt-icon claude">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                </div>
-                <div class="model-opt-meta">
-                  <div class="model-opt-title">
-                    <span>Claude 3.5 Sonnet</span>
-                    <span class="model-tag-badge fast-tag">High Speed</span>
-                  </div>
-                  <div class="model-opt-sub">Rapid full-stack engineering, React 19 & FastAPI generation</div>
-                </div>
-                <span class="model-opt-check">✓</span>
-              </div>
-
-              <div class="model-opt-item" id="opt-claude-3-opus" onclick="selectModel('claude-3-opus')">
-                <div class="model-opt-icon opus">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                </div>
-                <div class="model-opt-meta">
-                  <div class="model-opt-title">
-                    <span>Claude 3 Opus</span>
-                    <span class="model-tag-badge opus-tag">Deep Thinking</span>
-                  </div>
-                  <div class="model-opt-sub">Maximum deep reasoning, STEM analysis & complex security audits</div>
-                </div>
-                <span class="model-opt-check">✓</span>
-              </div>
-            </div>
-
-            <div class="model-group-section" style="margin-top:6px; padding-top:6px; border-top: 1px solid var(--border);">
-              <div class="model-group-label">OFFLINE AIR-GAPPED ENGINE</div>
-
-              <div class="model-opt-item" id="opt-spectre-local" onclick="selectModel('spectre-local')">
-                <div class="model-opt-icon local">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                </div>
-                <div class="model-opt-meta">
-                  <div class="model-opt-title">
-                    <span>SPECTRE Local (spectre:latest)</span>
-                    <span class="model-tag-badge uncensored-tag">100% Uncensored</span>
-                  </div>
-                  <div class="model-opt-sub">Offline abliterated 8B · Zero moralizing / refusals · Both WebDev & Pentest</div>
-                </div>
-                <span class="model-opt-check">✓</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Autopilot Mode Toggle -->
-        <div class="autopilot-toggle-btn active" id="autopilot-toggle" onclick="toggleAutopilot()" title="Autopilot Mode: When enabled, all permissions (running commands, writing files, installing packages) are automatically allowed without pausing">
-          <span class="autopilot-bolt">⚡</span>
-          <span class="autopilot-label">Autopilot</span>
-          <span class="autopilot-status" id="autopilot-status">ON</span>
-        </div>
-
         <!-- Skills Slash Command Autocomplete Popup -->
         <div id="skills-popup" class="skills-popup hidden">
           <div class="skills-popup-header">
@@ -3645,9 +3660,11 @@ function updateProjectUI() {
   document.getElementById('sidebar-proj-icon').innerHTML = getIconSvg(activeProjectData.icon || 'shield', 15);
   document.getElementById('sidebar-proj-name').textContent = activeProjectData.name;
 
-  // Header chip
-  document.getElementById('chip-proj-icon').innerHTML = getIconSvg(activeProjectData.icon || 'folder', 13);
-  document.getElementById('chip-proj-name').textContent = activeProjectData.name;
+  // Header chip (if present)
+  const chipProjIcon = document.getElementById('chip-proj-icon');
+  const chipProjName = document.getElementById('chip-proj-name');
+  if (chipProjIcon) chipProjIcon.innerHTML = getIconSvg(activeProjectData.icon || 'folder', 13);
+  if (chipProjName) chipProjName.textContent = activeProjectData.name;
 
   // Terminal header
   document.getElementById('term-proj-icon').innerHTML = getIconSvg('terminal', 13);
@@ -3886,6 +3903,13 @@ function toggleModelDropdown(event) {
   if (!menu) return;
   const isHidden = menu.classList.contains('hidden');
   if (isHidden) {
+    if (pill) {
+      const rect = pill.getBoundingClientRect();
+      const topPos = Math.max(12, Math.min(window.innerHeight - 440, rect.top));
+      menu.style.top = topPos + 'px';
+      menu.style.left = (rect.right + 10) + 'px';
+      menu.style.bottom = 'auto';
+    }
     menu.classList.remove('hidden');
     if (pill) pill.classList.add('open');
   } else {
@@ -3952,8 +3976,11 @@ function updateModelUI() {
 
 // Global click-outside listener to close model dropdown
 document.addEventListener('click', (e) => {
-  const wrapper = document.querySelector('.model-selector-wrapper');
-  if (wrapper && !wrapper.contains(e.target)) {
+  const pill = document.getElementById('model-selector-pill');
+  const menu = document.getElementById('model-dropdown-menu');
+  if (menu && !menu.classList.contains('hidden')) {
+    if (pill && pill.contains(e.target)) return;
+    if (menu.contains(e.target)) return;
     closeModelDropdown();
   }
 });
