@@ -3043,15 +3043,21 @@ const PROJECT_ACTIONS = {
     },
     {
       label: 'Explore Portfolio Source',
-      cmd: 'Inspect portfolio-latest/',
-      prompt: 'List directories in portfolio and inspect portfolio-latest/',
-      desc: 'Navigates the portfolio source tree, inspecting layout templates and content assets.'
+      cmd: 'Inspect script.js & index.html',
+      prompt: 'Inspect script.js and index.html to check our terminal console sections and project cards',
+      desc: 'Navigates the portfolio source tree, inspecting terminal command handlers and layout structure.'
     },
     {
       label: 'Component & Style Audit',
-      cmd: 'Check UI components & CSS',
-      prompt: 'Check the components and assets in portfolio-latest',
+      cmd: 'Check style.css & UI responsiveness',
+      prompt: 'Check style.css to audit visual tokens, terminal matrix colors, and mobile responsiveness',
       desc: 'Audits visual components, responsiveness, color tokens, and responsive typography.'
+    },
+    {
+      label: 'Git Sync & Pages Deploy',
+      cmd: 'git status & verify remote',
+      prompt: 'Check git status and verify our remote connection to github.com/rajdeeppal01/portfolio',
+      desc: 'Checks working tree cleanliness, commits pending edits, and syncs directly to GitHub Pages.'
     }
   ],
   resumes: [

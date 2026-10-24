@@ -185,6 +185,9 @@ def detect_project_stack(p: Path) -> list:
             badges.append('Docker')
         if any(f.endswith('.pdf') for f in names):
             badges.append('PDF / Docs')
+        if 'index.html' in names and any(f.endswith('.js') or f.endswith('.css') for f in names):
+            badges.append('Vanilla JS')
+            badges.append('GitHub Pages')
     except Exception:
         pass
     return badges or ['Workspace']
