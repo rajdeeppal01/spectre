@@ -2560,6 +2560,342 @@
       outline: none;
       box-shadow: 0 0 8px var(--accent-glow);
     }
+
+    /* ── Settings Modal & API Keys Management ────────────────────────────────── */
+    .settings-dialog {
+      width: 92%;
+      max-width: 760px;
+      max-height: 88vh;
+      background: #09090f;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 16px;
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(255, 255, 255, 0.03);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modal-pop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modal-pop {
+      from { transform: scale(0.96); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .settings-header {
+      padding: 18px 24px 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #06060a;
+    }
+    .settings-header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .settings-header-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f4f4f5;
+    }
+    .settings-header-text h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f4f4f5;
+      letter-spacing: -0.2px;
+    }
+    .settings-header-text p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .settings-close-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .settings-close-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .settings-banner {
+      padding: 10px 24px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+    .settings-banner-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settings-body {
+      padding: 16px 24px;
+      overflow-y: auto;
+      max-height: calc(88vh - 150px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .settings-key-card {
+      background: #0d0d14;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .settings-key-card:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+      background: #101018;
+    }
+    .settings-key-card.highlight {
+      border-color: rgba(255, 255, 255, 0.45) !important;
+      background: #141420 !important;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.12);
+      animation: key-card-pulse 1.8s ease-in-out infinite alternate;
+    }
+    @keyframes key-card-pulse {
+      from { border-color: rgba(255, 255, 255, 0.3); }
+      to { border-color: rgba(255, 255, 255, 0.65); }
+    }
+
+    .settings-key-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .settings-provider-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .settings-provider-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f4f4f5;
+      flex-shrink: 0;
+    }
+    .settings-provider-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .settings-provider-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #f4f4f5;
+    }
+    .settings-tier-badge {
+      font-size: 10px;
+      padding: 1px 7px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .settings-models-desc {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .settings-key-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .settings-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+    .settings-status-badge.configured {
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+    .settings-status-badge.missing {
+      background: rgba(234, 179, 8, 0.12);
+      color: #facc15;
+      border: 1px solid rgba(234, 179, 8, 0.25);
+    }
+    .settings-get-link {
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: color 0.15s;
+    }
+    .settings-get-link:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    .settings-input-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 8px;
+      padding: 2px 6px 2px 10px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .settings-input-group:focus-within {
+      border-color: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.06);
+    }
+    .settings-key-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f4f4f5;
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 7px 0;
+      letter-spacing: 0.4px;
+    }
+    .settings-key-input::placeholder {
+      color: #52525b;
+      font-family: var(--mono);
+      font-size: 11.5px;
+    }
+    .settings-input-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .settings-input-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .settings-footer {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      background: #06060a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .settings-alert {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .settings-alert.success { color: #4ade80; }
+    .settings-alert.error { color: #f87171; }
+
+    .settings-footer-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .settings-btn-cancel {
+      padding: 7px 16px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12.5px;
+      transition: all 0.15s;
+    }
+    .settings-btn-cancel:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .settings-btn-save {
+      padding: 7px 18px;
+      border-radius: 8px;
+      background: #f4f4f5;
+      color: #09090f;
+      border: 1px solid #f4f4f5;
+      cursor: pointer;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .settings-btn-save:hover {
+      background: #ffffff;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+    .settings-btn-save:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .model-dropdown-settings-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      margin-top: 6px;
+      border-top: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 11.5px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .model-dropdown-settings-link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .settings-link-arrow {
+      color: var(--muted2);
+      font-size: 12px;
+    }
+    .model-dropdown-settings-link:hover .settings-link-arrow {
+      color: #fff;
+    }
+
   </style>
 </head>
 
@@ -2806,6 +3142,14 @@
             <span class="model-opt-check">✓</span>
           </div>
         </div>
+
+        <div class="model-dropdown-settings-link" onclick="openSettingsModal()" title="Manage API Keys & Local Endpoints">
+          <span style="display:flex; align-items:center; gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Configure API Keys & Models</span>
+          </span>
+          <span class="settings-link-arrow">&rarr;</span>
+        </div>
       </div>
     </div>
 
@@ -2852,6 +3196,11 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           Help
         </button>
+        <button class="header-btn" onclick="openSettingsModal()" title="Model Settings & API Keys">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </button>
+
         <button class="header-btn" id="btn-preview-toggle" onclick="togglePreview()" title="Toggle Live Web Preview (:3000, :5173, :8000)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           Preview
@@ -3224,6 +3573,52 @@
   </div>
 </div>
 
+
+<!-- Settings & Intelligence API Keys Modal -->
+<div id="settings-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeSettingsModal()">
+  <div class="settings-dialog">
+    <div class="settings-header">
+      <div class="settings-header-title">
+        <div class="settings-header-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div class="settings-header-text">
+          <h3>Intelligence Models & API Keys</h3>
+          <p>Configure model access for Claude 3.7 Sonnet, Gemini Pro, OpenAI, Groq, DeepSeek & Local Ollama</p>
+        </div>
+      </div>
+      <button class="settings-close-btn" onclick="closeSettingsModal()" title="Close Settings (Esc)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="settings-banner">
+      <div class="settings-banner-info">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Saved locally in <code>infrastructure/.env</code> &middot; Hot-reloaded into server memory immediately</span>
+      </div>
+      <span style="font-size: 11px; opacity: 0.7;">Zero cloud telemetry</span>
+    </div>
+
+    <div class="settings-body" id="settings-keys-container">
+      <div style="padding: 30px; text-align: center; color: var(--muted); font-size: 13px;">
+        Loading intelligence provider settings...
+      </div>
+    </div>
+
+    <div class="settings-footer">
+      <div id="settings-alert" class="settings-alert"></div>
+      <div class="settings-footer-buttons">
+        <button class="settings-btn-cancel" onclick="closeSettingsModal()">Cancel</button>
+        <button class="settings-btn-save" id="btn-save-settings" onclick="saveSettingsKeys()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Save & Reload
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════════════════════════════════════
    SPECTRE MULTI-PROJECT ANTIGRAVITY ENGINE
@@ -3571,6 +3966,246 @@ window.addEventListener('keydown', (e) => {
       e.preventDefault();
       enterWorkspace('pentest');
       return;
+    }
+  }
+});
+
+
+// ── Settings Modal & API Keys Engine ─────────────────────────────────────────
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+let currentSettingsKeys = {};
+
+const PROVIDER_SVGS = {
+  anthropic: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  google: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  openai: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></svg>`,
+  groq: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+  deepseek: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  ollama: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+};
+
+async function openSettingsModal(highlightKey = null) {
+  const modal = document.getElementById('settings-modal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  const alertEl = document.getElementById('settings-alert');
+  if (alertEl) alertEl.innerHTML = '';
+
+  const container = document.getElementById('settings-keys-container');
+  if (container) {
+    container.innerHTML = `
+      <div style="padding: 30px; text-align: center; color: var(--muted); font-size: 13px;">
+        <span style="display:inline-block; animation:spin 1s linear infinite; margin-right:8px;">⚙️</span>
+        Loading intelligence provider keys...
+      </div>`;
+  }
+
+  try {
+    const res = await fetch('/api/settings/keys');
+    const data = await res.json();
+    if (data.ok && data.keys) {
+      currentSettingsKeys = data.keys;
+      renderSettingsKeys(data.keys, highlightKey);
+    } else {
+      if (container) container.innerHTML = `<div style="padding:20px; color:#f87171;">Failed to load settings.</div>`;
+    }
+  } catch (err) {
+    console.error('Error fetching settings keys:', err);
+    if (container) container.innerHTML = `<div style="padding:20px; color:#f87171;">Error connecting to settings API.</div>`;
+  }
+}
+
+function closeSettingsModal() {
+  const modal = document.getElementById('settings-modal');
+  if (modal) modal.classList.add('hidden');
+  const alertEl = document.getElementById('settings-alert');
+  if (alertEl) alertEl.innerHTML = '';
+}
+
+function renderSettingsKeys(keysDict, highlightKey = null) {
+  const container = document.getElementById('settings-keys-container');
+  if (!container) return;
+
+  const keyList = Object.values(keysDict);
+  let html = '';
+
+  keyList.forEach(item => {
+    const isConfigured = item.configured;
+    const isHighlight = highlightKey === item.key;
+    const providerIcon = PROVIDER_SVGS[item.provider] || PROVIDER_SVGS.anthropic;
+    const inputVal = item.value || '';
+
+    html += `
+      <div class="settings-key-card ${isHighlight ? 'highlight' : ''}" id="card-${item.key}">
+        <div class="settings-key-top">
+          <div class="settings-provider-info">
+            <div class="settings-provider-icon ${item.provider}">
+              ${providerIcon}
+            </div>
+            <div>
+              <div class="settings-provider-title-row">
+                <span class="settings-provider-name">${item.name}</span>
+                <span class="settings-tier-badge">${item.tier}</span>
+              </div>
+              <div class="settings-models-desc">${item.models}</div>
+            </div>
+          </div>
+          <div class="settings-key-actions">
+            <span class="settings-status-badge ${isConfigured ? 'configured' : 'missing'}">
+              ${isConfigured ? '● Active' : '○ Not Set'}
+            </span>
+            ${item.link ? `<a href="${item.link}" target="_blank" rel="noopener noreferrer" class="settings-get-link" title="Open provider developer console">Get Key ↗</a>` : ''}
+          </div>
+        </div>
+
+        <div class="settings-input-group">
+          <input 
+            type="${item.key === 'OLLAMA_API_BASE' ? 'text' : 'password'}"
+            class="settings-key-input"
+            id="input-${item.key}"
+            data-key="${item.key}"
+            value="${inputVal ? escapeHtml(inputVal) : ''}"
+            placeholder="${item.placeholder || 'Enter API Key...'}"
+            spellcheck="false"
+            autocomplete="new-password"
+          />
+          ${item.key !== 'OLLAMA_API_BASE' ? `
+            <button class="settings-input-btn" type="button" onclick="toggleKeyVisibility('input-${item.key}', this)" title="Show/hide key">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          ` : ''}
+          <button class="settings-input-btn" type="button" onclick="clearKeyInput('input-${item.key}')" title="Clear key">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  if (highlightKey) {
+    setTimeout(() => {
+      const card = document.getElementById(`card-${highlightKey}`);
+      const input = document.getElementById(`input-${highlightKey}`);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      if (input) {
+        input.focus();
+        if (input.type === 'text') {
+          input.select();
+        }
+      }
+    }, 120);
+  }
+}
+
+function toggleKeyVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+    btn.title = "Hide key";
+  } else {
+    input.type = 'password';
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+    btn.title = "Show key";
+  }
+}
+
+function clearKeyInput(inputId) {
+  const input = document.getElementById(inputId);
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+}
+
+async function saveSettingsKeys() {
+  const saveBtn = document.getElementById('btn-save-settings');
+  const alertEl = document.getElementById('settings-alert');
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = `<span style="display:inline-block; animation:spin 1s linear infinite;">⚙️</span> Saving...`;
+  }
+  if (alertEl) {
+    alertEl.className = 'settings-alert';
+    alertEl.textContent = 'Saving keys to infrastructure/.env...';
+  }
+
+  const inputs = document.querySelectorAll('.settings-key-input');
+  const payload = {};
+  inputs.forEach(inp => {
+    const k = inp.getAttribute('data-key');
+    if (k) {
+      payload[k] = inp.value.trim();
+    }
+  });
+
+  try {
+    const res = await fetch('/api/settings/keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keys: payload })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      if (alertEl) {
+        alertEl.className = 'settings-alert success';
+        alertEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Saved! Hot-reloaded into runtime.`;
+      }
+      currentSettingsKeys = data.keys || currentSettingsKeys;
+      renderSettingsKeys(currentSettingsKeys);
+
+      // Re-check backend status
+      if (typeof checkStatus === 'function') {
+        checkStatus();
+      }
+
+      setTimeout(() => {
+        closeSettingsModal();
+      }, 1100);
+    } else {
+      if (alertEl) {
+        alertEl.className = 'settings-alert error';
+        alertEl.textContent = data.error || 'Failed to save settings.';
+      }
+    }
+  } catch (err) {
+    console.error('Error saving settings keys:', err);
+    if (alertEl) {
+      alertEl.className = 'settings-alert error';
+      alertEl.textContent = 'Network error saving settings.';
+    }
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Save & Reload`;
+    }
+  }
+}
+
+// Global hotkey: Ctrl+, or Cmd+, opens settings modal, Esc closes
+window.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+    e.preventDefault();
+    openSettingsModal();
+  }
+  if (e.key === 'Escape') {
+    const sModal = document.getElementById('settings-modal');
+    if (sModal && !sModal.classList.contains('hidden')) {
+      closeSettingsModal();
     }
   }
 });

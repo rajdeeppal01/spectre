@@ -68,6 +68,139 @@ _ENV = _load_env()
 GEMINI_API_KEY = _ENV.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
 ANTHROPIC_API_KEY = _ENV.get("ANTHROPIC_API_KEY", os.environ.get("ANTHROPIC_API_KEY", ""))
 
+def _mask_key(val: str) -> str:
+    if not val:
+        return ""
+    if len(val) <= 8:
+        return "****"
+    return f"{val[:6]}...{val[-4:]}"
+
+def _get_api_keys_dict() -> dict:
+    env = _load_env()
+    g_key = env.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY", "")
+    a_key = env.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY", "")
+    o_key = env.get("OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
+    gr_key = env.get("GROQ_API_KEY") or os.environ.get("GROQ_API_KEY", "")
+    ds_key = env.get("DEEPSEEK_API_KEY") or os.environ.get("DEEPSEEK_API_KEY", "")
+    ollama_url = env.get("OLLAMA_API_BASE") or os.environ.get("OLLAMA_API_BASE", "http://localhost:11434")
+
+    return {
+        "ANTHROPIC_API_KEY": {
+            "key": "ANTHROPIC_API_KEY",
+            "name": "Anthropic Claude",
+            "provider": "anthropic",
+            "tier": "Frontier Cloud",
+            "models": "Claude 3.7 Sonnet, Claude 3.5 Sonnet, Claude 3 Opus",
+            "value": a_key,
+            "masked": _mask_key(a_key),
+            "configured": bool(a_key),
+            "link": "https://console.anthropic.com/settings/keys",
+            "placeholder": "sk-ant-api03-..."
+        },
+        "GEMINI_API_KEY": {
+            "key": "GEMINI_API_KEY",
+            "name": "Google Gemini",
+            "provider": "google",
+            "tier": "Frontier Cloud",
+            "models": "Gemini 2.5 Pro, Flash & Failover Pool",
+            "value": g_key,
+            "masked": _mask_key(g_key),
+            "configured": bool(g_key),
+            "link": "https://aistudio.google.com/app/apikey",
+            "placeholder": "AIzaSy..."
+        },
+        "OPENAI_API_KEY": {
+            "key": "OPENAI_API_KEY",
+            "name": "OpenAI / GPT",
+            "provider": "openai",
+            "tier": "Frontier Cloud",
+            "models": "GPT-4o, o3-mini & Embeddings",
+            "value": o_key,
+            "masked": _mask_key(o_key),
+            "configured": bool(o_key),
+            "link": "https://platform.openai.com/api-keys",
+            "placeholder": "sk-proj-..."
+        },
+        "GROQ_API_KEY": {
+            "key": "GROQ_API_KEY",
+            "name": "Groq Cloud (LPU)",
+            "provider": "groq",
+            "tier": "Ultra-Fast LPU",
+            "models": "Llama 3.3 70B, DeepSeek R1 Distill",
+            "value": gr_key,
+            "masked": _mask_key(gr_key),
+            "configured": bool(gr_key),
+            "link": "https://console.groq.com/keys",
+            "placeholder": "gsk_..."
+        },
+        "DEEPSEEK_API_KEY": {
+            "key": "DEEPSEEK_API_KEY",
+            "name": "DeepSeek API",
+            "provider": "deepseek",
+            "tier": "Reasoning & Coding",
+            "models": "DeepSeek-V3, DeepSeek-R1",
+            "value": ds_key,
+            "masked": _mask_key(ds_key),
+            "configured": bool(ds_key),
+            "link": "https://platform.deepseek.com/api_keys",
+            "placeholder": "sk-..."
+        },
+        "OLLAMA_API_BASE": {
+            "key": "OLLAMA_API_BASE",
+            "name": "SPECTRE Local / Ollama URL",
+            "provider": "ollama",
+            "tier": "Offline Air-Gapped",
+            "models": "spectre:latest, abliterated 8B",
+            "value": ollama_url,
+            "masked": ollama_url,
+            "configured": bool(ollama_url),
+            "link": "https://ollama.ai",
+            "placeholder": "http://localhost:11434"
+        }
+    }
+
+def _save_api_keys(new_keys: dict) -> dict:
+    global GEMINI_API_KEY, ANTHROPIC_API_KEY
+    env_path = ROOT / "infrastructure" / ".env"
+    if not env_path.parent.exists():
+        env_path.parent.mkdir(parents=True, exist_ok=True)
+
+    existing_lines = []
+    if env_path.exists():
+        existing_lines = env_path.read_text(encoding="utf-8", errors="replace").splitlines()
+
+    updated_keys = set()
+    new_lines = []
+    for raw in existing_lines:
+        line = raw.strip()
+        if line and "=" in line and not line.startswith("#"):
+            k, _ = line.split("=", 1)
+            k = k.strip()
+            if k in new_keys:
+                val = str(new_keys[k]).strip()
+                new_lines.append(f"{k}={val}")
+                updated_keys.add(k)
+                continue
+        new_lines.append(raw)
+
+    for k, v in new_keys.items():
+        if k not in updated_keys and v is not None:
+            val = str(v).strip()
+            new_lines.append(f"{k}={val}")
+
+    env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+
+    # Hot reload into runtime process environment and globals
+    for k, v in new_keys.items():
+        if v is not None:
+            val = str(v).strip()
+            os.environ[k] = val
+            _ENV[k] = val
+
+    GEMINI_API_KEY = _ENV.get("GEMINI_API_KEY", "")
+    ANTHROPIC_API_KEY = _ENV.get("ANTHROPIC_API_KEY", "")
+    return _get_api_keys_dict()
+
 # Multi-model failover pool protects against 429 quota exhaustion and model outages
 MODEL_FAILOVER_POOL = [
     "gemini-3.5-flash-lite",
@@ -1216,8 +1349,13 @@ def _stream_anthropic_model(model_key: str, system_prompt: str, history: list, s
             "type": "text",
             "text": (
                 f"> ⚠️ **Anthropic API Key Required for {model_info['name']}**\n\n"
-                f"To activate **{model_info['name']}**, add your Anthropic API key to `infrastructure/.env`:\n\n"
-                f"```bash\nANTHROPIC_API_KEY=sk-ant-api03-...\n```\n\n"
+                f"To activate **{model_info['name']}**, add your Anthropic API key via **Settings** or to `infrastructure/.env`:\n\n"
+                f'<div style="margin:14px 0 16px 0;">'
+                f'<button class="perm-auto-btn" onclick="openSettingsModal(\'ANTHROPIC_API_KEY\')" style="padding:7px 16px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px;cursor:pointer;">'
+                f'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+                f'⚙️ Configure API Key in Settings'
+                f'</button>'
+                f'</div>\n\n'
                 f"*Tip: You can switch to **Gemini Pro** (active) or **SPECTRE Local (Abliterated)** from the model selector in the top bar.*"
             )
         }
@@ -1939,6 +2077,10 @@ class _Handler(BaseHTTPRequestHandler):
                     "source": f"OS CSPRNG (Fallback: {exc})"
                 })
 
+        elif path == "/api/settings/keys":
+            keys = _get_api_keys_dict()
+            self._json_resp({"ok": True, "keys": keys})
+
         elif path == "/api/models":
             local_model = _get_local_uncensored_model()
             models_list = [
@@ -2106,6 +2248,18 @@ class _Handler(BaseHTTPRequestHandler):
                 return
             res = _exec_revert_snapshot(snapshot_id)
             self._json_resp(res)
+
+        elif path == "/api/settings/keys":
+            keys_data = body.get("keys", {})
+            if not isinstance(keys_data, dict):
+                self._json_resp({"error": "Invalid keys payload", "ok": False}, 400)
+                return
+            updated = _save_api_keys(keys_data)
+            self._json_resp({
+                "ok": True,
+                "message": "API keys saved and runtime reloaded successfully.",
+                "keys": updated
+            })
 
         elif path == "/api/session/clear":
             sid = body.get("sessionId", "")
