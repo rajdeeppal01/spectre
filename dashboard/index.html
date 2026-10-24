@@ -1362,8 +1362,8 @@
 
     #input-box {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      align-items: stretch;
       background: var(--panel);
       border: 1px solid var(--border2);
       border-radius: 12px;
@@ -1374,6 +1374,229 @@
     #input-box:focus-within {
       border-color: var(--accent-glow);
       box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+    #input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    /* ── Attachment Tray & Chips ── */
+    #attachment-tray {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 6px 4px 8px 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 6px;
+      width: 100%;
+    }
+    #attachment-tray.hidden {
+      display: none !important;
+    }
+    .attachment-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border2);
+      border-radius: 7px;
+      padding: 3px 8px;
+      font-size: 11.5px;
+      color: var(--text);
+      max-width: 240px;
+      transition: all 0.2s;
+    }
+    .attachment-chip:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: var(--accent);
+    }
+    .attachment-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .attachment-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: rgba(34, 211, 238, 0.12);
+      color: var(--accent);
+      font-size: 9.5px;
+      font-family: var(--mono);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .attachment-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      font-family: var(--mono);
+    }
+    .attachment-size {
+      color: var(--muted);
+      font-size: 10px;
+      font-family: var(--mono);
+    }
+    .attachment-remove {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 4px;
+      display: flex;
+      align-items: center;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    .attachment-remove:hover {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+    }
+    #attach-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    #attach-btn:hover {
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    /* ── Dropzone Overlay ── */
+    .drop-overlay {
+      position: absolute;
+      inset: -4px;
+      background: rgba(15, 15, 26, 0.94);
+      border: 2px dashed var(--accent);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      z-index: 100;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      pointer-events: none;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 25px var(--accent-glow);
+    }
+    .drop-overlay.hidden {
+      display: none !important;
+    }
+
+    /* ── Message Attachments Container ── */
+    .msg-attachments-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .msg-attachment-img {
+      max-width: 260px;
+      max-height: 180px;
+      border-radius: 8px;
+      border: 1px solid var(--border2);
+      cursor: pointer;
+      object-fit: cover;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .msg-attachment-img:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+    }
+    .msg-attachment-file {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text);
+    }
+
+    /* ── Antigravity Working / Worked Status Header ── */
+    .agent-working-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+    .working-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 3.5px 10px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      transition: all 0.25s ease;
+    }
+    .working-badge.working {
+      background: rgba(34, 211, 238, 0.08);
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      color: #22d3ee;
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
+    }
+    .theme-pentest .working-badge.working {
+      background: rgba(249, 115, 22, 0.08);
+      border-color: rgba(249, 115, 22, 0.35);
+      color: #f97316;
+      box-shadow: 0 0 12px rgba(249, 115, 22, 0.15);
+    }
+    .working-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: agyPulse 1.2s infinite ease-in-out;
+    }
+    @keyframes agyPulse {
+      0% { transform: scale(0.85); opacity: 0.5; box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.5); }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 8px rgba(34, 211, 238, 0.8); }
+      100% { transform: scale(0.85); opacity: 0.5; box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+    }
+    .working-badge.completed {
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: #94a3b8;
+    }
+    .working-badge.stopped {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      color: #f59e0b;
+    }
+    .working-badge.failed {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #ef4444;
+    }
+    .working-timer {
+      font-variant-numeric: tabular-nums;
+      opacity: 0.9;
     }
 
     /* Autopilot Mode Toggle */
@@ -2327,14 +2550,6 @@
   <!-- ── SIDEBAR ─────────────────────────────────────────────────────────── -->
   <aside id="sidebar">
     <div id="sidebar-header">
-      <div class="logo">
-        <div class="logo-icon" id="logo-icon"></div>
-        <div>
-          <div class="logo-title">SPECTRE</div>
-          <div class="logo-sub">ANTIGRAVITY WORKSPACE</div>
-        </div>
-      </div>
-
       <!-- Active Workspace Selector -->
       <div class="project-selector-card" onclick="openProjectModal()" title="Click to switch workspace">
         <div class="project-card-left">
@@ -2615,7 +2830,14 @@
     </div>
 
     <!-- Prompt Input Area -->
-    <div id="input-area">
+    <div id="input-area" style="position:relative;">
+      <!-- Drag & Drop Zone Overlay -->
+      <div id="drop-overlay" class="drop-overlay hidden">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Drop images or files to attach to Spectre</span>
+        <span style="font-size:11px; opacity:0.8; font-family:var(--mono);">Multimodal Vision + Document RAG Enabled</span>
+      </div>
+
       <div id="input-box">
         <!-- Skills Slash Command Autocomplete Popup -->
         <div id="skills-popup" class="skills-popup hidden">
@@ -2631,16 +2853,27 @@
           <div id="skills-popup-list" class="skills-popup-list"></div>
         </div>
 
-        <textarea
-          id="prompt-input"
-          placeholder="Ask ARCHITECT to build, scaffold, or test... (type / for skills)"
-          rows="1"
-          onkeydown="handleKey(event)"
-          oninput="autoResize(this); checkSkillsTrigger(this);"
-        ></textarea>
-        <button id="send-btn" onclick="sendMessage()" title="Send task (Enter)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-        </button>
+        <!-- Attachment Preview Tray -->
+        <div id="attachment-tray" class="attachment-tray hidden"></div>
+
+        <div id="input-row">
+          <!-- File & Image Upload Button -->
+          <input type="file" id="file-input" multiple accept="image/*,.pdf,.txt,.py,.js,.ts,.jsx,.tsx,.html,.css,.json,.md,.c,.cpp,.rs,.go,.sh,.yml,.yaml,.sql,.env" onchange="handleFileSelect(event)" style="display:none;" />
+          <button id="attach-btn" type="button" onclick="document.getElementById('file-input').click()" title="Attach images or files (or paste / drag & drop)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+
+          <textarea
+            id="prompt-input"
+            placeholder="Ask ARCHITECT to build, scaffold, or test... (type / for skills, paste images/files)"
+            rows="1"
+            onkeydown="handleKey(event)"
+            oninput="autoResize(this); checkSkillsTrigger(this);"
+          ></textarea>
+          <button id="send-btn" onclick="sendMessage()" title="Send task (Enter)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          </button>
+        </div>
       </div>
       <div class="input-hint">Autonomous agent with live tool execution · <span id="model-indicator">Gemini (Failover Protected)</span> · Press Enter to execute</div>
     </div>
@@ -3883,7 +4116,6 @@ function setAgent(agent) {
   document.getElementById('agent-icon').innerHTML = getIconSvg(cfg.iconKey, 18);
   document.getElementById('agent-name').textContent = cfg.name;
   document.getElementById('agent-desc').textContent = cfg.desc;
-  document.getElementById('logo-icon').innerHTML = getIconSvg('zap', 16);
 
   document.getElementById('empty-icon').innerHTML = getIconSvg(cfg.iconKey, 32);
   document.getElementById('empty-title').textContent = `${cfg.name} is ready`;
@@ -4245,7 +4477,7 @@ function copyCode(btn) {
   });
 }
 
-function appendMessage(role, contentText = '') {
+function appendMessage(role, contentText = '', attachments = []) {
   const msgs = document.getElementById('messages');
   document.getElementById('empty-state').classList.add('hidden');
 
@@ -4268,6 +4500,27 @@ function appendMessage(role, contentText = '') {
 
   if (role === 'user') {
     content.textContent = contentText;
+    if (attachments && attachments.length) {
+      const attContainer = document.createElement('div');
+      attContainer.className = 'msg-attachments-container';
+      attachments.forEach(att => {
+        if (att.type && att.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = att.data;
+          img.className = 'msg-attachment-img';
+          img.alt = att.name;
+          img.title = `${att.name} (Click to open full size)`;
+          img.onclick = () => window.open(att.data, '_blank');
+          attContainer.appendChild(img);
+        } else {
+          const chip = document.createElement('div');
+          chip.className = 'msg-attachment-file';
+          chip.innerHTML = `<span>📄</span> <span>${escapeHtml(att.name)}</span>`;
+          attContainer.appendChild(chip);
+        }
+      });
+      content.appendChild(attContainer);
+    }
   } else {
     content.innerHTML = renderMarkdown(contentText);
     processCodeBlocks(content);
@@ -4298,8 +4551,116 @@ function renderMessages(messages) {
   empty.classList.add('hidden');
 
   for (const m of messages) {
-    appendMessage(m.role === 'user' ? 'user' : 'agent', m.content);
+    appendMessage(m.role === 'user' ? 'user' : 'agent', m.content, m.attachments || []);
   }
+}
+
+// ── File & Image Attachment Handling ──────────────────────────────────────────
+let activeAttachments = [];
+
+function handleFileSelect(e) {
+  const files = e.target.files;
+  if (!files || !files.length) return;
+  for (const f of files) {
+    processUploadedFile(f);
+  }
+  e.target.value = '';
+}
+
+function processUploadedFile(file) {
+  if (file.size > 20 * 1024 * 1024) {
+    alert(`File "${file.name}" exceeds the 20MB limit.`);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    activeAttachments.push({
+      name: file.name,
+      type: file.type || 'application/octet-stream',
+      size: file.size,
+      data: ev.target.result
+    });
+    renderAttachmentTray();
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderAttachmentTray() {
+  const tray = document.getElementById('attachment-tray');
+  if (!tray) return;
+  tray.innerHTML = '';
+  if (!activeAttachments.length) {
+    tray.classList.add('hidden');
+    return;
+  }
+  tray.classList.remove('hidden');
+  activeAttachments.forEach((att, idx) => {
+    const chip = document.createElement('div');
+    chip.className = 'attachment-chip';
+    const isImg = att.type.startsWith('image/');
+    const previewHtml = isImg
+      ? `<img src="${att.data}" class="attachment-thumb" alt="${escapeHtml(att.name)}" />`
+      : `<span class="attachment-icon">${escapeHtml(att.name.split('.').pop().toUpperCase().slice(0, 4))}</span>`;
+    const sizeStr = att.size < 1024 * 1024 ? `${(att.size / 1024).toFixed(0)}KB` : `${(att.size / (1024 * 1024)).toFixed(1)}MB`;
+    chip.innerHTML = `
+      ${previewHtml}
+      <span class="attachment-name" title="${escapeHtml(att.name)}">${escapeHtml(att.name)}</span>
+      <span class="attachment-size">${sizeStr}</span>
+      <button type="button" class="attachment-remove" onclick="removeAttachment(${idx})" title="Remove">✕</button>
+    `;
+    tray.appendChild(chip);
+  });
+}
+
+function removeAttachment(idx) {
+  activeAttachments.splice(idx, 1);
+  renderAttachmentTray();
+}
+
+function initAttachmentHandlers() {
+  const chatArea = document.getElementById('chat-container');
+  const dropOverlay = document.getElementById('drop-overlay');
+
+  if (chatArea && dropOverlay) {
+    ['dragenter', 'dragover'].forEach(evt => {
+      chatArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropOverlay.classList.remove('hidden');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      chatArea.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropOverlay.classList.add('hidden');
+      });
+    });
+    chatArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropOverlay.classList.add('hidden');
+      if (e.dataTransfer && e.dataTransfer.files) {
+        for (const f of e.dataTransfer.files) {
+          processUploadedFile(f);
+        }
+      }
+    });
+  }
+
+  // Clipboard image / file paste listener
+  window.addEventListener('paste', (e) => {
+    const items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData))?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        if (file) {
+          processUploadedFile(file);
+        }
+      }
+    }
+  });
 }
 
 let activeAbortController = null;
@@ -4332,7 +4693,8 @@ async function sendMessage() {
 
   const input = document.getElementById('prompt-input');
   const text = input.value.trim();
-  if (!text) return;
+  const attachmentsToSend = [...activeAttachments];
+  if (!text && !attachmentsToSend.length) return;
 
   // If local offline model is selected, verify Ollama before submitting
   if (currentModel === 'spectre-local') {
@@ -4351,6 +4713,8 @@ async function sendMessage() {
   input.value = '';
   autoResize(input);
   input.disabled = true;
+  activeAttachments = [];
+  renderAttachmentTray();
 
   const sendBtn = document.getElementById('send-btn');
   if (sendBtn) {
@@ -4362,7 +4726,7 @@ async function sendMessage() {
   isStreaming = true;
   activeAbortController = new AbortController();
 
-  appendMessage('user', text);
+  appendMessage('user', text, attachmentsToSend);
 
   let convoIdx = activeChatIdx;
   if (convoIdx === -1 || (convoIdx >= 0 && conversations[convoIdx].id !== currentSid)) {
@@ -4371,7 +4735,7 @@ async function sendMessage() {
       agent: currentAgent,
       model: currentModel,
       project: activeProjectId,
-      title: text.length > 40 ? text.slice(0, 40) + '...' : text,
+      title: text ? (text.length > 40 ? text.slice(0, 40) + '...' : text) : 'Attached files analysis',
       messages: [],
       ts: Date.now()
     });
@@ -4381,10 +4745,38 @@ async function sendMessage() {
   }
 
   const convo = conversations[convoIdx];
-  convo.messages.push({ role: 'user', content: text });
+  convo.messages.push({ role: 'user', content: text, attachments: attachmentsToSend });
 
   const agentContentEl = appendMessage('agent', '');
   const msgs = document.getElementById('messages');
+
+  // Insert Antigravity Working... header with real-time live timer
+  const workingHeader = document.createElement('div');
+  workingHeader.className = 'agent-working-header';
+  const startTs = Date.now();
+  workingHeader.innerHTML = `
+    <div class="working-badge working">
+      <span class="working-dot"></span>
+      <span class="working-text">Working...</span>
+      <span class="working-timer">0.0s</span>
+    </div>
+  `;
+  agentContentEl.appendChild(workingHeader);
+
+  const timerEl = workingHeader.querySelector('.working-timer');
+  const badgeEl = workingHeader.querySelector('.working-badge');
+  const timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTs) / 1000;
+    if (timerEl) {
+      if (elapsed < 60) {
+        timerEl.textContent = `${elapsed.toFixed(1)}s`;
+      } else {
+        const mins = Math.floor(elapsed / 60);
+        const secs = (elapsed % 60).toFixed(0).padStart(2, '0');
+        timerEl.textContent = `${mins}m ${secs}s`;
+      }
+    }
+  }, 100);
 
   // Insert visual thinking indicator
   const indicator = document.createElement('div');
@@ -4397,6 +4789,8 @@ async function sendMessage() {
 
   let fullReplyText = '';
   let activeToolCards = {};
+  let hadError = false;
+  let wasAborted = false;
 
   try {
     const resp = await fetch('/api/chat', {
@@ -4406,6 +4800,7 @@ async function sendMessage() {
         agent: currentAgent,
         model: currentModel,
         message: text,
+        attachments: attachmentsToSend,
         sessionId: currentSid,
         autopilot: isAutopilotEnabled
       }),
@@ -4504,12 +4899,13 @@ async function sendMessage() {
               </div>
             `;
             agentContentEl.appendChild(card);
-            activeToolCards[ev.id || ev.name] = card;
+            if (ev.id) activeToolCards[ev.id] = card;
+            if (ev.name) activeToolCards[ev.name] = card;
             if (!isAutopilotEnabled) pendingToolApprovals[ev.id] = true;
             msgs.scrollTop = msgs.scrollHeight;
           }
           else if (ev.type === 'tool_result') {
-            const card = activeToolCards[ev.id || ev.name] || document.getElementById(`tool-${ev.id}`);
+            const card = (ev.id && activeToolCards[ev.id]) || (ev.name && activeToolCards[ev.name]) || (ev.id && document.getElementById(`tool-${ev.id}`));
             if (card) {
               card.classList.remove('running');
               const isOk = ev.exit_code === 0;
@@ -4521,7 +4917,7 @@ async function sendMessage() {
                 pill.textContent = isOk ? `Exit 0 · ${ev.duration}s` : `Exit ${ev.exit_code} · ${ev.duration}s`;
               }
               const pre = card.querySelector('.tool-output');
-              if (pre) pre.textContent = ev.output;
+              if (pre) pre.textContent = ev.output || '(Command completed with no output)';
 
               // Live Visual Diff & Rollback Snapshot Rendering
               if (ev.diff) {
@@ -4578,6 +4974,8 @@ async function sendMessage() {
       }
     }
   } catch (err) {
+    hadError = true;
+    wasAborted = err.name === 'AbortError';
     const ind = document.getElementById('streaming-thinking-indicator');
     if (ind) ind.remove();
 
@@ -4588,6 +4986,21 @@ async function sendMessage() {
     }
     agentContentEl.innerHTML = renderMarkdown(fullReplyText);
   } finally {
+    clearInterval(timerInterval);
+    const totalSecs = ((Date.now() - startTs) / 1000).toFixed(1);
+    const durStr = totalSecs < 60 ? `${totalSecs}s` : `${Math.floor(totalSecs / 60)}m ${(totalSecs % 60).toFixed(0)}s`;
+    if (badgeEl) {
+      if (hadError && !wasAborted) {
+        badgeEl.className = 'working-badge failed';
+        badgeEl.innerHTML = `<span style="font-size:11px;">✕</span> <span class="working-text">Failed after</span> <span class="working-timer">${durStr}</span>`;
+      } else if (wasAborted) {
+        badgeEl.className = 'working-badge stopped';
+        badgeEl.innerHTML = `<span style="font-size:10px;">■</span> <span class="working-text">Stopped after</span> <span class="working-timer">${durStr}</span>`;
+      } else {
+        badgeEl.className = 'working-badge completed';
+        badgeEl.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg> <span class="working-text">Worked for</span> <span class="working-timer">${durStr}</span>`;
+      }
+    }
     const textContainer = agentContentEl.querySelector('.agent-markdown-body');
     if (textContainer && agentContentEl.lastElementChild !== textContainer) {
       agentContentEl.appendChild(textContainer);
@@ -5086,6 +5499,9 @@ async function checkStatus() {
   
   // Initialize Aceternity Lines Gradient Shader on landing page
   initLinesGradientShader();
+
+  // Initialize Drag & Drop and Clipboard Paste for images and files
+  initAttachmentHandlers();
 
   // Show landing screen on initial load so user chooses ARCHITECT or SPECTRE
   showLandingScreen();

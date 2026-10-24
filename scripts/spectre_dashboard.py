@@ -595,8 +595,12 @@ CLAUDE_TOOLS = [
 
 # --- Safe Tool Execution Engine Scoped to Active Project -----------------------
 
-def _safe_resolve_path(rel_path: str) -> Path:
+def _safe_resolve_path(rel_path) -> Path:
     active_root = get_active_project_path()
+    if isinstance(rel_path, (list, tuple)):
+        rel_path = rel_path[0] if rel_path else "."
+    elif not isinstance(rel_path, str):
+        rel_path = str(rel_path or ".")
     p = (active_root / rel_path).resolve()
     return p
 
@@ -1011,7 +1015,7 @@ def _exec_verify_build(check_type: str = "auto") -> dict:
         "command": cmd
     }
 
-def _exec_handoff_to_spectre(target_paths: str = ".") -> dict:
+def _exec_handoff_to_spectre(target_paths=".") -> dict:
     t0 = time.time()
     active_dir = get_active_project_path()
     
@@ -1023,10 +1027,23 @@ def _exec_handoff_to_spectre(target_paths: str = ".") -> dict:
         (r'AIza[0-9A-Za-z-_]{35}', "Exposed Google/Gemini API Key"),
     ]
     
-    p = _safe_resolve_path(target_paths or ".")
-    targets = [p] if p.is_file() else [f for f in p.rglob("*") if f.is_file() and not any(part in f.parts for part in (".git", "node_modules", ".venv", "__pycache__", ".next", "dist"))]
+    # Handle list or string of target_paths
+    if isinstance(target_paths, (list, tuple)):
+        raw_list = target_paths
+    elif isinstance(target_paths, str) and "," in target_paths:
+        raw_list = [tp.strip() for tp in target_paths.split(",") if tp.strip()]
+    else:
+        raw_list = [target_paths] if target_paths else ["."]
+
+    targets = []
+    for item in raw_list:
+        p = _safe_resolve_path(item)
+        if p.is_file():
+            targets.append(p)
+        elif p.is_dir():
+            targets.extend([f for f in p.rglob("*") if f.is_file() and not any(part in f.parts for part in (".git", "node_modules", ".venv", "__pycache__", ".next", "dist"))])
+
     files_checked = 0
-    
     for tf in targets[:35]:
         files_checked += 1
         try:
@@ -1039,10 +1056,11 @@ def _exec_handoff_to_spectre(target_paths: str = ".") -> dict:
         except Exception:
             pass
 
+    display_target = str(target_paths)
     if findings:
         report = (
             f"### [SPECTRE RED TEAM AUDIT: VULNERABILITIES DETECTED]\n"
-            f"Checked {files_checked} files in `{target_paths}`.\n\n"
+            f"Checked {files_checked} files in `{display_target}`.\n\n"
             + "\n".join([f"- [!] {f}" for f in findings])
             + f"\n\n**Action Required**: ARCHITECT must sanitize these secrets and replace them with environment variables before proceeding."
         )
@@ -1050,7 +1068,7 @@ def _exec_handoff_to_spectre(target_paths: str = ".") -> dict:
     else:
         report = (
             f"### [SPECTRE RED TEAM AUDIT: CLEAR]\n"
-            f"Checked {files_checked} files in `{target_paths}`.\n"
+            f"Checked {files_checked} files in `{display_target}`.\n"
             f"- Zero exposed secrets, private keys, or API tokens found.\n"
             f"- Static security baseline passed."
         )
@@ -1107,26 +1125,29 @@ def _load_skills(workspace_path: Path | None = None) -> list[dict]:
     return skills
 
 def _dispatch_tool(name: str, args: dict) -> dict:
-    if name == "run_command":
-        return _exec_run_command(args.get("command", ""))
-    elif name == "write_file":
-        return _exec_write_file(args.get("path", ""), args.get("content", ""))
-    elif name == "replace_in_file":
-        return _exec_replace_in_file(args.get("path", ""), args.get("target", ""), args.get("replacement", ""))
-    elif name == "read_file":
-        return _exec_read_file(args.get("path", ""))
-    elif name == "grep_search":
-        return _exec_grep_search(args.get("query", ""), args.get("path", "."), args.get("case_sensitive", False))
-    elif name == "list_directory":
-        return _exec_list_dir(args.get("path", "."))
-    elif name == "search_web":
-        return _exec_search_web(args.get("query", ""), int(args.get("count", 5)))
-    elif name == "verify_build":
-        return _exec_verify_build(args.get("check_type", "auto"))
-    elif name == "handoff_to_spectre":
-        return _exec_handoff_to_spectre(args.get("target_paths", "."))
-    else:
-        return {"output": f"Unknown tool: {name}", "exit_code": 1, "duration": 0.0}
+    try:
+        if name == "run_command":
+            return _exec_run_command(args.get("command", ""))
+        elif name == "write_file":
+            return _exec_write_file(args.get("path", ""), args.get("content", ""))
+        elif name == "replace_in_file":
+            return _exec_replace_in_file(args.get("path", ""), args.get("target", ""), args.get("replacement", ""))
+        elif name == "read_file":
+            return _exec_read_file(args.get("path", ""))
+        elif name == "grep_search":
+            return _exec_grep_search(args.get("query", ""), args.get("path", "."), args.get("case_sensitive", False))
+        elif name == "list_directory":
+            return _exec_list_dir(args.get("path", "."))
+        elif name == "search_web":
+            return _exec_search_web(args.get("query", ""), int(args.get("count", 5)))
+        elif name == "verify_build":
+            return _exec_verify_build(args.get("check_type", "auto"))
+        elif name == "handoff_to_spectre":
+            return _exec_handoff_to_spectre(args.get("target_paths", "."))
+        else:
+            return {"output": f"Unknown tool: {name}", "exit_code": 1, "duration": 0.0}
+    except Exception as exc:
+        return {"output": f"Tool execution failed: {type(exc).__name__}: {str(exc)}", "exit_code": 1, "duration": 0.0}
 
 # --- Multi-Turn Agentic Chat Engine with SSE Streaming -------------------------
 
@@ -1300,7 +1321,7 @@ def _parse_react_tool_call(content: str) -> tuple[str | None, dict | None]:
     return None, None
 
 
-def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: str = "gemini", autopilot: bool = True):
+def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: str = "gemini", autopilot: bool = True, attachments: list | None = None):
     active_proj = get_active_project()
     active_path = str(get_active_project_path())
 
@@ -1359,12 +1380,65 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
             f"Strictly adhere to the specific instructions, rules, and steps detailed in this skill.\n"
         )
 
+    # Query local RAG vector store for relevant cybersecurity, web standards, and PQC knowledge
+    try:
+        from init_rag import search_vector_store
+        rag_hits = search_vector_store(user_prompt, top_k=2)
+        if rag_hits:
+            rag_docs = []
+            for hit in rag_hits:
+                rec = hit.get("record", {})
+                score = hit.get("score", 0)
+                if score > 0.10 or not rec.get("embedding"):
+                    rag_docs.append(f"• [{rec.get('collection')}] {rec.get('header')}:\n{rec.get('text')}")
+            if rag_docs:
+                project_context += (
+                    f"\n\n[SPECTRE RAG KNOWLEDGE BASE - RETRIEVED RELEVANT DOCUMENTS]:\n"
+                    + "\n\n".join(rag_docs)
+                    + "\nUse this verified technical knowledge when formulating your response and tool commands."
+                )
+    except Exception:
+        pass
+
     base_system = SYSTEM_PROMPTS.get(agent, SYSTEM_PROMPTS["webdev"])
     system_instruction = base_system + project_context
 
+    user_parts = []
+
+    # Process user attachments (Multimodal Images, PDFs, Code, Data)
+    if attachments:
+        for att in attachments:
+            name = att.get("name", "attachment")
+            mime = att.get("type", "application/octet-stream")
+            b64_data = att.get("data", "")
+            if "base64," in b64_data:
+                b64_data = b64_data.split("base64,")[1]
+
+            # Gemini Vision & Document Multimodal API
+            if mime.startswith("image/") or mime == "application/pdf":
+                user_parts.append({
+                    "inlineData": {
+                        "mimeType": mime,
+                        "data": b64_data
+                    }
+                })
+            else:
+                # Text / Code / Markdown attachments
+                try:
+                    import base64
+                    text_content = base64.b64decode(b64_data).decode("utf-8", errors="replace")
+                    ext = name.split(".")[-1] if "." in name else "text"
+                    user_parts.append({
+                        "text": f"\n\n[USER ATTACHED FILE: {name}]\n```{ext}\n{text_content}\n```\n"
+                    })
+                except Exception:
+                    pass
+
+    user_parts.append({"text": user_prompt})
+
     with _sessions_lock:
         history = _sessions.setdefault(sid, [])
-        history.append({"role": "user", "parts": [{"text": user_prompt}]})
+        history.append({"role": "user", "parts": user_parts})
         contents = list(history)
 
     if activated_skill:
@@ -1602,13 +1676,13 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                 fc = p["functionCall"]
                 name = fc.get("name", "")
                 args = fc.get("args", {})
-                call_id = fc.get("id")
+                call_id = fc.get("id") or str(uuid.uuid4())
 
                 yield {
                     "type": "tool_call",
                     "name": name,
                     "args": args,
-                    "id": call_id or str(uuid.uuid4())
+                    "id": call_id
                 }
 
                 result = _dispatch_tool(name, args)
@@ -1992,10 +2066,14 @@ class _Handler(BaseHTTPRequestHandler):
         sid = body.get("sessionId") or str(uuid.uuid4())
         model = body.get("model", "gemini")
         autopilot = bool(body.get("autopilot", True))
+        attachments = body.get("attachments", [])
 
-        if not message:
+        if not message and not attachments:
             self._json_resp({"error": "Empty message"}, 400)
             return
+
+        if not message and attachments:
+            message = "Please inspect, analyze, and process the attached files / images."
 
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
@@ -2005,7 +2083,7 @@ class _Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
         try:
-            for event in _stream_agent_task(agent, sid, message, selected_model=model, autopilot=autopilot):
+            for event in _stream_agent_task(agent, sid, message, selected_model=model, autopilot=autopilot, attachments=attachments):
                 payload = json.dumps(event, ensure_ascii=False)
                 self.wfile.write(f"data: {payload}\n\n".encode("utf-8"))
                 self.wfile.flush()
