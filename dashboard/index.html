@@ -15,35 +15,35 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #08080f;
-      --surface:     #0f0f1a;
-      --panel:       #121221;
-      --border:      rgba(255,255,255,0.08);
-      --border2:     rgba(255,255,255,0.14);
-      --text:        #e2e8f0;
-      --muted:       #8492a6;
-      --muted2:      #505d73;
+      --bg:          #030305;
+      --surface:     #08080c;
+      --panel:       #0d0d12;
+      --border:      rgba(255,255,255,0.07);
+      --border2:     rgba(255,255,255,0.12);
+      --text:        #f4f4f5;
+      --muted:       #a1a1aa;
+      --muted2:      #52525b;
 
-      /* ARCHITECT (Web Dev) Theme Defaults */
-      --accent:      #22d3ee;
-      --accent2:     #06b6d4;
-      --accent-glow: rgba(34,211,238,0.18);
-      --accent-dim:  rgba(34,211,238,0.08);
-      --user-bg:     rgba(34,211,238,0.10);
-      --agent-bg:    rgba(255,255,255,0.035);
+      /* ARCHITECT (Web Dev) Theme Defaults - Dark Stealth Titanium */
+      --accent:      #f4f4f5;
+      --accent2:     #a1a1aa;
+      --accent-glow: rgba(255,255,255,0.06);
+      --accent-dim:  rgba(255,255,255,0.04);
+      --user-bg:     rgba(255,255,255,0.06);
+      --agent-bg:    rgba(255,255,255,0.025);
 
       --radius:      12px;
       --font:        'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --mono:        'Fira Code', 'Cascadia Code', Consolas, monospace;
     }
 
-    /* SPECTRE (Pentest) Theme */
+    /* SPECTRE (Pentest) Theme - Refined Dark Obsidian / Subtle Crimson Accent */
     .theme-pentest {
-      --accent:      #f97316;
-      --accent2:     #ea580c;
-      --accent-glow: rgba(249,115,22,0.18);
-      --accent-dim:  rgba(249,115,22,0.08);
-      --user-bg:     rgba(249,115,22,0.10);
+      --accent:      #e4e4e7;
+      --accent2:     #71717a;
+      --accent-glow: rgba(255,255,255,0.06);
+      --accent-dim:  rgba(255,255,255,0.04);
+      --user-bg:     rgba(255,255,255,0.06);
     }
 
     html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font); }
@@ -82,11 +82,13 @@
 
     .logo-icon {
       width: 32px; height: 32px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: linear-gradient(135deg, #27272a, #18181b);
+      border: 1px solid rgba(255,255,255,0.14);
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
       font-size: 16px;
-      box-shadow: 0 0 18px var(--accent-glow);
+      color: #f4f4f5;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
       transition: all 0.3s;
       flex-shrink: 0;
     }
@@ -218,8 +220,8 @@
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .chat-item-dot.webdev { background: #22d3ee; box-shadow: 0 0 6px rgba(34,211,238,0.7); }
-    .chat-item-dot.pentest { background: #f97316; box-shadow: 0 0 6px rgba(249,115,22,0.7); }
+    .chat-item-dot.webdev { background: #f4f4f5; box-shadow: 0 0 6px rgba(255,255,255,0.4); }
+    .chat-item-dot.pentest { background: #a1a1aa; box-shadow: 0 0 6px rgba(255,255,255,0.2); }
 
     .chat-item-title {
       font-size: 11.5px;
@@ -410,11 +412,11 @@
     .autopilot-bolt {
       font-size: 13px;
       line-height: 1;
-      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
       transition: transform 0.2s ease;
     }
     .autopilot-sidebar-card.active .autopilot-bolt {
-      color: #22d3ee;
+      color: #f4f4f5;
       animation: pulseBolt 2s infinite ease-in-out;
     }
     .autopilot-sidebar-card:not(.active) .autopilot-bolt {
@@ -430,13 +432,13 @@
       letter-spacing: 0.3px;
     }
     .autopilot-sidebar-card.active .autopilot-status {
-      background: rgba(34, 211, 238, 0.25);
-      color: #22d3ee;
-      border: 1px solid rgba(34, 211, 238, 0.4);
+      background: rgba(255, 255, 255, 0.12);
+      color: #f4f4f5;
+      border: 1px solid rgba(255, 255, 255, 0.22);
     }
     .autopilot-sidebar-card:not(.active) .autopilot-status {
       background: rgba(255, 255, 255, 0.05);
-      color: #64748b;
+      color: #71717a;
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
@@ -517,10 +519,10 @@
       justify-content: center;
       flex-shrink: 0;
     }
-    .model-opt-icon.gemini { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-    .model-opt-icon.claude { background: rgba(249, 115, 22, 0.15); color: #f97316; }
-    .model-opt-icon.opus   { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
-    .model-opt-icon.local  { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .model-opt-icon.gemini { background: rgba(255, 255, 255, 0.08); color: #f4f4f5; border: 1px solid rgba(255, 255, 255, 0.10); }
+    .model-opt-icon.claude { background: rgba(255, 255, 255, 0.08); color: #f4f4f5; border: 1px solid rgba(255, 255, 255, 0.10); }
+    .model-opt-icon.opus   { background: rgba(255, 255, 255, 0.08); color: #f4f4f5; border: 1px solid rgba(255, 255, 255, 0.10); }
+    .model-opt-icon.local  { background: rgba(255, 255, 255, 0.08); color: #f4f4f5; border: 1px solid rgba(255, 255, 255, 0.10); }
 
     .model-opt-meta {
       flex: 1;
@@ -543,15 +545,18 @@
     .model-tag-badge {
       font-family: var(--mono);
       font-size: 9px;
-      font-weight: 700;
+      font-weight: 600;
       padding: 1px 5px;
       border-radius: 3px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #d4d4d8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .active-tag { background: rgba(34,211,238,0.15); color: #22d3ee; }
-    .hybrid-tag { background: rgba(249,115,22,0.15); color: #f97316; }
-    .fast-tag   { background: rgba(59,130,246,0.15); color: #60a5fa; }
-    .opus-tag   { background: rgba(168,85,247,0.15); color: #c084fc; }
-    .uncensored-tag { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .active-tag { background: rgba(255,255,255,0.14); color: #f4f4f5; border-color: rgba(255,255,255,0.22); }
+    .hybrid-tag { background: rgba(255,255,255,0.08); color: #e4e4e7; }
+    .fast-tag   { background: rgba(255,255,255,0.08); color: #e4e4e7; }
+    .opus-tag   { background: rgba(255,255,255,0.08); color: #e4e4e7; }
+    .uncensored-tag { background: rgba(255,255,255,0.08); color: #e4e4e7; }
 
     .model-opt-check {
       font-size: 13px;
@@ -612,9 +617,9 @@
       font-family: var(--mono);
       padding: 2px 8px;
       border-radius: 4px;
-      background: rgba(34, 211, 238, 0.12);
-      color: #22d3ee;
-      border: 1px solid rgba(34, 211, 238, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+      color: #f4f4f5;
+      border: 1px solid rgba(255, 255, 255, 0.16);
     }
     .help-commands-grid {
       display: flex;
@@ -655,9 +660,9 @@
     .help-command-run-btn {
       padding: 3px 9px;
       border-radius: 6px;
-      border: 1px solid var(--border);
-      background: rgba(34, 211, 238, 0.10);
-      color: #22d3ee;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.06);
+      color: #f4f4f5;
       font-size: 10.5px;
       font-weight: 600;
       cursor: pointer;
@@ -1556,16 +1561,16 @@
       transition: all 0.25s ease;
     }
     .working-badge.working {
-      background: rgba(34, 211, 238, 0.08);
-      border: 1px solid rgba(34, 211, 238, 0.35);
-      color: #22d3ee;
-      box-shadow: 0 0 12px rgba(34, 211, 238, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #f4f4f5;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
     }
     .theme-pentest .working-badge.working {
-      background: rgba(249, 115, 22, 0.08);
-      border-color: rgba(249, 115, 22, 0.35);
-      color: #f97316;
-      box-shadow: 0 0 12px rgba(249, 115, 22, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.22);
+      color: #f4f4f5;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
     }
     .working-dot {
       width: 7px;
@@ -1617,18 +1622,18 @@
       background: rgba(255, 255, 255, 0.07);
     }
     .autopilot-toggle-btn.active {
-      background: rgba(34, 211, 238, 0.12);
-      border-color: rgba(34, 211, 238, 0.45);
-      box-shadow: 0 0 12px rgba(34, 211, 238, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.22);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
     }
     .autopilot-bolt {
       font-size: 12px;
       line-height: 1;
-      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.6));
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.4));
       transition: transform 0.2s ease;
     }
     .autopilot-toggle-btn.active .autopilot-bolt {
-      color: #22d3ee;
+      color: #f4f4f5;
       animation: pulseBolt 2s infinite ease-in-out;
     }
     .autopilot-toggle-btn:not(.active) .autopilot-bolt {
@@ -1636,8 +1641,8 @@
       opacity: 0.5;
     }
     @keyframes pulseBolt {
-      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 3px rgba(34, 211, 238, 0.4)); }
-      50% { transform: scale(1.18); filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.8)); }
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.3)); }
+      50% { transform: scale(1.18); filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6)); }
     }
     .autopilot-label {
       font-family: var(--font);
@@ -1658,13 +1663,13 @@
       letter-spacing: 0.3px;
     }
     .autopilot-toggle-btn.active .autopilot-status {
-      background: rgba(34, 211, 238, 0.25);
-      color: #22d3ee;
-      border: 1px solid rgba(34, 211, 238, 0.4);
+      background: rgba(255, 255, 255, 0.14);
+      color: #f4f4f5;
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
     .autopilot-toggle-btn:not(.active) .autopilot-status {
       background: rgba(255, 255, 255, 0.05);
-      color: #64748b;
+      color: #71717a;
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
@@ -1712,13 +1717,13 @@
       font-size: 10.5px;
       font-weight: 600;
       border-radius: 4px;
-      background: rgba(34, 211, 238, 0.2);
-      border: 1px solid rgba(34, 211, 238, 0.45);
-      color: #22d3ee;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #f4f4f5;
       cursor: pointer;
     }
     .perm-auto-btn:hover {
-      background: rgba(34, 211, 238, 0.35);
+      background: rgba(255, 255, 255, 0.22);
       color: #fff;
     }
 
@@ -1739,19 +1744,23 @@
 
     #send-btn {
       width: 36px; height: 36px;
-      background: var(--accent);
-      border: none;
+      background: #f4f4f5;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 9px;
-      color: #000;
+      color: #050508;
       font-size: 15px;
       font-weight: 700;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
       flex-shrink: 0;
-      box-shadow: 0 0 14px var(--accent-glow);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     }
-    #send-btn:hover { transform: scale(1.04); box-shadow: 0 0 20px var(--accent-glow); }
+    #send-btn:hover {
+      background: #ffffff;
+      transform: scale(1.04);
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.25);
+    }
     #send-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
     #send-btn.streaming-stop {
       background: rgba(239, 68, 68, 0.15) !important;
@@ -1940,18 +1949,17 @@
       cursor: pointer;
     }
 
-    /* ── Landing Page Overlay ─────────────────────────────────────────────── */
+    /* ── Landing Page Overlay & Video Backdrop ────────────────────────────────── */
     .landing-screen {
       position: fixed;
       inset: 0;
       z-index: 9000;
-      background: #080811;
+      background: #000000;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow-y: auto;
-      padding: 40px 20px;
-      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .landing-screen.hidden {
       opacity: 0;
@@ -1959,109 +1967,206 @@
       transform: scale(0.98);
     }
 
-    .landing-bg-glow {
+    .landing-video-wrap {
       position: absolute;
       inset: 0;
-      pointer-events: none;
       overflow: hidden;
       z-index: 0;
+      background: #000000;
+      pointer-events: none;
     }
-    .lines-gradient-canvas {
-      position: absolute;
-      inset: 0;
+    .landing-ferris-video {
       width: 100%;
       height: 100%;
+      object-fit: cover;
+      object-position: center;
       display: block;
-      opacity: 0.90;
-      pointer-events: none;
+      filter: brightness(0.80) contrast(1.1);
+      opacity: 0.88;
+      transition: opacity 0.5s ease;
     }
-    .landing-canvas-vignette {
+    .landing-video-vignette {
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 90% 85% at 50% 35%, rgba(8, 8, 17, 0.40) 0%, rgba(8, 8, 17, 0.80) 65%, #080811 96%);
+      background: radial-gradient(ellipse at center, rgba(3, 3, 5, 0.15) 0%, rgba(3, 3, 5, 0.65) 65%, #030305 100%);
       pointer-events: none;
     }
-    .glow-cyan {
+
+    /* ── Landing Stages (Stage 1: Welcome, Stage 2: Persona Selection) ───────── */
+    .landing-stage {
       position: absolute;
-      width: 650px; height: 650px;
-      top: -100px; left: -100px;
-      background: radial-gradient(circle, rgba(34,211,238,0.13) 0%, transparent 68%);
-      filter: blur(80px);
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.97);
+      transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .glow-orange {
-      position: absolute;
-      width: 650px; height: 650px;
-      bottom: -100px; right: -100px;
-      background: radial-gradient(circle, rgba(249,115,22,0.13) 0%, transparent 68%);
-      filter: blur(80px);
+    .landing-stage.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
     }
 
+    /* Stage 1: Welcome Box */
+    .landing-stage-welcome {
+      cursor: pointer;
+    }
+    .welcome-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      user-select: none;
+      padding: 40px 30px;
+      border-radius: 24px;
+      transition: transform 0.25s ease;
+    }
+    .welcome-box:hover {
+      transform: translateY(-2px);
+    }
+    .welcome-heading {
+      font-size: clamp(2.6rem, 6.5vw, 4.6rem);
+      font-weight: 300;
+      letter-spacing: -0.04em;
+      color: #f4f4f5;
+      line-height: 1.1;
+      text-shadow: 0 4px 28px rgba(0, 0, 0, 0.8);
+      margin-bottom: 26px;
+      font-family: var(--font);
+    }
+    .welcome-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px 8px 20px;
+      background: rgba(14, 14, 20, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 99px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+    .welcome-box:hover .welcome-cta {
+      background: rgba(24, 24, 34, 0.85);
+      border-color: rgba(255, 255, 255, 0.32);
+      transform: scale(1.04);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
+    }
+    .welcome-key {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: rgba(244, 244, 245, 0.8);
+    }
+    .welcome-arrow {
+      font-size: 14px;
+      color: #f4f4f5;
+      animation: enterPromptBounce 1.8s infinite ease-in-out;
+    }
+    @keyframes enterPromptBounce {
+      0%, 100% { transform: translateX(0); opacity: 0.75; }
+      50% { transform: translateX(3px); opacity: 1; }
+    }
+
+    /* Stage 2: Persona Selection */
     .landing-container {
       position: relative;
       z-index: 10;
-      max-width: 1040px;
+      max-width: 680px;
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       margin: auto;
     }
+    .landing-back-btn {
+      position: absolute;
+      top: -46px;
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 15, 22, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(244, 244, 245, 0.75);
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 99px;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.15s ease;
+    }
+    .landing-back-btn:hover {
+      background: rgba(25, 25, 36, 0.85);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
 
     .landing-brand-badge {
       display: flex;
       align-items: center;
-      gap: 9px;
-      padding: 6px 16px;
-      background: rgba(255,255,255,0.035);
-      border: 1px solid var(--border);
+      gap: 8px;
+      padding: 5px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
       border-radius: 99px;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(12px);
     }
     .landing-brand-icon {
-      width: 16px; height: 16px;
-      color: #22d3ee;
+      color: #f4f4f5;
       display: flex; align-items: center; justify-content: center;
     }
     .landing-brand-name {
       font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: #d4d4d8;
     }
 
     .landing-headline {
       font-size: 28px;
-      font-weight: 800;
+      font-weight: 700;
       color: #ffffff;
       text-align: center;
       letter-spacing: -0.02em;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.6);
     }
     .landing-sub {
-      font-size: 13.5px;
+      font-size: 13px;
       color: var(--muted);
       text-align: center;
-      max-width: 520px;
+      max-width: 480px;
       line-height: 1.5;
-      margin-bottom: 30px;
+      margin-bottom: 26px;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.6);
     }
 
     .landing-cards {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      max-width: 680px;
+      gap: 18px;
       width: 100%;
     }
-
-    @media (max-width: 680px) {
+    @media (max-width: 640px) {
       .landing-cards { grid-template-columns: 1fr; }
     }
 
     .landing-card {
-      background: rgba(14, 14, 26, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(10, 10, 16, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.10);
       border-radius: 16px;
       padding: 24px 22px;
       display: flex;
@@ -2073,146 +2178,129 @@
       transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
     }
-
-    .landing-card.webdev {
-      border-color: rgba(34, 211, 238, 0.2);
-    }
-    .landing-card.webdev:hover {
-      border-color: #22d3ee;
-      box-shadow: 0 14px 34px rgba(34, 211, 238, 0.22), 0 0 0 1px rgba(34, 211, 238, 0.4);
-      transform: translateY(-3px);
-    }
-
-    .landing-card.pentest {
-      border-color: rgba(249, 115, 22, 0.2);
-    }
-    .landing-card.pentest:hover {
-      border-color: #f97316;
-      box-shadow: 0 14px 34px rgba(249, 115, 22, 0.22), 0 0 0 1px rgba(249, 115, 22, 0.4);
+    .landing-card:hover {
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(18, 18, 26, 0.85);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.15);
       transform: translateY(-3px);
     }
 
     .card-icon-wrap {
-      width: 52px; height: 52px;
-      border-radius: 14px;
+      width: 48px; height: 48px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #f4f4f5;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.2s ease;
     }
-    .landing-card.webdev .card-icon-wrap {
-      background: rgba(34, 211, 238, 0.12);
-      color: #22d3ee;
-      border: 1px solid rgba(34, 211, 238, 0.3);
-    }
-    .landing-card.pentest .card-icon-wrap {
-      background: rgba(249, 115, 22, 0.12);
-      color: #f97316;
-      border: 1px solid rgba(249, 115, 22, 0.3);
+    .landing-card:hover .card-icon-wrap {
+      background: rgba(255, 255, 255, 0.10);
+      border-color: rgba(255, 255, 255, 0.25);
     }
 
     .card-title {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-      margin-bottom: 4px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      margin-bottom: 5px;
     }
-    .landing-card.webdev .card-title { color: #22d3ee; }
-    .landing-card.pentest .card-title { color: #f97316; }
-
     .card-subtitle {
-      font-size: 12px;
-      font-weight: 500;
+      font-size: 11.5px;
+      font-weight: 400;
       color: var(--muted);
+      line-height: 1.4;
       margin-bottom: 20px;
+      min-height: 32px;
     }
 
     .card-cta-btn {
       width: 100%;
-      padding: 10px 16px;
-      border-radius: 9px;
-      border: none;
+      padding: 9px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.06);
+      color: #f4f4f5;
       font-family: var(--font);
-      font-size: 12.5px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 7px;
       cursor: pointer;
       transition: all 0.18s;
     }
-    .landing-card.webdev .card-cta-btn {
-      background: #22d3ee;
-      color: #080811;
-    }
-    .landing-card.webdev .card-cta-btn:hover {
-      background: #38bdf8;
-      box-shadow: 0 0 16px rgba(34, 211, 238, 0.4);
-    }
-    .landing-card.pentest .card-cta-btn {
-      background: #f97316;
-      color: #080811;
-    }
-    .landing-card.pentest .card-cta-btn:hover {
-      background: #fb923c;
-      box-shadow: 0 0 16px rgba(249, 115, 22, 0.4);
+    .landing-card:hover .card-cta-btn {
+      background: #f4f4f5;
+      color: #050508;
+      border-color: #ffffff;
+      box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15);
     }
 
     .landing-bottom-bar {
-      margin-top: 26px;
+      margin-top: 24px;
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
       justify-content: center;
     }
-
     .landing-footer-ws {
       display: flex;
       align-items: center;
-      gap: 9px;
-      padding: 6px 14px;
-      background: rgba(255,255,255,0.025);
-      border: 1px solid var(--border);
+      gap: 8px;
+      padding: 5px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 99px;
-      font-size: 11.5px;
+      font-size: 11px;
       color: var(--muted);
+      backdrop-filter: blur(10px);
     }
     .landing-ws-chip {
-      color: #fff;
+      color: #f4f4f5;
       font-family: var(--mono);
       font-weight: 600;
     }
     .landing-ws-btn {
       background: none;
       border: none;
-      color: var(--accent);
+      color: #a1a1aa;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
       text-decoration: underline;
+    }
+    .landing-ws-btn:hover {
+      color: #fff;
     }
 
     .landing-help-btn {
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 14px;
-      background: rgba(255,255,255,0.025);
-      border: 1px solid var(--border);
+      padding: 5px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 99px;
-      font-size: 11.5px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 500;
       color: var(--muted);
       cursor: pointer;
+      backdrop-filter: blur(10px);
       transition: all 0.15s;
     }
     .landing-help-btn:hover {
       color: #fff;
-      border-color: rgba(255,255,255,0.25);
-      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.07);
     }
 
     /* Help Modal Styling */
@@ -2232,10 +2320,10 @@
       padding: 16px;
     }
     .help-persona-box.arch {
-      border-color: rgba(34, 211, 238, 0.25);
+      border-color: rgba(255, 255, 255, 0.14);
     }
     .help-persona-box.spec {
-      border-color: rgba(249, 115, 22, 0.25);
+      border-color: rgba(255, 255, 255, 0.14);
     }
     .help-persona-header {
       display: flex;
@@ -2247,8 +2335,8 @@
       font-size: 15px;
       font-weight: 700;
     }
-    .help-persona-box.arch .help-persona-title { color: #22d3ee; }
-    .help-persona-box.spec .help-persona-title { color: #f97316; }
+    .help-persona-box.arch .help-persona-title { color: #f4f4f5; }
+    .help-persona-box.spec .help-persona-title { color: #f4f4f5; }
     .help-persona-tag {
       font-size: 10px;
       font-family: var(--mono);
@@ -2284,8 +2372,8 @@
       flex-shrink: 0;
       margin-top: 2px;
     }
-    .help-persona-box.arch .help-features-list li svg { color: #22d3ee; }
-    .help-persona-box.spec .help-features-list li svg { color: #f97316; }
+    .help-persona-box.arch .help-features-list li svg { color: #a1a1aa; }
+    .help-persona-box.spec .help-features-list li svg { color: #a1a1aa; }
 
     /* ── Docker Offline Engine Prompt Modal ────────────────────────────── */
     .modal-docker-icon {
@@ -2470,65 +2558,85 @@
 
 <body>
 
-<!-- ── LANDING PAGE OVERLAY ────────────────────────────────────────────── -->
+<!-- ── LANDING PAGE OVERLAY (FERRIS WHEEL BACKDROP + TWO STAGES) ────────────── -->
 <div id="landing-screen" class="landing-screen">
-  <div class="landing-bg-glow">
-    <canvas id="lines-gradient-canvas" class="lines-gradient-canvas"></canvas>
-    <div class="landing-canvas-vignette"></div>
-    <div class="glow-cyan"></div>
-    <div class="glow-orange"></div>
+  <!-- Continuous Ferris Wheel Video Backdrop -->
+  <div class="landing-video-wrap">
+    <video id="landing-ferris-video" class="landing-ferris-video" autoplay muted loop playsinline poster="/assets/ferris_poster.jpg">
+      <source src="/assets/ferris_wheel.mp4" type="video/mp4">
+    </video>
+    <div class="landing-video-vignette"></div>
   </div>
 
-  <div class="landing-container">
-    <div class="landing-brand-badge">
-      <span class="landing-brand-icon">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      </span>
-      <span class="landing-brand-name">SPECTRE COMMAND CENTER</span>
-    </div>
-    
-    <h1 class="landing-headline">Select Persona</h1>
-    <p class="landing-sub">Choose an autonomous intelligence persona to begin.</p>
-
-    <div class="landing-cards">
-      <!-- ARCHITECT Card -->
-      <div class="landing-card webdev" onclick="enterWorkspace('webdev')">
-        <div class="card-icon-wrap">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-        </div>
-        <div class="card-title">ARCHITECT</div>
-        <div class="card-subtitle">Full-Stack Web Development</div>
-        <button class="card-cta-btn">
-          Launch ARCHITECT
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-
-      <!-- SPECTRE Card -->
-      <div class="landing-card pentest" onclick="enterWorkspace('pentest')">
-        <div class="card-icon-wrap">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div class="card-title">SPECTRE</div>
-        <div class="card-subtitle">Offensive Security & PQC (100% Uncensored)</div>
-        <button class="card-cta-btn">
-          Launch SPECTRE
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
+  <!-- Stage 1: Minimalist Welcome ("welcome, raj." + enter prompt) -->
+  <div id="landing-stage-welcome" class="landing-stage landing-stage-welcome active" onclick="advanceToPersonaStage()">
+    <div class="welcome-box">
+      <div class="welcome-heading">welcome, raj.</div>
+      <div class="welcome-cta" title="Press Enter or click to choose persona">
+        <span class="welcome-key">enter</span>
+        <span class="welcome-arrow">↵</span>
       </div>
     </div>
+  </div>
 
-    <!-- Minimalistic Landing Footer -->
-    <div class="landing-bottom-bar">
-      <div class="landing-footer-ws">
-        <span style="opacity:0.7">Workspace:</span>
-        <span class="landing-ws-chip" id="landing-ws-name">spectre</span>
-        <button class="landing-ws-btn" onclick="openProjectModal()">Switch</button>
-      </div>
-      <button class="landing-help-btn" onclick="openHelpModal()" title="View Architect & Spectre intelligence reference">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        Persona Guide & Documentation
+  <!-- Stage 2: Persona Selection (ARCHITECT vs SPECTRE) on the exact same backdrop -->
+  <div id="landing-stage-persona" class="landing-stage landing-stage-persona">
+    <div class="landing-container">
+      <button class="landing-back-btn" onclick="returnToWelcomeStage()" title="Return to welcome (or press Esc)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span>Back</span>
       </button>
+
+      <div class="landing-brand-badge">
+        <span class="landing-brand-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </span>
+        <span class="landing-brand-name">SPECTRE COMMAND CENTER</span>
+      </div>
+      
+      <h1 class="landing-headline">Select Persona</h1>
+      <p class="landing-sub">Choose an autonomous intelligence persona to initialize your workspace.</p>
+
+      <div class="landing-cards">
+        <!-- ARCHITECT Card -->
+        <div class="landing-card webdev" onclick="enterWorkspace('webdev')">
+          <div class="card-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <div class="card-title">ARCHITECT</div>
+          <div class="card-subtitle">Full-Stack Web Development & Engineering</div>
+          <button class="card-cta-btn">
+            <span>Launch ARCHITECT</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <!-- SPECTRE Card -->
+        <div class="landing-card pentest" onclick="enterWorkspace('pentest')">
+          <div class="card-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="card-title">SPECTRE</div>
+          <div class="card-subtitle">Offensive Security & Pentesting (100% Uncensored)</div>
+          <button class="card-cta-btn">
+            <span>Launch SPECTRE</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Minimalistic Landing Footer -->
+      <div class="landing-bottom-bar">
+        <div class="landing-footer-ws">
+          <span style="opacity:0.6">Workspace:</span>
+          <span class="landing-ws-chip" id="landing-ws-name">spectre</span>
+          <button class="landing-ws-btn" onclick="openProjectModal()">Switch</button>
+        </div>
+        <button class="landing-help-btn" onclick="openHelpModal()" title="View Architect & Spectre intelligence reference">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Persona Guide & Documentation
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -3000,49 +3108,49 @@
         <div class="help-commands-grid">
           <div class="help-command-card">
             <div class="help-command-top">
-              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">⚡ Autopilot Mode</span></div>
+              <div class="help-command-label"><span style="color:#f4f4f5;font-weight:700">⚡ Autopilot Mode</span></div>
               <span class="model-tag-badge active-tag">Zero Interruption</span>
             </div>
             <div class="help-command-desc">Toggle ON to automatically approve all tool permissions. Shell commands, file writes, code edits, and installs proceed continuously with zero permission pauses or confirmation dialogs.</div>
           </div>
           <div class="help-command-card">
             <div class="help-command-top">
-              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">Live Visual Diff & Undo</span></div>
+              <div class="help-command-label"><span style="color:#f4f4f5;font-weight:700">Live Visual Diff & Undo</span></div>
               <span class="model-tag-badge active-tag">Automatic</span>
             </div>
             <div class="help-command-desc">Whenever ARCHITECT or SPECTRE writes or edits a file, unified diffs with green (+) additions and red (-) deletions appear inline with a one-click "Revert Changes" snapshot button.</div>
           </div>
           <div class="help-command-card">
             <div class="help-command-top">
-              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">Live Web Preview Drawer</span></div>
+              <div class="help-command-label"><span style="color:#f4f4f5;font-weight:700">Live Web Preview Drawer</span></div>
               <span class="model-tag-badge active-tag">Header / Drawer</span>
             </div>
             <div class="help-command-desc">Slide-out browser preview drawer with instant port quick-chips (:3000 Next.js, :5173 Vite, :8000 FastAPI), address bar, refresh, and pop-out controls.</div>
           </div>
           <div class="help-command-card">
             <div class="help-command-top">
-              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">Build & Verify Loop</span></div>
+              <div class="help-command-label"><span style="color:#f4f4f5;font-weight:700">Build & Verify Loop</span></div>
               <code>verify_build</code>
             </div>
             <div class="help-command-desc">Autonomous compiler self-healing. Runs TypeScript type checks, npm builds, or python compilation checks and self-repairs any detected errors until passing.</div>
           </div>
           <div class="help-command-card">
             <div class="help-command-top">
-              <div class="help-command-label"><span style="color:#22d3ee;font-weight:700">Live Web & Docs Search</span></div>
+              <div class="help-command-label"><span style="color:#f4f4f5;font-weight:700">Live Web & Docs Search</span></div>
               <code>search_web</code>
             </div>
             <div class="help-command-desc">Searches live online documentation, APIs, and CVE databases via SearXNG or DuckDuckGo fallback directly from within the chat loop.</div>
           </div>
           <div class="help-command-card">
             <div class="help-command-top">
-              <div class="help-command-label"><span style="color:#f97316;font-weight:700">Red/Blue Team Handoff</span></div>
+              <div class="help-command-label"><span style="color:#f4f4f5;font-weight:700">Red/Blue Team Handoff</span></div>
               <code>handoff_to_spectre</code>
             </div>
             <div class="help-command-desc">ARCHITECT automatically invokes SPECTRE red-team scans to audit modified code for hardcoded secrets, private keys, exposed tokens, or security vulnerabilities.</div>
           </div>
           <div class="help-command-card">
             <div class="help-command-top">
-              <div class="help-command-label"><span style="color:#a855f7;font-weight:700">Skills Slash Engine</span></div>
+              <div class="help-command-label"><span style="color:#f4f4f5;font-weight:700">Skills Slash Engine</span></div>
               <code>/command</code>
             </div>
             <div class="help-command-desc">Type / in the prompt to activate specialized skills (e.g. /nextjs-scaffold, /pqc-audit, /secure-api) from the skills/ folder with frontmatter prompt injection.</div>
@@ -3321,10 +3429,10 @@ const AGENT_CONFIGS = {
     title: 'Daily Web Development Agent',
     desc: 'React 19, Next.js 15, TypeScript 5, FastAPI, Component Scaffolding & Code Repair',
     iconKey: 'code',
-    accent: '#22d3ee',
-    accent2: '#06b6d4',
-    glow: 'rgba(34,211,238,0.18)',
-    dim: 'rgba(34,211,238,0.08)',
+    accent: '#f4f4f5',
+    accent2: '#a1a1aa',
+    glow: 'rgba(255,255,255,0.08)',
+    dim: 'rgba(255,255,255,0.04)',
     theme: 'theme-webdev',
     placeholder: 'Ask ARCHITECT to build, scaffold, edit, or test...',
     prompts: [
@@ -3340,10 +3448,10 @@ const AGENT_CONFIGS = {
     title: 'Weekly Offensive Cyber Agent',
     desc: 'Nmap Recon, OWASP CVE Analysis, Post-Quantum Cryptography Audits & Exploit Scripts',
     iconKey: 'shield',
-    accent: '#f97316',
-    accent2: '#ea580c',
-    glow: 'rgba(249,115,22,0.18)',
-    dim: 'rgba(249,115,22,0.08)',
+    accent: '#e4e4e7',
+    accent2: '#71717a',
+    glow: 'rgba(255,255,255,0.08)',
+    dim: 'rgba(255,255,255,0.04)',
     theme: 'theme-pentest',
     placeholder: 'Ask SPECTRE to scan targets, audit cryptography, or research CVEs...',
     prompts: [
@@ -3356,253 +3464,51 @@ const AGENT_CONFIGS = {
   }
 };
 
-// ── Aceternity Lines Gradient Shader ───────────────────────────────────────────
-class LinesGradientShader {
-  constructor(canvas, options = {}) {
-    this.canvas = canvas;
-    this.container = canvas.parentElement || document.body;
-    this.speed = options.speed ?? 0.95;
-    this.bandCount = options.bandCount ?? 6;
-    this.bandSpacing = options.bandSpacing ?? 38;
-    this.bandThickness = options.bandThickness ?? 95;
-    this.waveAmplitude = options.waveAmplitude ?? 0.20;
-    this.targetFps = options.targetFps ?? 60;
-    this.colors = options.colors ?? [
-      [139, 92, 246], // violet (#8b5cf6)
-      [168, 85, 247], // purple (#a855f7)
-      [217, 70, 239], // fuchsia (#d946ef)
-      [236, 72, 153], // pink (#ec4899)
-      [244, 63, 94],  // rose (#f43f5e)
-      [249, 115, 22],  // orange (#f97316)
-      [251, 191, 36],  // amber (#fbbf24)
-      [254, 240, 138]  // yellow (#fef08a)
-    ];
+// ── Landing Page Operations (Continuous Ferris Wheel Video + Two Stages) ─────
+let currentLandingStage = 1; // 1 = Welcome ("welcome, raj."), 2 = Persona Choice
 
-    this.ctx = this.canvas.getContext('2d', { alpha: true, desynchronized: true });
-    this.running = false;
-    this.animId = null;
-    this.lastTime = 0;
-    this.startTime = 0;
-    this.width = 0;
-    this.height = 0;
-    this.dpr = 1;
-    this.j = Array.from({ length: 41 }, () => ({ x: 0, y: 0 }));
-    this.R = Array.from({ length: 41 }, () => ({ x: 0, y: 0 }));
-
-    this.initBands();
-    this.setupListeners();
-    this.resize();
-  }
-
-  lerp(c1, c2, r) {
-    const r0 = Math.round(c1[0] + (c2[0] - c1[0]) * r);
-    const g0 = Math.round(c1[1] + (c2[1] - c1[1]) * r);
-    const b0 = Math.round(c1[2] + (c2[2] - c1[2]) * r);
-    return `rgb(${r0},${g0},${b0})`;
-  }
-
-  sampleColor(t) {
-    const r = Math.max(0, Math.min(1, t)) * (this.colors.length - 1);
-    const n = Math.floor(r);
-    const c1 = this.colors[Math.min(n, this.colors.length - 1)];
-    const c2 = this.colors[Math.min(n + 1, this.colors.length - 1)];
-    return this.lerp(c1, c2, r - n);
-  }
-
-  initBands() {
-    this.bands = [];
-    for (let e = 0; e < this.bandCount; e++) {
-      const n = e / Math.max(1, this.bandCount - 1);
-      this.bands.push({
-        start: this.sampleColor(n - 0.02),
-        end: this.sampleColor(n + 0.08)
+function ensureLandingVideoPlaying() {
+  const vid = document.getElementById('landing-ferris-video');
+  if (vid) {
+    if (vid.paused) {
+      vid.play().catch(e => {
+        console.warn('Video waiting for user interaction:', e);
       });
     }
   }
-
-  setupListeners() {
-    this.resizeObserver = new ResizeObserver(() => this.resize());
-    if (this.container) this.resizeObserver.observe(this.container);
-    window.addEventListener('resize', () => this.resize());
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        this.stop();
-      } else {
-        const landing = document.getElementById('landing-screen');
-        if (landing && !landing.classList.contains('hidden')) {
-          this.start();
-        }
-      }
-    });
-  }
-
-  resize() {
-    if (!this.container || !this.ctx) return;
-    const rect = this.container.getBoundingClientRect();
-    this.width = rect.width || window.innerWidth;
-    this.height = rect.height || window.innerHeight;
-    this.dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
-
-    this.canvas.width = Math.floor(this.width * this.dpr);
-    this.canvas.height = Math.floor(this.height * this.dpr);
-    this.canvas.style.width = Math.floor(this.width) + 'px';
-    this.canvas.style.height = Math.floor(this.height) + 'px';
-
-    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-
-    if (!this.running) {
-      this.drawSingleFrame();
-    }
-  }
-
-  start() {
-    if (this.running) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      this.drawSingleFrame();
-      return;
-    }
-    this.running = true;
-    this.startTime = 0;
-    this.lastTime = performance.now();
-    this.loop = (now) => {
-      if (!this.running) return;
-      this.animId = requestAnimationFrame(this.loop);
-
-      const delta = now - this.lastTime;
-      const interval = 1000 / this.targetFps;
-      if (delta < interval) return;
-      this.lastTime = now - (delta % interval);
-
-      if (!this.startTime) this.startTime = now;
-      this.render((now - this.startTime) * 0.001 * this.speed);
-    };
-    this.animId = requestAnimationFrame(this.loop);
-  }
-
-  stop() {
-    this.running = false;
-    if (this.animId) {
-      cancelAnimationFrame(this.animId);
-      this.animId = null;
-    }
-  }
-
-  drawSingleFrame() {
-    this.render(0.5);
-  }
-
-  render(elapsed) {
-    const ctx = this.ctx;
-    const w = this.width;
-    const f = this.height;
-    if (!ctx || !w || !f) return;
-
-    ctx.clearRect(0, 0, w, f);
-
-    const m = f * this.waveAmplitude;
-    const centerOffset = this.bandCount / 2;
-    const M = w + 450;
-
-    for (let e = this.bandCount - 1; e >= 0; e--) {
-      const { start, end } = this.bands[e];
-      const grad = ctx.createLinearGradient(0.25 * w, 0, w, f);
-      grad.addColorStop(0, start);
-      grad.addColorStop(1, end);
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-
-      const p1 = 0.12 * elapsed + 0.15 * e;
-      const p2 = 0.08 * elapsed + 0.10 * e;
-      const p3 = 0.05 * elapsed + 0.08 * e;
-      const c = (e - centerOffset) * this.bandSpacing;
-
-      ctx.moveTo(-100, f + 250);
-
-      for (let s = 0; s <= 40; s++) {
-        const t = s / 40;
-        const x = -100 + M * t;
-        const baseY = 1.4 * f - t * f * 1.25 + c;
-        const wave = Math.sin(2.5 * t + p1) * m
-                   + Math.sin(1.5 * t + p2) * m * 0.4
-                   + Math.sin(4.0 * t + p3) * m * 0.15;
-        const halfThickness = (this.bandThickness + 4 * Math.sin(2.0 * t + 0.3 * p1)) / 2;
-
-        this.j[s].x = x;
-        this.j[s].y = baseY + wave + halfThickness;
-        this.R[s].x = x;
-        this.R[s].y = baseY + wave - halfThickness;
-      }
-
-      for (let s = 0; s <= 40; s++) {
-        ctx.lineTo(this.j[s].x, this.j[s].y);
-      }
-      ctx.lineTo(w + 250, -100);
-      for (let s = 40; s >= 0; s--) {
-        ctx.lineTo(this.R[s].x, this.R[s].y);
-      }
-      ctx.lineTo(-100, f + 250);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    // Dynamic overlay highlights
-    ctx.globalCompositeOperation = 'overlay';
-    ctx.globalAlpha = 0.28;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
-    ctx.lineWidth = 1.2;
-
-    for (let e = 0; e < this.bandCount; e++) {
-      const p1 = 0.12 * elapsed + 0.15 * e;
-      const p2 = 0.08 * elapsed + 0.10 * e;
-      const p3 = 0.05 * elapsed + 0.08 * e;
-      const c = (e - centerOffset) * this.bandSpacing;
-
-      ctx.beginPath();
-      for (let s = 0; s <= 30; s++) {
-        const t = s / 30;
-        const x = -100 + M * t;
-        const y = 1.4 * f - t * f * 1.25 + c
-                + Math.sin(2.5 * t + p1) * m
-                + Math.sin(1.5 * t + p2) * m * 0.4
-                + Math.sin(4.0 * t + p3) * m * 0.15;
-        if (s === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    }
-
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.globalAlpha = 1;
-  }
 }
 
-let landingShader = null;
-function initLinesGradientShader() {
-  const canvas = document.getElementById('lines-gradient-canvas');
-  if (canvas && !landingShader) {
-    landingShader = new LinesGradientShader(canvas, {
-      speed: 0.95,
-      bandCount: 6,
-      bandSpacing: 38,
-      bandThickness: 95,
-      waveAmplitude: 0.20,
-      targetFps: 60
-    });
-  }
+function advanceToPersonaStage() {
+  currentLandingStage = 2;
+  const stageWelcome = document.getElementById('landing-stage-welcome');
+  const stagePersona = document.getElementById('landing-stage-persona');
+  if (stageWelcome) stageWelcome.classList.remove('active');
+  if (stagePersona) stagePersona.classList.add('active');
+  ensureLandingVideoPlaying();
 }
 
-// ── Landing Page Operations ────────────────────────────────────────────────────
-function showLandingScreen() {
+function returnToWelcomeStage() {
+  currentLandingStage = 1;
+  const stageWelcome = document.getElementById('landing-stage-welcome');
+  const stagePersona = document.getElementById('landing-stage-persona');
+  if (stagePersona) stagePersona.classList.remove('active');
+  if (stageWelcome) stageWelcome.classList.add('active');
+  ensureLandingVideoPlaying();
+}
+
+function showLandingScreen(initialStage = 1) {
   const landing = document.getElementById('landing-screen');
   if (landing) {
     landing.classList.remove('hidden');
     const wsLabel = document.getElementById('landing-ws-name');
     if (wsLabel) wsLabel.textContent = activeProjectId;
   }
-  if (landingShader) {
-    landingShader.start();
+  if (initialStage === 2) {
+    advanceToPersonaStage();
+  } else {
+    returnToWelcomeStage();
   }
+  ensureLandingVideoPlaying();
 }
 
 function enterWorkspace(agent) {
@@ -3611,11 +3517,48 @@ function enterWorkspace(agent) {
   if (landing) {
     landing.classList.add('hidden');
   }
-  if (landingShader) {
-    landingShader.stop();
-  }
-  document.getElementById('prompt-input').focus();
+  const promptInput = document.getElementById('prompt-input');
+  if (promptInput) promptInput.focus();
 }
+
+function initLinesGradientShader() {
+  // Compatibility stub; continuous video backdrop handles rendering
+  ensureLandingVideoPlaying();
+}
+
+// Global Keyboard Handler for Landing Page
+window.addEventListener('keydown', (e) => {
+  const landing = document.getElementById('landing-screen');
+  if (!landing || landing.classList.contains('hidden')) return;
+
+  // If in Stage 1: "welcome, raj."
+  if (currentLandingStage === 1) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      advanceToPersonaStage();
+    }
+    return;
+  }
+
+  // If in Stage 2: Persona Choice (ARCHITECT vs SPECTRE)
+  if (currentLandingStage === 2) {
+    if (e.key === 'Escape' || e.key === 'Backspace') {
+      e.preventDefault();
+      returnToWelcomeStage();
+      return;
+    }
+    if (e.key === '1' || e.key === 'a' || e.key === 'A') {
+      e.preventDefault();
+      enterWorkspace('webdev');
+      return;
+    }
+    if (e.key === '2' || e.key === 's' || e.key === 'S') {
+      e.preventDefault();
+      enterWorkspace('pentest');
+      return;
+    }
+  }
+});
 
 function openHelpModal() {
   const modal = document.getElementById('help-modal');
@@ -4138,7 +4081,7 @@ const MODELS_CONFIG = {
     badge: 'Cloud',
     fullName: 'Gemini 2.5 Pro / Flash (Failover Protected)',
     icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
-    color: '#22d3ee'
+    color: '#f4f4f5'
   },
   'claude-3-7-sonnet': {
     id: 'claude-3-7-sonnet',
@@ -4146,7 +4089,7 @@ const MODELS_CONFIG = {
     badge: 'Hybrid',
     fullName: 'Claude 3.7 Sonnet (Hybrid Reasoning)',
     icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
-    color: '#f97316'
+    color: '#f4f4f5'
   },
   'claude-3-5-sonnet': {
     id: 'claude-3-5-sonnet',
@@ -4154,7 +4097,7 @@ const MODELS_CONFIG = {
     badge: 'Fast',
     fullName: 'Claude 3.5 Sonnet (High Speed)',
     icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
-    color: '#60a5fa'
+    color: '#f4f4f5'
   },
   'claude-3-opus': {
     id: 'claude-3-opus',
@@ -4162,7 +4105,7 @@ const MODELS_CONFIG = {
     badge: 'Thinking',
     fullName: 'Claude 3 Opus (Deep Reasoning)',
     icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
-    color: '#c084fc'
+    color: '#f4f4f5'
   },
   'spectre-local': {
     id: 'spectre-local',
@@ -5433,8 +5376,8 @@ function updateAutopilotUI() {
   if (hintEl) {
     const mCfg = MODELS_CONFIG[currentModel] || MODELS_CONFIG['gemini'];
     const apText = isAutopilotEnabled 
-      ? '<span style="color:#22d3ee;font-weight:600">⚡ Autopilot: ON (Pre-approved)</span>' 
-      : '<span style="color:#f59e0b;font-weight:600">🛡️ Autopilot: OFF (Manual approval)</span>';
+      ? '<span style="color:#f4f4f5;font-weight:600">⚡ Autopilot: ON (Pre-approved)</span>' 
+      : '<span style="color:#a1a1aa;font-weight:600">🛡️ Autopilot: OFF (Manual approval)</span>';
     hintEl.innerHTML = `${mCfg.name} · ${apText}`;
   }
 }

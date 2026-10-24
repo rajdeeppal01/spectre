@@ -1825,6 +1825,63 @@ class _Handler(BaseHTTPRequestHandler):
             else:
                 self._json_resp({"error": "Dashboard HTML not found"}, 404)
 
+        elif path.startswith("/assets/") or path.endswith((".mp4", ".webm", ".jpg", ".jpeg", ".png", ".svg", ".ico", ".css", ".js")):
+            rel_file = path.lstrip("/")
+            target = ROOT / "dashboard" / rel_file
+            if not target.exists():
+                target = ROOT / rel_file
+            if target.exists() and target.is_file():
+                ext = target.suffix.lower()
+                mime_map = {
+                    ".mp4": "video/mp4",
+                    ".webm": "video/webm",
+                    ".jpg": "image/jpeg",
+                    ".jpeg": "image/jpeg",
+                    ".png": "image/png",
+                    ".svg": "image/svg+xml",
+                    ".ico": "image/x-icon",
+                    ".css": "text/css",
+                    ".js": "application/javascript"
+                }
+                mime = mime_map.get(ext, "application/octet-stream")
+                file_size = target.stat().st_size
+                range_header = self.headers.get("Range")
+
+                if range_header and range_header.startswith("bytes="):
+                    try:
+                        ranges = range_header[6:].split("-")
+                        start = int(ranges[0]) if ranges[0] else 0
+                        end = int(ranges[1]) if len(ranges) > 1 and ranges[1] else file_size - 1
+                        length = end - start + 1
+
+                        self.send_response(206)
+                        self.send_header("Content-Type", mime)
+                        self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
+                        self.send_header("Content-Length", str(length))
+                        self.send_header("Accept-Ranges", "bytes")
+                        self._cors_headers()
+                        self.end_headers()
+
+                        with open(target, "rb") as f:
+                            f.seek(start)
+                            self.wfile.write(f.read(length))
+                        return
+                    except Exception:
+                        pass
+
+                data = target.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", mime)
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Accept-Ranges", "bytes")
+                self._cors_headers()
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            else:
+                self._json_resp({"error": "Asset not found"}, 404)
+                return
+
         elif path == "/api/status":
             score = _get_cached_health()
             active_proj = get_active_project()
