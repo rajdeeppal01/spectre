@@ -4514,6 +4514,11 @@ async function sendMessage() {
               textContainer = document.createElement('div');
               textContainer.className = 'agent-markdown-body';
               agentContentEl.appendChild(textContainer);
+            } else {
+              // Ensure the summary paragraph is at the bottom after tool execution cards
+              if (agentContentEl.lastElementChild !== textContainer) {
+                agentContentEl.appendChild(textContainer);
+              }
             }
             textContainer.innerHTML = renderMarkdown(fullReplyText);
             processCodeBlocks(textContainer);
@@ -4526,6 +4531,10 @@ async function sendMessage() {
               textContainer = document.createElement('div');
               textContainer.className = 'agent-markdown-body';
               agentContentEl.appendChild(textContainer);
+            } else {
+              if (agentContentEl.lastElementChild !== textContainer) {
+                agentContentEl.appendChild(textContainer);
+              }
             }
             textContainer.innerHTML = renderMarkdown(fullReplyText);
             msgs.scrollTop = msgs.scrollHeight;
@@ -4544,12 +4553,17 @@ async function sendMessage() {
     }
     agentContentEl.innerHTML = renderMarkdown(fullReplyText);
   } finally {
+    const textContainer = agentContentEl.querySelector('.agent-markdown-body');
+    if (textContainer && agentContentEl.lastElementChild !== textContainer) {
+      agentContentEl.appendChild(textContainer);
+    }
     if (fullReplyText) {
       convo.messages.push({ role: 'model', content: fullReplyText });
       saveConvos();
     }
     stopGeneration();
     input.focus();
+    msgs.scrollTop = msgs.scrollHeight;
   }
 }
 
