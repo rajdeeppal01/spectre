@@ -1962,9 +1962,16 @@
       transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .landing-screen.hidden {
-      opacity: 0;
-      pointer-events: none;
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
       transform: scale(0.98);
+    }
+    .landing-screen.hidden * {
+      display: none !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
     }
 
     .landing-video-wrap {
@@ -3516,6 +3523,14 @@ function enterWorkspace(agent) {
   const landing = document.getElementById('landing-screen');
   if (landing) {
     landing.classList.add('hidden');
+    const vid = document.getElementById('landing-ferris-video');
+    if (vid) {
+      try { vid.pause(); } catch(e) {}
+    }
+    const stageWelcome = document.getElementById('landing-stage-welcome');
+    const stagePersona = document.getElementById('landing-stage-persona');
+    if (stageWelcome) stageWelcome.classList.remove('active');
+    if (stagePersona) stagePersona.classList.remove('active');
   }
   const promptInput = document.getElementById('prompt-input');
   if (promptInput) promptInput.focus();
