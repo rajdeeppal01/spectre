@@ -2589,7 +2589,12 @@
         <div id="skills-popup" class="skills-popup hidden">
           <div class="skills-popup-header">
             <span>AVAILABLE WORKFLOW SKILLS (Type /command)</span>
-            <span class="skills-count" id="skills-count-badge">0 skills</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="skills-count" id="skills-count-badge">0 skills</span>
+              <button onclick="document.getElementById('skills-popup').classList.add('hidden')" style="background:none; border:none; color:var(--muted); cursor:pointer; padding:2px 4px; display:flex; align-items:center;" title="Close (Esc)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
           </div>
           <div id="skills-popup-list" class="skills-popup-list"></div>
         </div>
@@ -4923,6 +4928,16 @@ function handleKey(e) {
     sendMessage();
   }
 }
+
+document.addEventListener('click', (e) => {
+  const popup = document.getElementById('skills-popup');
+  const inputBox = document.getElementById('input-box');
+  if (popup && !popup.classList.contains('hidden')) {
+    if (inputBox && !inputBox.contains(e.target)) {
+      popup.classList.add('hidden');
+    }
+  }
+});
 
 // ── Autopilot Mode & Permission Manager ────────────────────────────────────────
 let isAutopilotEnabled = localStorage.getItem('spectre_autopilot') !== 'false';
