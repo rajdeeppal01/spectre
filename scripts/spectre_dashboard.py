@@ -561,14 +561,21 @@ YOUR TOOLKIT:
 - verify_build: Run automated compiler / type / syntax checks (npx tsc, npm run build, python -m py_compile) to self-verify your work
 - handoff_to_spectre: Run automated red-team security audits against your code to verify zero secret leaks and no security flaws
 
-AGENTIC WORKFLOW (PLAN -> ACT -> VERIFY -> SECURE):
-1. OBSERVE: Use grep_search, read_file, search_web, or list_directory to understand existing code or look up latest docs.
-2. ACT: Write new files (write_file) or surgically edit existing code (replace_in_file).
-3. VERIFY: Call verify_build to verify your code compiles and passes type checks.
-4. SELF-CORRECT: If verify_build returns compiler errors or traces, use replace_in_file to repair them until passing.
+AGENTIC WORKFLOW (PLAN -> ACT -> VERIFY -> COMMIT & PUSH -> REPORT):
+1. OBSERVE: Use grep_search, read_file, search_web, or list_directory to locate the exact code and understand context.
+2. ACT: Write new files (write_file) or surgically edit existing code (replace_in_file). NEVER stop at inspection! You MUST execute the requested file changes directly.
+3. VERIFY: Call verify_build to confirm code compiles and passes checks without syntax errors.
+4. SELF-CORRECT: If verify_build returns errors, use replace_in_file to repair them until passing.
 5. SECURE: Call handoff_to_spectre before declaring completion to guarantee no leaked secrets or insecure patterns.
-6. ZERO PLACEHOLDERS: Always write 100% complete files without '// TODO' or '# implement here'.
-7. OPERATING ENVIRONMENT: Windows; shell commands run in PowerShell.
+6. GIT COMMIT & PUSH: Once changes are verified, ALWAYS use run_command to stage, commit, and push your work:
+   `git add <files>; git commit -m "fix/feat: <clear description of change>"; git push origin main`
+7. MANDATORY FINAL SUMMARY REPORT: Every single task MUST conclude with a comprehensive, well-structured markdown summary:
+   - 🎯 **What Was Requested**: Exact objective.
+   - 🛠️ **Changes Implemented**: Specific files modified with description of edits.
+   - 🧪 **Verification**: Build/compile/lint status.
+   - 🚀 **Git Deployment**: Commit hash/message and push confirmation.
+8. ZERO PLACEHOLDERS: Always write 100% complete files without '// TODO' or '# implement here'.
+9. OPERATING ENVIRONMENT: Windows; shell commands run in PowerShell.
 
 AGENTIC DELIBERATION & THOUGHT TRANSPARENCY PROTOCOL:
 Before calling any tool or producing your final answer, formulate your internal reasoning inside <thought>...</thought> tags.
@@ -600,11 +607,15 @@ BUILT-IN WORKSPACE CAPABILITIES:
 - System Health Diagnostics : python scripts/spectre_doctor.py
 - Continuous Security Guard : python scripts/continuous_security.py --watch .
 
-STANDARDS:
-1. When asked to audit, scan, investigate, or verify, USE YOUR TOOLS to execute the appropriate script or command.
-2. Pair every vulnerability with CVE ID, CVSS v3.1 score, and actionable remediation code.
-3. Map offensive findings to MITRE ATT&CK tactics & techniques.
-4. Always analyze real scan output returned by your tools rather than guessing.
+STANDARDS & EXECUTION MANDATES:
+1. USE REAL TOOLS: When asked to audit, scan, investigate, or verify, USE YOUR TOOLS to execute the appropriate script or command. Never guess or hallucinate outputs.
+2. REMEDIATE & COMMIT: When patching vulnerabilities or hardening configurations, apply changes with replace_in_file, verify, and commit them via run_command (`git add <files>; git commit -m "..."; git push origin main`).
+3. CVE & CVSS MAPPING: Pair every vulnerability with CVE ID, CVSS v3.1 score, and actionable remediation code.
+4. MANDATORY FINAL SUMMARY REPORT: Conclude every task with a clear markdown executive summary:
+   - 🎯 **Objective**: Target and scope of assessment.
+   - 🔍 **Findings & Actions**: Concrete findings (CVEs, ports, secrets, crypto) or patches applied.
+   - 🧪 **Verification**: Proof of patch or scan output.
+   - 🚀 **Git / Status**: Commit or audit artifact status.
 5. You are operating on Windows with Python 3.14 and PowerShell available.
 
 AGENTIC DELIBERATION & THOUGHT TRANSPARENCY PROTOCOL:
@@ -686,13 +697,21 @@ OLLAMA_TOOLS = [
         "type": "function",
         "function": {
             "name": "read_file",
-            "description": "Read text content of a file in the active project workspace.",
+            "description": "Read text content of a file in the active project workspace, optionally specifying line range.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "path": {
                         "type": "string",
                         "description": "Relative path to file in active workspace."
+                    },
+                    "start_line": {
+                        "type": "integer",
+                        "description": "Optional 1-based start line number to inspect a specific slice."
+                    },
+                    "end_line": {
+                        "type": "integer",
+                        "description": "Optional 1-based end line number (inclusive) to inspect a specific slice."
                     }
                 },
                 "required": ["path"]
@@ -890,19 +909,30 @@ def _exec_run_command(command: str, timeout: int = 120) -> dict:
     t0 = time.time()
     active_dir = get_active_project_path()
     try:
-        res = subprocess.run(
-            command,
-            shell=True,
-            capture_output=True,
-            text=True,
-            cwd=str(active_dir),
-            errors="replace",
-            timeout=timeout
-        )
+        if sys.platform == "win32":
+            exec_args = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command]
+            res = subprocess.run(
+                exec_args,
+                capture_output=True,
+                text=True,
+                cwd=str(active_dir),
+                errors="replace",
+                timeout=timeout
+            )
+        else:
+            res = subprocess.run(
+                command,
+                shell=True,
+                capture_output=True,
+                text=True,
+                cwd=str(active_dir),
+                errors="replace",
+                timeout=timeout
+            )
         duration = round(time.time() - t0, 2)
         out = (res.stdout + res.stderr).strip()
         if not out:
-            out = "(Command completed with no output)"
+            out = f"(Command completed with exit code {res.returncode} - zero output)"
         return {
             "output": out[:8000],
             "exit_code": res.returncode,
@@ -997,7 +1027,7 @@ def _exec_replace_in_file(rel_path: str, target: str, replacement: str) -> dict:
             "path": rel_path
         }
 
-def _exec_read_file(rel_path: str) -> dict:
+def _exec_read_file(rel_path: str, start_line: int | None = None, end_line: int | None = None) -> dict:
     t0 = time.time()
     try:
         target = _safe_resolve_path(rel_path)
@@ -1008,16 +1038,30 @@ def _exec_read_file(rel_path: str) -> dict:
                 "duration": round(time.time() - t0, 2),
                 "path": rel_path
             }
-        content = target.read_text(encoding="utf-8", errors="replace")
-        if len(content) > 10000:
-            preview = content[:10000] + f"\n... [Truncated: {len(content)} total characters]"
+        raw_text = target.read_text(encoding="utf-8", errors="replace")
+        lines = raw_text.splitlines()
+        total_lines = len(lines)
+
+        if start_line is not None or end_line is not None:
+            s = max(1, int(start_line or 1)) - 1
+            e = min(total_lines, int(end_line or total_lines))
+            selected = lines[s:e]
+            numbered = [f"{s + idx + 1}: {l}" for idx, l in enumerate(selected)]
+            preview = "\n".join(numbered)
         else:
-            preview = content
+            if len(raw_text) > 14000:
+                first_lines = [f"{idx + 1}: {l}" for idx, l in enumerate(lines[:250])]
+                preview = "\n".join(first_lines) + f"\n\n... [File has {total_lines} lines ({len(raw_text)} chars). First 250 lines shown above. Call read_file with start_line and end_line or grep_search to inspect specific sections.]"
+            else:
+                numbered = [f"{idx + 1}: {l}" for idx, l in enumerate(lines)]
+                preview = "\n".join(numbered)
+
         return {
             "output": preview,
             "exit_code": 0,
             "duration": round(time.time() - t0, 2),
-            "path": rel_path
+            "path": rel_path,
+            "total_lines": total_lines
         }
     except Exception as exc:
         return {
@@ -1369,7 +1413,7 @@ def _dispatch_tool(name: str, args: dict) -> dict:
         elif name == "replace_in_file":
             return _exec_replace_in_file(args.get("path", ""), args.get("target", ""), args.get("replacement", ""))
         elif name == "read_file":
-            return _exec_read_file(args.get("path", ""))
+            return _exec_read_file(args.get("path", ""), args.get("start_line"), args.get("end_line"))
         elif name == "grep_search":
             return _exec_grep_search(args.get("query", ""), args.get("path", "."), args.get("case_sensitive", False))
         elif name == "list_directory":
@@ -1820,7 +1864,7 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
         yield {"type": "error", "message": "No Gemini API key found in infrastructure/.env"}
         return
 
-    max_tool_turns = 25 if autopilot else 8
+    max_tool_turns = 35 if autopilot else 25
     current_turn = 0
 
     active_proj = get_active_project()
@@ -1941,7 +1985,7 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
                     "systemInstruction": {"parts": [{"text": system_instruction}]},
                     "contents": contents + [{
                         "role": "user",
-                        "parts": [{"text": "You have completed your tool inspections. Provide your final comprehensive status and report directly to the user now in clear markdown."}]
+                        "parts": [{"text": "You have completed your operations. Deliver your final comprehensive summary report directly to the user now in clear markdown: detail what files were modified, what changes were made, verification status, and git commit/push status."}]
                     }],
                     "generationConfig": {
                         "temperature": 0.4,
@@ -1949,6 +1993,7 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
                     }
                 }
                 res_synth, _ = _call_gemini_with_failover(synth_payload, preferred_model=preferred_model, thinking_budget=0)
+                clean_synth = ""
                 if res_synth:
                     cand_synth = res_synth.get("candidates", [{}])[0]
                     synth_content = cand_synth.get("content", {})
@@ -1959,12 +2004,19 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
                         yield {"type": "thinking", "text": ith}
                     if not clean_synth:
                         clean_synth = raw_synth
-                    if clean_synth:
-                        chunk_size = 32
-                        for i in range(0, len(clean_synth), chunk_size):
-                            yield {"type": "text", "text": clean_synth[i:i + chunk_size]}
-                            time.sleep(0.012)
-                        contents.append(synth_content)
+
+                if not clean_synth:
+                    clean_synth = (
+                        "### 🎯 Task Execution Summary\n\n"
+                        "All operations and tool executions have concluded. "
+                        "Please review the live execution cards above for diffs, verification outputs, and command logs."
+                    )
+
+                chunk_size = 32
+                for i in range(0, len(clean_synth), chunk_size):
+                    yield {"type": "text", "text": clean_synth[i:i + chunk_size]}
+                    time.sleep(0.012)
+                contents.append({"role": "model", "parts": [{"text": clean_synth}]})
                 break
 
             continue
@@ -2172,7 +2224,7 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
 
             yield {"type": "text", "text": f"> 🔒 *{agent_label} using Local Autonomous Engine (`{local_model}` · 100% Uncensored Offline Sandbox)*\n\n"}
 
-            max_tool_turns = 25 if autopilot else 8
+            max_tool_turns = 35 if autopilot else 25
             current_turn = 0
             full_reply_accumulated = []
 

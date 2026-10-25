@@ -446,6 +446,10 @@
     .model-dropdown {
       position: fixed;
       width: 380px;
+      max-height: calc(100vh - 36px);
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
       background: rgba(13, 13, 24, 0.98);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
@@ -458,6 +462,22 @@
       flex-direction: column;
       gap: 3px;
       animation: fade-in 0.15s ease-out;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    }
+    .model-dropdown::-webkit-scrollbar {
+      width: 5px;
+    }
+    .model-dropdown::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 99px;
+    }
+    .model-dropdown::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 99px;
+    }
+    .model-dropdown::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.45);
     }
     .model-dropdown.hidden {
       display: none;
@@ -5067,15 +5087,29 @@ function toggleModelDropdown(event) {
   if (!menu) return;
   const isHidden = menu.classList.contains('hidden');
   if (isHidden) {
-    if (pill) {
-      const rect = pill.getBoundingClientRect();
-      const topPos = Math.max(12, Math.min(window.innerHeight - 440, rect.top));
-      menu.style.top = topPos + 'px';
-      menu.style.left = (rect.right + 10) + 'px';
-      menu.style.bottom = 'auto';
-    }
     menu.classList.remove('hidden');
     if (pill) pill.classList.add('open');
+
+    const rect = pill ? pill.getBoundingClientRect() : { top: 60, right: 260 };
+    const availH = window.innerHeight;
+    const maxAllowedH = Math.max(280, availH - 32);
+    menu.style.maxHeight = maxAllowedH + 'px';
+
+    const menuH = menu.offsetHeight || 550;
+    let topPos = rect.top;
+    if (topPos + menuH > availH - 16) {
+      topPos = Math.max(12, availH - menuH - 16);
+    }
+    menu.style.top = topPos + 'px';
+    menu.style.left = (rect.right + 10) + 'px';
+    menu.style.bottom = 'auto';
+
+    const activeItem = menu.querySelector('.model-opt-item.active');
+    if (activeItem) {
+      setTimeout(() => {
+        try { activeItem.scrollIntoView({ block: 'nearest' }); } catch {}
+      }, 50);
+    }
   } else {
     menu.classList.add('hidden');
     if (pill) pill.classList.remove('open');
