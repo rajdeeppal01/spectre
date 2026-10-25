@@ -569,6 +569,13 @@ AGENTIC WORKFLOW (PLAN -> ACT -> VERIFY -> SECURE):
 5. SECURE: Call handoff_to_spectre before declaring completion to guarantee no leaked secrets or insecure patterns.
 6. ZERO PLACEHOLDERS: Always write 100% complete files without '// TODO' or '# implement here'.
 7. OPERATING ENVIRONMENT: Windows; shell commands run in PowerShell.
+
+AGENTIC DELIBERATION & THOUGHT TRANSPARENCY PROTOCOL:
+Before calling any tool or producing your final answer, formulate your internal reasoning inside <thought>...</thought> tags.
+In your thinking block, explicitly explain:
+- ANALYSIS: What you are observing in the codebase and user request.
+- STRATEGY & RATIONALE: Why you are taking the specific step, which tool you are calling, and what outcome you anticipate.
+- EVALUATION: When reviewing tool results, explain what the output reveals and what your next step will be.
 """,
 
     "pentest": """\
@@ -599,6 +606,13 @@ STANDARDS:
 3. Map offensive findings to MITRE ATT&CK tactics & techniques.
 4. Always analyze real scan output returned by your tools rather than guessing.
 5. You are operating on Windows with Python 3.14 and PowerShell available.
+
+AGENTIC DELIBERATION & THOUGHT TRANSPARENCY PROTOCOL:
+Before calling any tool or producing your final answer, formulate your internal reasoning inside <thought>...</thought> tags.
+In your thinking block, explicitly explain:
+- ANALYSIS: What vulnerabilities, attack surfaces, or configurations you are investigating.
+- STRATEGY & RATIONALE: Why you are executing the specific tool, scan script, or patch, and what results you expect.
+- EVALUATION: When analyzing tool outputs, synthesize the technical findings and plan the next penetration or remediation step.
 """
 }
 
@@ -1376,7 +1390,69 @@ def _dispatch_tool(name: str, args: dict) -> dict:
 _sessions: dict[str, list] = {}
 _sessions_lock = threading.Lock()
 
-def _call_gemini_with_failover(payload: dict, preferred_model: str = None, thinking_budget: int = 0) -> tuple[dict | None, str | None]:
+# --- Thought Transparency & Engineering Rationale Helpers -------------------
+
+def _extract_and_stream_thoughts(text: str) -> tuple[str, list[str]]:
+    """Extracts <thought>...</thought> or <think>...</think> from text.
+    Returns (clean_text, extracted_thoughts)."""
+    if not text:
+        return "", []
+    thoughts = []
+    pattern = r'<(?:thought|think)>(.*?)</(?:thought|think)>'
+    matches = re.findall(pattern, text, flags=re.DOTALL | re.IGNORECASE)
+    for m in matches:
+        cleaned = m.strip()
+        if cleaned:
+            thoughts.append(cleaned)
+    clean_text = re.sub(pattern, '', text, flags=re.DOTALL | re.IGNORECASE).strip()
+    return clean_text, thoughts
+
+def _get_tool_rationale_desc(name: str, args: dict, proj_id: str = "spectre") -> str:
+    """Generates an Antigravity-style engineering rationale explaining why this step is taken."""
+    if name == "run_command":
+        cmd = args.get("command", "")
+        return f"Executing shell command in `{proj_id}`:\n`{cmd}`\n• Why this step: Running process in active workspace to verify runtime environment, execute scripts, or build assets."
+    elif name == "write_file":
+        path = args.get("path", "")
+        return f"Writing file in `{proj_id}`: `{path}`\n• Why this step: Implementing complete production code file (visual diff and undo snapshot registered)."
+    elif name == "replace_in_file":
+        path = args.get("path", "")
+        target = args.get("target", "")[:60]
+        return f"Applying surgical code patch to `{path}` in `{proj_id}`\n• Why this step: Modifying target code block `{target}...` with new implementation without rewriting whole file."
+    elif name == "read_file":
+        path = args.get("path", "")
+        return f"Inspecting file in `{proj_id}`: `{path}`\n• Why this step: Reading existing source syntax, imports, and structures before making modifications."
+    elif name == "grep_search":
+        q = args.get("query", "")
+        p = args.get("path", ".")
+        return f"Searching codebase for `{q}` in `{p}`\n• Why this step: Locating definitions, usages, and references to understand dependencies before modifying."
+    elif name == "list_directory":
+        p = args.get("path", ".")
+        return f"Listing directory `{p}` in `{proj_id}`\n• Why this step: Discovering project folder layout and available assets."
+    elif name == "search_web":
+        q = args.get("query", "")
+        return f"Searching live technical documentation for: `{q}`\n• Why this step: Consulting latest official API specifications and error resolutions."
+    elif name == "verify_build":
+        ct = args.get("check_type", "auto")
+        return f"Running automated build and syntax verification ({ct})\n• Why this step: Proactively compiling code (tsc/build/py_compile) to guarantee zero syntax or import errors."
+    elif name == "handoff_to_spectre":
+        tp = args.get("target_paths", ".")
+        return f"Triggering automated security audit on `{tp}`\n• Why this step: Auditing code for hardcoded secrets, weak cryptographic primitives, and vulnerabilities."
+    else:
+        return f"Executing tool `{name}`\n• Why this step: Executing required step in agentic workflow."
+
+def _get_tool_evaluation_desc(name: str, result: dict) -> str:
+    exit_code = result.get("exit_code", 0)
+    dur = result.get("duration", 0.0)
+    out = (result.get("output", "") or "").strip()
+    if exit_code == 0:
+        summary = out[:160] if out else "Execution succeeded with clean output"
+        return f"Tool `{name}` completed successfully (Exit 0 in {dur:.2f}s).\n• Evaluation: {summary}. Formulating next step..."
+    else:
+        summary = out[:220] if out else "Non-zero exit code"
+        return f"Tool `{name}` returned warning/error (Exit {exit_code} in {dur:.2f}s).\n• Evaluation: {summary}. Planning corrective action..."
+
+def _call_gemini_with_failover(payload: dict, preferred_model: str = None, thinking_budget: int = 0, on_thought=None) -> tuple[dict | None, str | None]:
     """Execute generateContent with automatic model failover and thinking budget support."""
     global ACTIVE_MODEL
 
@@ -1403,17 +1479,21 @@ def _call_gemini_with_failover(payload: dict, preferred_model: str = None, think
         candidates = [ACTIVE_MODEL] + [m for m in MODEL_FAILOVER_POOL if m != ACTIVE_MODEL]
 
     last_err = ""
-    for cand in candidates:
+    for idx, cand in enumerate(candidates):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{cand}:generateContent?key={GEMINI_API_KEY}"
         try:
             resp = _requests.post(url, json=req_payload, timeout=15)
             if resp.status_code == 200:
+                if idx > 0 and on_thought:
+                    on_thought(f"Initiating failover: Confirmed alternative model `{cand}`. Failover mechanism active — service continuity maintained.")
                 if cand != ACTIVE_MODEL:
                     print(f"[*] Gemini model failover successful: switched to {cand}")
                     ACTIVE_MODEL = cand
                 return resp.json(), None
             elif resp.status_code == 400 and "thinkingConfig" in req_payload.get("generationConfig", {}):
                 # If thinkingConfig is not supported on this specific candidate, retry immediately without it
+                if on_thought:
+                    on_thought(f"Model `{cand}` does not require thinkingConfig. Retrying request directly with standard generation config...")
                 no_think_payload = dict(req_payload)
                 no_think_payload["generationConfig"] = dict(req_payload["generationConfig"])
                 no_think_payload["generationConfig"].pop("thinkingConfig", None)
@@ -1423,10 +1503,28 @@ def _call_gemini_with_failover(payload: dict, preferred_model: str = None, think
                     return resp2.json(), None
 
             err_data = resp.json().get("error", {})
-            last_err = f"{cand} (HTTP {resp.status_code}): {err_data.get('message', resp.text)}"
+            err_msg = err_data.get('message', resp.text)
+            last_err = f"{cand} (HTTP {resp.status_code}): {err_msg}"
             print(f"[!] Quota/Availability on {cand} ({resp.status_code}). Failing over to next candidate...")
+
+            if on_thought:
+                next_cand = candidates[idx + 1] if idx + 1 < len(candidates) else "backup"
+                if resp.status_code == 429:
+                    on_thought(
+                        f"Analyzing available model configurations to find a suitable replacement for rate-limited primary `{cand}`. "
+                        f"Rate limit triggered a failover (HTTP 429 quota limit). Examining the response code confirmed the need for an immediate switch to a backup. "
+                        f"Initiating failover to alternative candidate `{next_cand}` in the pool..."
+                    )
+                elif resp.status_code == 404:
+                    on_thought(f"Candidate `{cand}` returned HTTP 404. Switching to backup model `{next_cand}`...")
+                else:
+                    on_thought(f"Candidate `{cand}` returned HTTP {resp.status_code}. Failing over to backup model `{next_cand}`...")
+
         except Exception as exc:
             last_err = f"{cand} connection error: {exc}"
+            if on_thought:
+                next_cand = candidates[idx + 1] if idx + 1 < len(candidates) else "backup"
+                on_thought(f"Connection timeout/error on `{cand}`: {exc}. Failing over to backup model `{next_cand}`...")
             continue
 
     return None, last_err
@@ -1500,6 +1598,14 @@ def _stream_anthropic_model(model_key: str, system_prompt: str, history: list, s
         resp = _requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload, stream=True, timeout=90)
         if resp.status_code == 429:
             yield {
+                "type": "thinking",
+                "text": (
+                    f"Rate limiting triggered an Anthropic free-tier failover (HTTP 429). "
+                    f"Examining available model configurations in the failover pool to maintain service continuity. "
+                    f"Initiating seamless failover to your Google AI Pro plan (`gemini-3.8-flash`)..."
+                )
+            }
+            yield {
                 "type": "text",
                 "text": (
                     f"\n\n> ⚠️ **Anthropic Free Tier Quota / Rate Limit Reached (HTTP 429)**\n"
@@ -1530,11 +1636,19 @@ def _stream_anthropic_model(model_key: str, system_prompt: str, history: list, s
                 break
             try:
                 ev = json.loads(data_raw)
-                if ev.get("type") == "content_block_delta":
-                    delta_text = ev.get("delta", {}).get("text", "")
-                    if delta_text:
-                        full_reply.append(delta_text)
-                        yield {"type": "text", "text": delta_text}
+                ev_type = ev.get("type", "")
+                if ev_type == "content_block_delta":
+                    delta = ev.get("delta", {})
+                    d_type = delta.get("type", "")
+                    if d_type == "thinking_delta":
+                        th_chunk = delta.get("thinking", "")
+                        if th_chunk:
+                            yield {"type": "thinking", "text": th_chunk}
+                    elif d_type == "text_delta":
+                        delta_text = delta.get("text", "")
+                        if delta_text:
+                            full_reply.append(delta_text)
+                            yield {"type": "text", "text": delta_text}
             except Exception:
                 continue
 
@@ -1604,6 +1718,13 @@ def _stream_openai_compatible_model(model_key: str, system_prompt: str, history:
         resp = _requests.post(url, headers=headers, json=payload, stream=True, timeout=90)
         if resp.status_code == 429:
             yield {
+                "type": "thinking",
+                "text": (
+                    f"Rate limiting triggered a failover on {model_cfg['name']} (HTTP 429 quota exceeded). "
+                    f"Examining backup models in the failover pool. Initiating seamless failover to your Google AI Pro plan (`gemini-3.8-flash`)..."
+                )
+            }
+            yield {
                 "type": "text",
                 "text": (
                     f"\n\n> ⚠️ *{model_cfg['name']} Free Tier Quota / Rate Limit Exceeded (HTTP 429)*\n"
@@ -1634,10 +1755,14 @@ def _stream_openai_compatible_model(model_key: str, system_prompt: str, history:
                 break
             try:
                 chunk = json.loads(data_raw)
-                delta = chunk.get("choices", [{}])[0].get("delta", {}).get("content", "")
-                if delta:
-                    full_reply.append(delta)
-                    yield {"type": "text", "text": delta}
+                delta = chunk.get("choices", [{}])[0].get("delta", {})
+                reasoning = delta.get("reasoning_content") or delta.get("reasoning")
+                if reasoning:
+                    yield {"type": "thinking", "text": reasoning}
+                content_chunk = delta.get("content", "")
+                if content_chunk:
+                    full_reply.append(content_chunk)
+                    yield {"type": "text", "text": content_chunk}
             except Exception:
                 continue
 
@@ -1698,6 +1823,9 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
     max_tool_turns = 25 if autopilot else 8
     current_turn = 0
 
+    active_proj = get_active_project()
+    proj_name = active_proj.get("name", "spectre")
+
     while current_turn < max_tool_turns:
         current_turn += 1
 
@@ -1718,7 +1846,16 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
             ]
         }
 
-        res_json, err_msg = _call_gemini_with_failover(payload, preferred_model=preferred_model, thinking_budget=thinking_budget)
+        failover_thoughts = []
+        res_json, err_msg = _call_gemini_with_failover(
+            payload,
+            preferred_model=preferred_model,
+            thinking_budget=thinking_budget,
+            on_thought=lambda th: failover_thoughts.append(th)
+        )
+        for th in failover_thoughts:
+            yield {"type": "thinking", "text": th}
+
         if not res_json:
             yield {"type": "error", "message": f"Gemini API Error (all failovers exhausted): {err_msg}"}
             return
@@ -1726,6 +1863,20 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
         candidate = res_json.get("candidates", [{}])[0]
         model_content = candidate.get("content", {})
         parts = model_content.get("parts", [])
+
+        # Yield raw Gemini thought parts if thinkingConfig was active
+        for p in parts:
+            if p.get("thought") and p.get("text"):
+                th_body = p["text"].strip()
+                if th_body:
+                    yield {"type": "thinking", "text": th_body}
+
+        # Yield any <thought>...</thought> or <think> tags from text parts
+        for p in parts:
+            if not p.get("thought") and "text" in p:
+                _, inline_th = _extract_and_stream_thoughts(p["text"])
+                for ith in inline_th:
+                    yield {"type": "thinking", "text": ith}
 
         function_calls = [p for p in parts if "functionCall" in p]
 
@@ -1737,6 +1888,10 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
                 name = fc.get("name", "")
                 args = fc.get("args", {})
                 call_id = fc.get("id") or str(uuid.uuid4())
+
+                # Explain why this step is taken before running tool
+                rationale = _get_tool_rationale_desc(name, args, proj_name)
+                yield {"type": "thinking", "text": rationale}
 
                 yield {
                     "type": "tool_call",
@@ -1758,6 +1913,10 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
                     "path": result.get("path", ""),
                     "id": call_id
                 }
+
+                # Explain evaluation of tool output
+                eval_step = _get_tool_evaluation_desc(name, result)
+                yield {"type": "thinking", "text": eval_step}
 
                 fr_item = {
                     "name": name,
@@ -1794,27 +1953,36 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
                     cand_synth = res_synth.get("candidates", [{}])[0]
                     synth_content = cand_synth.get("content", {})
                     text_parts = [p.get("text", "") for p in synth_content.get("parts", []) if "text" in p]
-                    full_text = "".join(text_parts)
-                    if full_text:
+                    raw_synth = "".join(text_parts)
+                    clean_synth, inline_th = _extract_and_stream_thoughts(raw_synth)
+                    for ith in inline_th:
+                        yield {"type": "thinking", "text": ith}
+                    if not clean_synth:
+                        clean_synth = raw_synth
+                    if clean_synth:
                         chunk_size = 32
-                        for i in range(0, len(full_text), chunk_size):
-                            yield {"type": "text", "text": full_text[i:i + chunk_size]}
-                            time.sleep(0.015)
+                        for i in range(0, len(clean_synth), chunk_size):
+                            yield {"type": "text", "text": clean_synth[i:i + chunk_size]}
+                            time.sleep(0.012)
                         contents.append(synth_content)
                 break
 
             continue
 
         else:
-            text_parts = [p.get("text", "") for p in parts if "text" in p]
-            full_text = "".join(text_parts)
-            if not full_text:
-                full_text = "Task execution completed."
+            text_parts = [p.get("text", "") for p in parts if not p.get("thought") and "text" in p]
+            raw_full_text = "".join(text_parts)
+            clean_text, inline_th = _extract_and_stream_thoughts(raw_full_text)
+            for ith in inline_th:
+                yield {"type": "thinking", "text": ith}
+
+            if not clean_text:
+                clean_text = raw_full_text or "Task execution completed."
 
             chunk_size = 32
-            for i in range(0, len(full_text), chunk_size):
-                yield {"type": "text", "text": full_text[i:i + chunk_size]}
-                time.sleep(0.015)
+            for i in range(0, len(clean_text), chunk_size):
+                yield {"type": "text", "text": clean_text[i:i + chunk_size]}
+                time.sleep(0.012)
 
             contents.append(model_content)
             break
@@ -1943,7 +2111,30 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
         history.append({"role": "user", "parts": user_parts})
         contents = list(history)
 
+    agent_label = "ARCHITECT" if agent == "webdev" else "SPECTRE"
+    model_display = selected_model
+    if selected_model in GEMINI_MODELS:
+        model_display = GEMINI_MODELS[selected_model].get("name", selected_model)
+    elif selected_model in EXTERNAL_MODELS:
+        model_display = EXTERNAL_MODELS[selected_model].get("name", selected_model)
+    elif selected_model == "spectre-local":
+        model_display = "SPECTRE Local (Offline 8B)"
+
+    # Initial Agentic Deliberation (Antigravity-Style Workspace & Goal Inspection)
+    yield {
+        "type": "thinking",
+        "text": (
+            f"Analyzing objective for **{agent_label}** inside active workspace `{active_proj['name']}` ({active_path}).\n"
+            f"• Engine: **{model_display}** | Execution Mode: {'⚡ Autopilot (autonomous pre-approved execution)' if autopilot else 'Interactive'}.\n"
+            f"• Inspecting workspace state, directory structure, active rules, and available tool suite..."
+        )
+    }
+
     if activated_skill:
+        yield {
+            "type": "thinking",
+            "text": f"Activated Skill Workflow: `{activated_skill['name']}` (`skills/{activated_skill['id']}/SKILL.md`). Applying specialized operational guidelines."
+        }
         yield {"type": "text", "text": f"> ⚡ *Skill Activated: `{activated_skill['name']}`* (`skills/{activated_skill['id']}/SKILL.md`)\n\n"}
 
     if autopilot:
@@ -1979,7 +2170,6 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                 if text_part:
                     ollama_messages.append({"role": role, "content": text_part})
 
-            agent_label = "ARCHITECT" if agent == "webdev" else "SPECTRE"
             yield {"type": "text", "text": f"> 🔒 *{agent_label} using Local Autonomous Engine (`{local_model}` · 100% Uncensored Offline Sandbox)*\n\n"}
 
             max_tool_turns = 25 if autopilot else 8
@@ -2021,10 +2211,18 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                 content = msg.get("content", "")
                 native_tool_calls = msg.get("tool_calls", [])
 
+                # Extract and yield any thinking content from local model (<think> or <thought>)
+                if content:
+                    clean_c, extracted_th = _extract_and_stream_thoughts(content)
+                    for eth in extracted_th:
+                        yield {"type": "thinking", "text": f"Local Engine Deliberation: {eth}"}
+                else:
+                    clean_c = ""
+
                 if native_tool_calls:
-                    if content:
-                        yield {"type": "text", "text": content + "\n\n"}
-                        full_reply_accumulated.append(content)
+                    if clean_c:
+                        yield {"type": "text", "text": clean_c + "\n\n"}
+                        full_reply_accumulated.append(clean_c)
 
                     ollama_messages.append({
                         "role": "assistant",
@@ -2043,6 +2241,11 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                                 targs = {}
 
                         call_id = str(uuid.uuid4())
+
+                        # Explain why local engine takes this step
+                        rationale = _get_tool_rationale_desc(tname, targs, active_proj.get("name", "spectre"))
+                        yield {"type": "thinking", "text": f"Local Autonomous Engine: {rationale}"}
+
                         yield {
                             "type": "tool_call",
                             "name": tname,
@@ -2064,6 +2267,9 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                             "id": call_id
                         }
 
+                        eval_step = _get_tool_evaluation_desc(tname, result)
+                        yield {"type": "thinking", "text": f"Local Autonomous Engine: {eval_step}"}
+
                         ollama_messages.append({
                             "role": "tool",
                             "content": result.get("output", "")
@@ -2073,11 +2279,14 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                     # Check ReAct fallback
                     fallback_name, fallback_args = _parse_react_tool_call(content)
                     if fallback_name and fallback_name in [t["function"]["name"] for t in OLLAMA_TOOLS]:
-                        if content:
-                            yield {"type": "text", "text": content + "\n\n"}
-                            full_reply_accumulated.append(content)
+                        if clean_c:
+                            yield {"type": "text", "text": clean_c + "\n\n"}
+                            full_reply_accumulated.append(clean_c)
 
                         call_id = str(uuid.uuid4())
+                        rationale = _get_tool_rationale_desc(fallback_name, fallback_args, active_proj.get("name", "spectre"))
+                        yield {"type": "thinking", "text": f"Local Autonomous Engine: {rationale}"}
+
                         yield {
                             "type": "tool_call",
                             "name": fallback_name,
@@ -2099,6 +2308,9 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                             "id": call_id
                         }
 
+                        eval_step = _get_tool_evaluation_desc(fallback_name, result)
+                        yield {"type": "thinking", "text": f"Local Autonomous Engine: {eval_step}"}
+
                         ollama_messages.append({"role": "assistant", "content": content})
                         ollama_messages.append({
                             "role": "user",
@@ -2106,9 +2318,9 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                         })
                     else:
                         # Final response produced
-                        if content:
-                            yield {"type": "text", "text": content}
-                            full_reply_accumulated.append(content)
+                        if clean_c:
+                            yield {"type": "text", "text": clean_c}
+                            full_reply_accumulated.append(clean_c)
                         break
 
             final_text = "\n\n".join(full_reply_accumulated) if full_reply_accumulated else "(Task execution completed)"

@@ -829,6 +829,141 @@
       color: var(--text);
     }
 
+    /* Antigravity Chain-of-Thought & Live Deliberation Card */
+    .agent-thinking-card {
+      background: rgba(15, 17, 26, 0.7);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      border-radius: 9px;
+      margin: 8px 0;
+      overflow: hidden;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+    .agent-thinking-card.active {
+      border-color: rgba(168, 85, 247, 0.6);
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.15);
+    }
+    .agent-thinking-card.completed {
+      border-color: rgba(255, 255, 255, 0.08);
+      background: rgba(14, 15, 23, 0.45);
+    }
+    .thinking-header {
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      background: rgba(139, 92, 246, 0.05);
+      user-select: none;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: #c4b5fd;
+      transition: background 0.15s ease;
+    }
+    .thinking-header:hover {
+      background: rgba(139, 92, 246, 0.1);
+    }
+    .agent-thinking-card.completed .thinking-header {
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .thinking-brain-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #c084fc;
+      filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.5));
+      animation: brainGlow 2.5s infinite ease-in-out;
+    }
+    .agent-thinking-card.completed .thinking-brain-icon {
+      color: #64748b;
+      filter: none;
+      animation: none;
+    }
+    @keyframes brainGlow {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 9px rgba(192, 132, 252, 0.8)); }
+    }
+    .thinking-title-area {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+    .thinking-label {
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+    .thinking-timer {
+      font-size: 11px;
+      opacity: 0.85;
+      font-variant-numeric: tabular-nums;
+    }
+    .thinking-pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #c084fc;
+      box-shadow: 0 0 8px #c084fc;
+      animation: agyPulse 1.2s infinite ease-in-out;
+    }
+    .thinking-chevron {
+      font-size: 11px;
+      opacity: 0.65;
+      transition: transform 0.2s ease;
+      display: inline-block;
+      margin-left: auto;
+    }
+    .agent-thinking-card.collapsed .thinking-chevron {
+      transform: rotate(-90deg);
+    }
+    .agent-thinking-body {
+      padding: 10px 14px;
+      background: rgba(8, 9, 14, 0.85);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 12px;
+      line-height: 1.65;
+      color: #cbd5e1;
+      max-height: 280px;
+      overflow-y: auto;
+      border-left: 2px solid rgba(168, 85, 247, 0.35);
+      margin: 0;
+      transition: max-height 0.25s ease, opacity 0.2s ease;
+    }
+    .agent-thinking-card.collapsed .agent-thinking-body {
+      display: none;
+    }
+    .agent-thinking-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: var(--font);
+    }
+    .agent-thinking-text p {
+      margin: 4px 0;
+    }
+    .agent-thinking-text code {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 1px 4px;
+      border-radius: 4px;
+      color: #e2e8f0;
+    }
+    .thinking-failover-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 600;
+      margin: 4px 0;
+    }
+
     /* Tool Call Card */
     .tool-card {
       background: rgba(14, 14, 26, 0.9);
@@ -3720,7 +3855,8 @@ const SVG_ICONS = {
   edit: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
   more: `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`,
   check: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-  search: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`
+  search: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  brain: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"/></svg>`
 };
 
 function getIconSvg(name, size = 14) {
@@ -5537,6 +5673,37 @@ async function sendMessage() {
   let hadError = false;
   let wasAborted = false;
 
+  let activeThinkingCard = null;
+  let activeThinkingBody = null;
+  let activeThinkingTextEl = null;
+  let activeThinkingTimerEl = null;
+  let activeThinkingLabelEl = null;
+  let activeThinkingInterval = null;
+  let activeThinkingStartTs = 0;
+  let accumulatedThinkingText = '';
+
+  function completeActiveThinking() {
+    if (!activeThinkingCard) return;
+    if (activeThinkingInterval) {
+      clearInterval(activeThinkingInterval);
+      activeThinkingInterval = null;
+    }
+    const elapsed = Math.max(0.1, (Date.now() - activeThinkingStartTs) / 1000).toFixed(1);
+    if (activeThinkingLabelEl) activeThinkingLabelEl.textContent = 'Thought';
+    if (activeThinkingTimerEl) activeThinkingTimerEl.textContent = `for ${elapsed}s`;
+    const dot = activeThinkingCard.querySelector('.thinking-pulse-dot');
+    if (dot) dot.remove();
+    activeThinkingCard.classList.remove('active');
+    activeThinkingCard.classList.add('completed');
+    activeThinkingCard.classList.add('collapsed');
+    activeThinkingCard = null;
+    activeThinkingBody = null;
+    activeThinkingTextEl = null;
+    activeThinkingTimerEl = null;
+    activeThinkingLabelEl = null;
+    accumulatedThinkingText = '';
+  }
+
   try {
     const resp = await fetch('/api/chat', {
       method: 'POST',
@@ -5578,7 +5745,54 @@ async function sendMessage() {
           const ind = document.getElementById('streaming-thinking-indicator');
           if (ind) ind.remove();
 
-          if (ev.type === 'tool_call') {
+          if (ev.type === 'thinking') {
+            if (!activeThinkingCard) {
+              activeThinkingStartTs = Date.now();
+              activeThinkingCard = document.createElement('div');
+              activeThinkingCard.className = 'agent-thinking-card active';
+              activeThinkingCard.id = 'th-' + Date.now();
+
+              activeThinkingCard.innerHTML = `
+                <div class="thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                  <span class="thinking-brain-icon">${getIconSvg('brain', 13)}</span>
+                  <div class="thinking-title-area">
+                    <span class="thinking-label">Thinking...</span>
+                    <span class="thinking-timer">(0.0s)</span>
+                  </div>
+                  <span class="thinking-pulse-dot"></span>
+                  <span class="thinking-chevron">▾</span>
+                </div>
+                <div class="agent-thinking-body">
+                  <div class="agent-thinking-text"></div>
+                </div>
+              `;
+              agentContentEl.appendChild(activeThinkingCard);
+              activeThinkingBody = activeThinkingCard.querySelector('.agent-thinking-body');
+              activeThinkingTextEl = activeThinkingCard.querySelector('.agent-thinking-text');
+              activeThinkingTimerEl = activeThinkingCard.querySelector('.thinking-timer');
+              activeThinkingLabelEl = activeThinkingCard.querySelector('.thinking-label');
+
+              activeThinkingInterval = setInterval(() => {
+                if (!activeThinkingTimerEl) return;
+                const sec = ((Date.now() - activeThinkingStartTs) / 1000).toFixed(1);
+                activeThinkingTimerEl.textContent = `(${sec}s)`;
+              }, 100);
+            }
+
+            accumulatedThinkingText += ev.text + '\n';
+            if (activeThinkingTextEl) {
+              activeThinkingTextEl.innerHTML = renderMarkdown(accumulatedThinkingText);
+            }
+            if (activeThinkingBody) {
+              activeThinkingBody.scrollTop = activeThinkingBody.scrollHeight;
+            }
+            msgs.scrollTop = msgs.scrollHeight;
+          }
+          else if (ev.type === 'thinking_done') {
+            completeActiveThinking();
+          }
+          else if (ev.type === 'tool_call') {
+            completeActiveThinking();
             const card = document.createElement('div');
             card.className = 'tool-card running';
             card.id = `tool-${ev.id}`;
@@ -5684,6 +5898,7 @@ async function sendMessage() {
             msgs.scrollTop = msgs.scrollHeight;
           }
           else if (ev.type === 'text') {
+            completeActiveThinking();
             fullReplyText += ev.text;
             let textContainer = agentContentEl.querySelector('.agent-markdown-body');
             if (!textContainer) {
@@ -5701,6 +5916,7 @@ async function sendMessage() {
             msgs.scrollTop = msgs.scrollHeight;
           }
           else if (ev.type === 'error') {
+            completeActiveThinking();
             fullReplyText += `\n\n**[Error]** ${ev.message}`;
             let textContainer = agentContentEl.querySelector('.agent-markdown-body');
             if (!textContainer) {
@@ -5719,6 +5935,7 @@ async function sendMessage() {
       }
     }
   } catch (err) {
+    completeActiveThinking();
     hadError = true;
     wasAborted = err.name === 'AbortError';
     const ind = document.getElementById('streaming-thinking-indicator');
@@ -5731,6 +5948,7 @@ async function sendMessage() {
     }
     agentContentEl.innerHTML = renderMarkdown(fullReplyText);
   } finally {
+    completeActiveThinking();
     clearInterval(timerInterval);
     const totalSecs = ((Date.now() - startTs) / 1000).toFixed(1);
     const durStr = totalSecs < 60 ? `${totalSecs}s` : `${Math.floor(totalSecs / 60)}m ${(totalSecs % 60).toFixed(0)}s`;
