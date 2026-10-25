@@ -85,36 +85,36 @@ def _get_api_keys_dict() -> dict:
     ollama_url = env.get("OLLAMA_API_BASE") or os.environ.get("OLLAMA_API_BASE", "http://localhost:11434")
 
     return {
-        "ANTHROPIC_API_KEY": {
-            "key": "ANTHROPIC_API_KEY",
-            "name": "Anthropic Claude",
-            "provider": "anthropic",
-            "tier": "Frontier Cloud",
-            "models": "Claude 3.7 Sonnet, Claude 3.5 Sonnet, Claude 3 Opus",
-            "value": a_key,
-            "masked": _mask_key(a_key),
-            "configured": bool(a_key),
-            "link": "https://console.anthropic.com/settings/keys",
-            "placeholder": "sk-ant-api03-..."
-        },
         "GEMINI_API_KEY": {
             "key": "GEMINI_API_KEY",
-            "name": "Google Gemini",
+            "name": "Google AI Pro (Gemini)",
             "provider": "google",
-            "tier": "Frontier Cloud",
-            "models": "Gemini 2.5 Pro, Flash & Failover Pool",
+            "tier": "⭐ Active Pro Plan (Unlimited)",
+            "models": "Gemini 2.5 Pro, Gemini 3.8 Flash (High/Med/Low Thinking) & Failover Pool",
             "value": g_key,
             "masked": _mask_key(g_key),
             "configured": bool(g_key),
             "link": "https://aistudio.google.com/app/apikey",
             "placeholder": "AIzaSy..."
         },
+        "ANTHROPIC_API_KEY": {
+            "key": "ANTHROPIC_API_KEY",
+            "name": "Anthropic Claude (Free Guarded)",
+            "provider": "anthropic",
+            "tier": "🆓 Free Tier (Guarded)",
+            "models": "Claude 3.5 Haiku, Claude 3.7 Sonnet (2K token cap, Pro failover)",
+            "value": a_key,
+            "masked": _mask_key(a_key),
+            "configured": bool(a_key),
+            "link": "https://console.anthropic.com/settings/keys",
+            "placeholder": "sk-ant-api03-..."
+        },
         "OPENAI_API_KEY": {
             "key": "OPENAI_API_KEY",
-            "name": "OpenAI / GPT",
+            "name": "OpenAI (Free Guarded)",
             "provider": "openai",
-            "tier": "Frontier Cloud",
-            "models": "GPT-4o, o3-mini & Embeddings",
+            "tier": "🆓 Free Tier (Guarded)",
+            "models": "GPT-4o Mini (Free budget, Pro failover)",
             "value": o_key,
             "masked": _mask_key(o_key),
             "configured": bool(o_key),
@@ -123,10 +123,10 @@ def _get_api_keys_dict() -> dict:
         },
         "GROQ_API_KEY": {
             "key": "GROQ_API_KEY",
-            "name": "Groq Cloud (LPU)",
+            "name": "Groq Cloud (Free LPU)",
             "provider": "groq",
-            "tier": "Ultra-Fast LPU",
-            "models": "Llama 3.3 70B, DeepSeek R1 Distill",
+            "tier": "⚡ Free LPU Tier",
+            "models": "Llama 3.3 70B Versatile, Llama 3.1 8B Instant",
             "value": gr_key,
             "masked": _mask_key(gr_key),
             "configured": bool(gr_key),
@@ -135,10 +135,10 @@ def _get_api_keys_dict() -> dict:
         },
         "DEEPSEEK_API_KEY": {
             "key": "DEEPSEEK_API_KEY",
-            "name": "DeepSeek API",
+            "name": "DeepSeek API (Free Guarded)",
             "provider": "deepseek",
-            "tier": "Reasoning & Coding",
-            "models": "DeepSeek-V3, DeepSeek-R1",
+            "tier": "🆓 Free Tier (Guarded)",
+            "models": "DeepSeek-V3 Chat (Free quota, Pro failover)",
             "value": ds_key,
             "masked": _mask_key(ds_key),
             "configured": bool(ds_key),
@@ -149,7 +149,7 @@ def _get_api_keys_dict() -> dict:
             "key": "OLLAMA_API_BASE",
             "name": "SPECTRE Local / Ollama URL",
             "provider": "ollama",
-            "tier": "Offline Air-Gapped",
+            "tier": "100% Free Air-Gapped",
             "models": "spectre:latest, abliterated 8B",
             "value": ollama_url,
             "masked": ollama_url,
@@ -203,33 +203,122 @@ def _save_api_keys(new_keys: dict) -> dict:
 
 # Multi-model failover pool protects against 429 quota exhaustion and model outages
 MODEL_FAILOVER_POOL = [
-    "gemini-3.5-flash-lite",
-    "gemini-3.1-flash-lite",
-    "gemini-3.7-flash",
-    "gemini-flash-latest",
     "gemini-3.8-flash",
+    "gemini-3.6-flash",
     "gemini-3.5-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-flash-latest",
 ]
 ACTIVE_MODEL = MODEL_FAILOVER_POOL[0]
 
-# Claude Frontier Models Map
-CLAUDE_MODELS = {
-    "claude-3-7-sonnet": {
-        "id": "claude-3-7-sonnet-20250219",
-        "name": "Claude 3.7 Sonnet",
-        "badge": "Hybrid Reasoning"
+# Google AI Pro Models Map (Paid Subscription & Full Unlimited Quotas)
+GEMINI_MODELS = {
+    "gemini-pro": {
+        "id": "gemini-pro",
+        "name": "Gemini Pro",
+        "model_name": "gemini-3.8-flash",
+        "candidates": ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-latest"],
+        "thinking_budget": 0,
+        "badge": "Pro Plan",
+        "desc": "Google AI Pro subscription · Frontier 2M token context"
     },
-    "claude-3-5-sonnet": {
-        "id": "claude-3-5-sonnet-20241022",
-        "name": "Claude 3.5 Sonnet",
-        "badge": "High Speed"
+    "gemini-3.8-flash-high": {
+        "id": "gemini-3.8-flash-high",
+        "name": "Gemini 3.8 Flash (High)",
+        "model_name": "gemini-3.8-flash",
+        "candidates": ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-latest"],
+        "thinking_budget": 8192,
+        "badge": "High Thinking",
+        "desc": "Deep reasoning & verification · 8,192 token thinking budget"
     },
-    "claude-3-opus": {
-        "id": "claude-3-opus-20240229",
-        "name": "Claude 3 Opus",
-        "badge": "Deep Thinking"
+    "gemini-3.8-flash-medium": {
+        "id": "gemini-3.8-flash-medium",
+        "name": "Gemini 3.8 Flash (Medium)",
+        "model_name": "gemini-3.8-flash",
+        "candidates": ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-flash-latest"],
+        "thinking_budget": 2048,
+        "badge": "Medium Thinking",
+        "desc": "Balanced engineering intelligence · 2,048 token thinking budget"
+    },
+    "gemini-3.8-flash-low": {
+        "id": "gemini-3.8-flash-low",
+        "name": "Gemini 3.8 Flash (Low)",
+        "model_name": "gemini-3.8-flash",
+        "candidates": ["gemini-3.8-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.5-flash"],
+        "thinking_budget": 512,
+        "badge": "Fast / Low Latency",
+        "desc": "Ultra-fast latency & instant code edits · 512 token thinking budget"
+    },
+    "gemini": {
+        "id": "gemini",
+        "name": "Gemini Pro",
+        "model_name": "gemini-3.8-flash",
+        "candidates": ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"],
+        "thinking_budget": 2048,
+        "badge": "Pro Plan",
+        "desc": "Google AI Pro subscription · Failover protected"
     }
 }
+
+# External Cloud Models (Free Tier Guarded & Capped)
+EXTERNAL_MODELS = {
+    "claude-3-7-sonnet": {
+        "provider": "anthropic",
+        "id": "claude-3-7-sonnet-20250219",
+        "name": "Claude 3.7 Sonnet",
+        "badge": "Free Guarded",
+        "max_tokens": 2048
+    },
+    "claude-3-5-haiku": {
+        "provider": "anthropic",
+        "id": "claude-3-5-haiku-20241022",
+        "name": "Claude 3.5 Haiku",
+        "badge": "Free Tier",
+        "max_tokens": 2048
+    },
+    "claude-3-5-sonnet": {
+        "provider": "anthropic",
+        "id": "claude-3-5-sonnet-20241022",
+        "name": "Claude 3.5 Sonnet",
+        "badge": "Free Guarded",
+        "max_tokens": 2048
+    },
+    "claude-3-opus": {
+        "provider": "anthropic",
+        "id": "claude-3-opus-20240229",
+        "name": "Claude 3 Opus",
+        "badge": "Free Guarded",
+        "max_tokens": 2048
+    },
+    "openai-gpt4o-mini": {
+        "provider": "openai",
+        "id": "gpt-4o-mini",
+        "name": "GPT-4o Mini",
+        "badge": "Free Tier",
+        "base_url": "https://api.openai.com/v1",
+        "key_env": "OPENAI_API_KEY",
+        "max_tokens": 2048
+    },
+    "groq-llama": {
+        "provider": "groq",
+        "id": "llama-3.3-70b-versatile",
+        "name": "Groq Llama 3.3 70B",
+        "badge": "Free LPU",
+        "base_url": "https://api.groq.com/openai/v1",
+        "key_env": "GROQ_API_KEY",
+        "max_tokens": 2048
+    },
+    "deepseek": {
+        "provider": "deepseek",
+        "id": "deepseek-chat",
+        "name": "DeepSeek-V3",
+        "badge": "Free Tier",
+        "base_url": "https://api.deepseek.com",
+        "key_env": "DEEPSEEK_API_KEY",
+        "max_tokens": 2048
+    }
+}
+CLAUDE_MODELS = {k: v for k, v in EXTERNAL_MODELS.items() if v.get("provider") == "anthropic"}
 
 # --- Multi-Project Registry ---------------------------------------------------
 
@@ -1287,32 +1376,55 @@ def _dispatch_tool(name: str, args: dict) -> dict:
 _sessions: dict[str, list] = {}
 _sessions_lock = threading.Lock()
 
-def _call_gemini_with_failover(payload: dict) -> tuple[dict | None, str | None]:
-    """Execute generateContent with automatic model failover across MODEL_FAILOVER_POOL."""
+def _call_gemini_with_failover(payload: dict, preferred_model: str = None, thinking_budget: int = 0) -> tuple[dict | None, str | None]:
+    """Execute generateContent with automatic model failover and thinking budget support."""
     global ACTIVE_MODEL
-    # Try ACTIVE_MODEL first, followed by the rest of the pool
-    candidates = [ACTIVE_MODEL] + [m for m in MODEL_FAILOVER_POOL if m != ACTIVE_MODEL]
-    last_err = ""
 
+    req_payload = dict(payload)
+    if "generationConfig" not in req_payload:
+        req_payload["generationConfig"] = {"temperature": 0.4, "maxOutputTokens": 8192}
+    else:
+        req_payload["generationConfig"] = dict(req_payload["generationConfig"])
+
+    if thinking_budget and thinking_budget > 0:
+        req_payload["generationConfig"]["thinkingConfig"] = {
+            "thinkingBudget": thinking_budget
+        }
+
+    # Build candidates order: preferred model candidates first, then general pool
+    if preferred_model and preferred_model in GEMINI_MODELS:
+        candidates = list(GEMINI_MODELS[preferred_model].get("candidates", []))
+        for m in MODEL_FAILOVER_POOL:
+            if m not in candidates:
+                candidates.append(m)
+    elif preferred_model:
+        candidates = [preferred_model] + [m for m in MODEL_FAILOVER_POOL if m != preferred_model]
+    else:
+        candidates = [ACTIVE_MODEL] + [m for m in MODEL_FAILOVER_POOL if m != ACTIVE_MODEL]
+
+    last_err = ""
     for cand in candidates:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{cand}:generateContent?key={GEMINI_API_KEY}"
         try:
-            resp = _requests.post(url, json=payload, timeout=60)
+            resp = _requests.post(url, json=req_payload, timeout=15)
             if resp.status_code == 200:
                 if cand != ACTIVE_MODEL:
-                    print(f"[*] Gemini model failover successful: switched from {ACTIVE_MODEL} -> {cand}")
+                    print(f"[*] Gemini model failover successful: switched to {cand}")
                     ACTIVE_MODEL = cand
                 return resp.json(), None
-            elif resp.status_code in (429, 404, 503):
-                err_data = resp.json().get("error", {})
-                last_err = f"{cand} (HTTP {resp.status_code}): {err_data.get('message', resp.text)}"
-                print(f"[!] Quota/Availability issue on {cand} ({resp.status_code}). Failing over to next candidate...")
-                continue
-            else:
-                err_data = resp.json().get("error", {})
-                last_err = f"{cand} (HTTP {resp.status_code}): {err_data.get('message', resp.text)}"
-                print(f"[!] Error on {cand} ({resp.status_code}): {last_err}. Trying other models...")
-                continue
+            elif resp.status_code == 400 and "thinkingConfig" in req_payload.get("generationConfig", {}):
+                # If thinkingConfig is not supported on this specific candidate, retry immediately without it
+                no_think_payload = dict(req_payload)
+                no_think_payload["generationConfig"] = dict(req_payload["generationConfig"])
+                no_think_payload["generationConfig"].pop("thinkingConfig", None)
+                resp2 = _requests.post(url, json=no_think_payload, timeout=15)
+                if resp2.status_code == 200:
+                    ACTIVE_MODEL = cand
+                    return resp2.json(), None
+
+            err_data = resp.json().get("error", {})
+            last_err = f"{cand} (HTTP {resp.status_code}): {err_data.get('message', resp.text)}"
+            print(f"[!] Quota/Availability on {cand} ({resp.status_code}). Failing over to next candidate...")
         except Exception as exc:
             last_err = f"{cand} connection error: {exc}"
             continue
@@ -1341,27 +1453,28 @@ def _stream_anthropic_model(model_key: str, system_prompt: str, history: list, s
         _fresh = _load_env()
         ANTHROPIC_API_KEY = _fresh.get("ANTHROPIC_API_KEY", os.environ.get("ANTHROPIC_API_KEY", ""))
 
-    model_info = CLAUDE_MODELS.get(model_key, CLAUDE_MODELS["claude-3-7-sonnet"])
-    model_id = model_info["id"]
+    model_info = EXTERNAL_MODELS.get(model_key, EXTERNAL_MODELS.get("claude-3-7-sonnet", {}))
+    model_id = model_info.get("id", "claude-3-7-sonnet-20250219")
+    max_tokens = model_info.get("max_tokens", 2048)
 
     if not ANTHROPIC_API_KEY:
         yield {
             "type": "text",
             "text": (
-                f"> ⚠️ **Anthropic API Key Required for {model_info['name']}**\n\n"
-                f"To activate **{model_info['name']}**, add your Anthropic API key via **Settings** or to `infrastructure/.env`:\n\n"
+                f"> ⚠️ **Anthropic API Key Required for {model_info.get('name', 'Claude')}**\n\n"
+                f"To activate **{model_info.get('name', 'Claude')}**, add your Anthropic API key via **Settings**:\n\n"
                 f'<div style="margin:14px 0 16px 0;">'
                 f'<button class="perm-auto-btn" onclick="openSettingsModal(\'ANTHROPIC_API_KEY\')" style="padding:7px 16px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px;cursor:pointer;">'
                 f'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
-                f'⚙️ Configure API Key in Settings'
+                f'⚙️ Configure Anthropic Key in Settings'
                 f'</button>'
                 f'</div>\n\n'
-                f"*Tip: You can switch to **Gemini Pro** (active) or **SPECTRE Local (Abliterated)** from the model selector in the top bar.*"
+                f"*Tip: Your **Google AI Pro** plan is active and unlimited. Switch to **Gemini Pro** or **Gemini 3.8 Flash** from the top bar to run without external keys.*"
             )
         }
         return
 
-    yield {"type": "text", "text": f"> ⚡ *Anthropic Cloud Engine Active (`{model_info['name']}`)*\n\n"}
+    yield {"type": "text", "text": f"> ⚡ *Anthropic Cloud Engine Active (`{model_info.get('name', 'Claude')}` · Free Tier Guarded)*\n\n"}
 
     claude_messages = []
     for h in history:
@@ -1377,14 +1490,25 @@ def _stream_anthropic_model(model_key: str, system_prompt: str, history: list, s
     }
     payload = {
         "model": model_id,
-        "max_tokens": 4096,
+        "max_tokens": max_tokens,
         "system": system_prompt,
         "messages": claude_messages,
         "stream": True
     }
 
     try:
-        resp = _requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload, stream=True, timeout=120)
+        resp = _requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload, stream=True, timeout=90)
+        if resp.status_code == 429:
+            yield {
+                "type": "text",
+                "text": (
+                    f"\n\n> ⚠️ **Anthropic Free Tier Quota / Rate Limit Reached (HTTP 429)**\n"
+                    f"> 🛡️ *Seamlessly failing over to your **Google AI Pro** plan (`gemini-3.8-flash`)...*\n\n"
+                )
+            }
+            yield from _run_gemini_turn_loop(system_prompt, list(history), sid, preferred_model="gemini-3.8-flash", thinking_budget=2048)
+            return
+
         if resp.status_code != 200:
             err_text = resp.text
             try:
@@ -1423,6 +1547,109 @@ def _stream_anthropic_model(model_key: str, system_prompt: str, history: list, s
         yield {"type": "error", "message": f"Failed to connect to Anthropic: {exc}"}
 
 
+def _stream_openai_compatible_model(model_key: str, system_prompt: str, history: list, sid: str):
+    env = _load_env()
+    model_cfg = EXTERNAL_MODELS.get(model_key, {})
+    if not model_cfg:
+        yield {"type": "error", "message": f"Unknown external model: {model_key}"}
+        return
+
+    provider = model_cfg.get("provider", "external")
+    key_name = model_cfg.get("key_env", "")
+    api_key = env.get(key_name) or os.environ.get(key_name, "")
+    base_url = model_cfg.get("base_url", "https://api.openai.com/v1")
+    model_id = model_cfg.get("id", "")
+    max_tokens = model_cfg.get("max_tokens", 2048)
+
+    if not api_key:
+        yield {
+            "type": "text",
+            "text": (
+                f"> ⚠️ **{model_cfg['name']} API Key Required**\n\n"
+                f"To activate **{model_cfg['name']}**, add your {provider.upper()} API key via **Settings**:\n\n"
+                f'<div style="margin:14px 0 16px 0;">'
+                f'<button class="perm-auto-btn" onclick="openSettingsModal(\'{key_name}\')" style="padding:7px 16px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:7px;cursor:pointer;">'
+                f'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
+                f'⚙️ Configure {key_name} in Settings'
+                f'</button>'
+                f'</div>\n\n'
+                f"*Tip: Your **Google AI Pro** plan is active and unlimited. Switch to **Gemini Pro** or **Gemini 3.8 Flash** to proceed without external keys.*"
+            )
+        }
+        return
+
+    yield {"type": "text", "text": f"> ⚡ *{model_cfg['name']} Free Tier Active (Guarded · {max_tokens} Max Tokens)*\n\n"}
+
+    messages = [{"role": "system", "content": system_prompt}]
+    for h in history:
+        role = "assistant" if h.get("role") == "model" else "user"
+        text_part = "".join([p.get("text", "") for p in h.get("parts", []) if "text" in p])
+        if text_part:
+            messages.append({"role": role, "content": text_part})
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": model_id,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": 0.4,
+        "stream": True
+    }
+
+    try:
+        url = f"{base_url.rstrip('/')}/chat/completions"
+        resp = _requests.post(url, headers=headers, json=payload, stream=True, timeout=90)
+        if resp.status_code == 429:
+            yield {
+                "type": "text",
+                "text": (
+                    f"\n\n> ⚠️ *{model_cfg['name']} Free Tier Quota / Rate Limit Exceeded (HTTP 429)*\n"
+                    f"> 🛡️ *Seamlessly failing over to your **Google AI Pro** plan (`gemini-3.8-flash`)...*\n\n"
+                )
+            }
+            yield from _run_gemini_turn_loop(system_prompt, list(history), sid, preferred_model="gemini-3.8-flash", thinking_budget=2048)
+            return
+
+        if resp.status_code != 200:
+            err_text = resp.text
+            try:
+                err_text = resp.json().get("error", {}).get("message", resp.text)
+            except Exception:
+                pass
+            yield {"type": "error", "message": f"{model_cfg['name']} API Error ({resp.status_code}): {err_text}"}
+            return
+
+        full_reply = []
+        for line in resp.iter_lines():
+            if not line:
+                continue
+            line_str = line.decode("utf-8", errors="replace") if isinstance(line, bytes) else line
+            if not line_str.startswith("data: "):
+                continue
+            data_raw = line_str[6:].strip()
+            if data_raw == "[DONE]":
+                break
+            try:
+                chunk = json.loads(data_raw)
+                delta = chunk.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                if delta:
+                    full_reply.append(delta)
+                    yield {"type": "text", "text": delta}
+            except Exception:
+                continue
+
+        full_text = "".join(full_reply)
+        if full_text:
+            with _sessions_lock:
+                history.append({"role": "model", "parts": [{"text": full_text}]})
+                _sessions[sid] = history
+    except Exception as exc:
+        yield {"type": "error", "message": f"Failed to connect to {model_cfg['name']}: {exc}"}
+
+
 def _parse_react_tool_call(content: str) -> tuple[str | None, dict | None]:
     """Fallback parser for local models that output markdown tool calls instead of JSON tool_calls."""
     # Pattern 1: ```tool:name\n{json}\n```
@@ -1457,6 +1684,143 @@ def _parse_react_tool_call(content: str) -> tuple[str | None, dict | None]:
             return tname, {"query": arg_val}
 
     return None, None
+
+
+def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, autopilot: bool = True, preferred_model: str = "gemini-3.8-flash", thinking_budget: int = 0):
+    global GEMINI_API_KEY
+    if not GEMINI_API_KEY:
+        _fresh = _load_env()
+        GEMINI_API_KEY = _fresh.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
+    if not GEMINI_API_KEY:
+        yield {"type": "error", "message": "No Gemini API key found in infrastructure/.env"}
+        return
+
+    max_tool_turns = 25 if autopilot else 8
+    current_turn = 0
+
+    while current_turn < max_tool_turns:
+        current_turn += 1
+
+        payload = {
+            "systemInstruction": {"parts": [{"text": system_instruction}]},
+            "contents": contents,
+            "tools": GEMINI_TOOLS,
+            "generationConfig": {
+                "temperature": 0.4,
+                "maxOutputTokens": 8192
+            },
+            "safetySettings": [
+                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_CIVIC_INTEGRITY", "threshold": "BLOCK_NONE"}
+            ]
+        }
+
+        res_json, err_msg = _call_gemini_with_failover(payload, preferred_model=preferred_model, thinking_budget=thinking_budget)
+        if not res_json:
+            yield {"type": "error", "message": f"Gemini API Error (all failovers exhausted): {err_msg}"}
+            return
+
+        candidate = res_json.get("candidates", [{}])[0]
+        model_content = candidate.get("content", {})
+        parts = model_content.get("parts", [])
+
+        function_calls = [p for p in parts if "functionCall" in p]
+
+        if function_calls:
+            contents.append(model_content)
+            fr_parts = []
+            for p in function_calls:
+                fc = p["functionCall"]
+                name = fc.get("name", "")
+                args = fc.get("args", {})
+                call_id = fc.get("id") or str(uuid.uuid4())
+
+                yield {
+                    "type": "tool_call",
+                    "name": name,
+                    "args": args,
+                    "id": call_id
+                }
+
+                result = _dispatch_tool(name, args)
+
+                yield {
+                    "type": "tool_result",
+                    "name": name,
+                    "output": result.get("output", ""),
+                    "exit_code": result.get("exit_code", 0),
+                    "duration": result.get("duration", 0.0),
+                    "diff": result.get("diff", ""),
+                    "snapshot_id": result.get("snapshot_id", ""),
+                    "path": result.get("path", ""),
+                    "id": call_id
+                }
+
+                fr_item = {
+                    "name": name,
+                    "response": {
+                        "name": name,
+                        "content": {
+                            "output": result.get("output", ""),
+                            "exit_code": result.get("exit_code", 0)
+                        }
+                    }
+                }
+                if call_id:
+                    fr_item["id"] = call_id
+
+                fr_parts.append({"functionResponse": fr_item})
+
+            contents.append({"role": "user", "parts": fr_parts})
+
+            # If we've reached max tool turns, force a final response synthesis
+            if current_turn >= max_tool_turns:
+                synth_payload = {
+                    "systemInstruction": {"parts": [{"text": system_instruction}]},
+                    "contents": contents + [{
+                        "role": "user",
+                        "parts": [{"text": "You have completed your tool inspections. Provide your final comprehensive status and report directly to the user now in clear markdown."}]
+                    }],
+                    "generationConfig": {
+                        "temperature": 0.4,
+                        "maxOutputTokens": 8192
+                    }
+                }
+                res_synth, _ = _call_gemini_with_failover(synth_payload, preferred_model=preferred_model, thinking_budget=0)
+                if res_synth:
+                    cand_synth = res_synth.get("candidates", [{}])[0]
+                    synth_content = cand_synth.get("content", {})
+                    text_parts = [p.get("text", "") for p in synth_content.get("parts", []) if "text" in p]
+                    full_text = "".join(text_parts)
+                    if full_text:
+                        chunk_size = 32
+                        for i in range(0, len(full_text), chunk_size):
+                            yield {"type": "text", "text": full_text[i:i + chunk_size]}
+                            time.sleep(0.015)
+                        contents.append(synth_content)
+                break
+
+            continue
+
+        else:
+            text_parts = [p.get("text", "") for p in parts if "text" in p]
+            full_text = "".join(text_parts)
+            if not full_text:
+                full_text = "Task execution completed."
+
+            chunk_size = 32
+            for i in range(0, len(full_text), chunk_size):
+                yield {"type": "text", "text": full_text[i:i + chunk_size]}
+                time.sleep(0.015)
+
+            contents.append(model_content)
+            break
+
+    with _sessions_lock:
+        _sessions[sid] = contents
 
 
 def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: str = "gemini", autopilot: bool = True, attachments: list | None = None):
@@ -1763,142 +2127,37 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
             }
             return
 
-    # 2. Claude Frontier Models (Anthropic)
-    elif selected_model in CLAUDE_MODELS:
-        yield from _stream_anthropic_model(selected_model, system_instruction, history, sid)
-        return
-
-    # 3. Gemini Multi-Model Failover Pool (Default)
-    if not GEMINI_API_KEY:
-        yield {"type": "error", "message": "No Gemini API key found in infrastructure/.env"}
-        return
-
-    max_tool_turns = 25 if autopilot else 8
-    current_turn = 0
-
-    while current_turn < max_tool_turns:
-        current_turn += 1
-
-        payload = {
-            "systemInstruction": {"parts": [{"text": system_instruction}]},
-            "contents": contents,
-            "tools": GEMINI_TOOLS,
-            "generationConfig": {
-                "temperature": 0.4,
-                "maxOutputTokens": 8192
-            },
-            "safetySettings": [
-                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_CIVIC_INTEGRITY", "threshold": "BLOCK_NONE"}
-            ]
-        }
-
-        res_json, err_msg = _call_gemini_with_failover(payload)
-        if not res_json:
-            yield {"type": "error", "message": f"Gemini API Error (all failovers exhausted): {err_msg}"}
-            return
-
-        candidate = res_json.get("candidates", [{}])[0]
-        model_content = candidate.get("content", {})
-        parts = model_content.get("parts", [])
-
-        function_calls = [p for p in parts if "functionCall" in p]
-
-        if function_calls:
-            contents.append(model_content)
-            fr_parts = []
-            for p in function_calls:
-                fc = p["functionCall"]
-                name = fc.get("name", "")
-                args = fc.get("args", {})
-                call_id = fc.get("id") or str(uuid.uuid4())
-
-                yield {
-                    "type": "tool_call",
-                    "name": name,
-                    "args": args,
-                    "id": call_id
-                }
-
-                result = _dispatch_tool(name, args)
-
-                yield {
-                    "type": "tool_result",
-                    "name": name,
-                    "output": result.get("output", ""),
-                    "exit_code": result.get("exit_code", 0),
-                    "duration": result.get("duration", 0.0),
-                    "diff": result.get("diff", ""),
-                    "snapshot_id": result.get("snapshot_id", ""),
-                    "path": result.get("path", ""),
-                    "id": call_id
-                }
-
-                fr_item = {
-                    "name": name,
-                    "response": {
-                        "name": name,
-                        "content": {
-                            "output": result.get("output", ""),
-                            "exit_code": result.get("exit_code", 0)
-                        }
-                    }
-                }
-                if call_id:
-                    fr_item["id"] = call_id
-
-                fr_parts.append({"functionResponse": fr_item})
-
-            contents.append({"role": "user", "parts": fr_parts})
-
-            # If we've reached max tool turns, force a final response synthesis
-            if current_turn >= max_tool_turns:
-                synth_payload = {
-                    "systemInstruction": {"parts": [{"text": system_instruction}]},
-                    "contents": contents + [{
-                        "role": "user",
-                        "parts": [{"text": "You have completed your tool inspections. Provide your final comprehensive status and report directly to the user now in clear markdown."}]
-                    }],
-                    "generationConfig": {
-                        "temperature": 0.4,
-                        "maxOutputTokens": 8192
-                    }
-                }
-                res_synth, _ = _call_gemini_with_failover(synth_payload)
-                if res_synth:
-                    cand_synth = res_synth.get("candidates", [{}])[0]
-                    synth_content = cand_synth.get("content", {})
-                    text_parts = [p.get("text", "") for p in synth_content.get("parts", []) if "text" in p]
-                    full_text = "".join(text_parts)
-                    if full_text:
-                        chunk_size = 32
-                        for i in range(0, len(full_text), chunk_size):
-                            yield {"type": "text", "text": full_text[i:i + chunk_size]}
-                            time.sleep(0.015)
-                        contents.append(synth_content)
-                break
-
-            continue
-
+    # 2. External Cloud Tier Models (Free Tier Guarded)
+    elif selected_model in EXTERNAL_MODELS:
+        ext_cfg = EXTERNAL_MODELS[selected_model]
+        if ext_cfg.get("provider") == "anthropic":
+            yield from _stream_anthropic_model(selected_model, system_instruction, history, sid)
         else:
-            text_parts = [p.get("text", "") for p in parts if "text" in p]
-            full_text = "".join(text_parts)
-            if not full_text:
-                full_text = "Task execution completed."
+            yield from _stream_openai_compatible_model(selected_model, system_instruction, history, sid)
+        return
 
-            chunk_size = 32
-            for i in range(0, len(full_text), chunk_size):
-                yield {"type": "text", "text": full_text[i:i + chunk_size]}
-                time.sleep(0.015)
+    # 3. Google AI Pro Tier (Gemini Pro, Gemini 3.8 Flash High / Med / Low)
+    gem_cfg = GEMINI_MODELS.get(selected_model, GEMINI_MODELS.get("gemini-pro", {}))
+    pref_model = gem_cfg.get("model_name", "gemini-3.8-flash")
+    think_budget = gem_cfg.get("thinking_budget", 0)
 
-            contents.append(model_content)
-            break
+    if think_budget == 8192:
+        yield {"type": "text", "text": f"> 🧠 *Google AI Pro Engine Active (`{gem_cfg.get('name', 'Gemini')}` · Deep Thinking 8,192 Budget)*\n\n"}
+    elif think_budget == 2048:
+        yield {"type": "text", "text": f"> ⚡ *Google AI Pro Engine Active (`{gem_cfg.get('name', 'Gemini')}` · Medium Thinking 2,048 Budget)*\n\n"}
+    elif think_budget == 512:
+        yield {"type": "text", "text": f"> ⚡ *Google AI Pro Engine Active (`{gem_cfg.get('name', 'Gemini')}` · Fast Latency 512 Budget)*\n\n"}
+    else:
+        yield {"type": "text", "text": f"> ⭐ *Google AI Pro Engine Active (`{gem_cfg.get('name', 'Gemini')}` · Pro Plan)*\n\n"}
 
-    with _sessions_lock:
-        _sessions[sid] = contents
+    yield from _run_gemini_turn_loop(
+        system_instruction=system_instruction,
+        contents=contents,
+        sid=sid,
+        autopilot=autopilot,
+        preferred_model=pref_model,
+        thinking_budget=think_budget
+    )
 
 
 _cached_health_score = 50
@@ -2083,47 +2342,105 @@ class _Handler(BaseHTTPRequestHandler):
 
         elif path == "/api/models":
             local_model = _get_local_uncensored_model()
+            env = _load_env()
+            o_key = env.get("OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
+            gr_key = env.get("GROQ_API_KEY") or os.environ.get("GROQ_API_KEY", "")
+            ds_key = env.get("DEEPSEEK_API_KEY") or os.environ.get("DEEPSEEK_API_KEY", "")
+
             models_list = [
+                # Google AI Pro Tier
                 {
-                    "id": "gemini",
-                    "name": "Gemini 2.5 Pro / Flash",
+                    "id": "gemini-pro",
+                    "name": "Gemini Pro",
                     "tag": "Google AI Studio",
-                    "badge": "Active Pool",
-                    "tier": "cloud",
+                    "badge": "Pro Plan",
+                    "tier": "google-pro",
                     "icon": "sparkles",
-                    "description": "Multi-model failover pool · 1M token context · Live tool execution",
+                    "description": "Google AI Pro subscription · 2M token context · Deep logic & architecture",
                     "available": bool(GEMINI_API_KEY)
                 },
+                {
+                    "id": "gemini-3.8-flash-high",
+                    "name": "Gemini 3.8 Flash (High)",
+                    "tag": "Google AI Studio",
+                    "badge": "High Thinking",
+                    "tier": "google-pro",
+                    "icon": "zap",
+                    "description": "Deep reasoning & multi-step security verification · 8,192 thinking budget",
+                    "available": bool(GEMINI_API_KEY)
+                },
+                {
+                    "id": "gemini-3.8-flash-medium",
+                    "name": "Gemini 3.8 Flash (Medium)",
+                    "tag": "Google AI Studio",
+                    "badge": "Medium Thinking",
+                    "tier": "google-pro",
+                    "icon": "sparkles",
+                    "description": "Balanced engineering intelligence · 2,048 thinking budget",
+                    "available": bool(GEMINI_API_KEY)
+                },
+                {
+                    "id": "gemini-3.8-flash-low",
+                    "name": "Gemini 3.8 Flash (Low)",
+                    "tag": "Google AI Studio",
+                    "badge": "Fast / Low Thinking",
+                    "tier": "google-pro",
+                    "icon": "zap",
+                    "description": "Ultra-fast latency & instant code edits · 512 thinking budget",
+                    "available": bool(GEMINI_API_KEY)
+                },
+                # External Cloud (Free Tier Guarded)
                 {
                     "id": "claude-3-7-sonnet",
                     "name": "Claude 3.7 Sonnet",
                     "tag": "Anthropic",
-                    "badge": "Hybrid Reasoning",
-                    "tier": "cloud",
+                    "badge": "Free Guarded",
+                    "tier": "free-cloud",
                     "icon": "zap",
-                    "description": "State-of-the-art hybrid coding, reasoning & system architecture",
+                    "description": "Anthropic frontier coding · 2K token cap · Auto-failover to Gemini Pro",
                     "available": bool(ANTHROPIC_API_KEY)
                 },
                 {
-                    "id": "claude-3-5-sonnet",
-                    "name": "Claude 3.5 Sonnet",
+                    "id": "claude-3-5-haiku",
+                    "name": "Claude 3.5 Haiku",
                     "tag": "Anthropic",
-                    "badge": "High Speed",
-                    "tier": "cloud",
+                    "badge": "Free Tier",
+                    "tier": "free-cloud",
                     "icon": "star",
-                    "description": "Fast full-stack engineering, React 19 & debugging",
+                    "description": "Lightweight starter tier · Token-conserving rapid assistance",
                     "available": bool(ANTHROPIC_API_KEY)
                 },
                 {
-                    "id": "claude-3-opus",
-                    "name": "Claude 3 Opus",
-                    "tag": "Anthropic",
-                    "badge": "Deep Thinking",
-                    "tier": "cloud",
-                    "icon": "brain",
-                    "description": "Maximum deep synthesis, complex logic & security audits",
-                    "available": bool(ANTHROPIC_API_KEY)
+                    "id": "openai-gpt4o-mini",
+                    "name": "OpenAI GPT-4o Mini",
+                    "tag": "OpenAI",
+                    "badge": "Free Tier",
+                    "tier": "free-cloud",
+                    "icon": "circle",
+                    "description": "OpenAI free-tier friendly model · Generous allowances · Pro failover",
+                    "available": bool(o_key)
                 },
+                {
+                    "id": "groq-llama",
+                    "name": "Groq Llama 3.3 70B",
+                    "tag": "Groq LPU",
+                    "badge": "Free LPU",
+                    "tier": "free-cloud",
+                    "icon": "zap",
+                    "description": "Groq Cloud ultra-fast LPU free tier · Zero inference cost",
+                    "available": bool(gr_key)
+                },
+                {
+                    "id": "deepseek",
+                    "name": "DeepSeek-V3 Chat",
+                    "tag": "DeepSeek",
+                    "badge": "Free Quota",
+                    "tier": "free-cloud",
+                    "icon": "code",
+                    "description": "DeepSeek coding & reasoning · Free starter credits guarded",
+                    "available": bool(ds_key)
+                },
+                # Offline Air-gapped
                 {
                     "id": "spectre-local",
                     "name": "SPECTRE Local (spectre:latest)",
