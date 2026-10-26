@@ -57,3 +57,7 @@ tmp/
 temp/
 scratch/
 test-dashboard/
+
+# Agentic Runtime Artifacts
+dashboard/screenshots/*.png
+dashboard/logs/*.log

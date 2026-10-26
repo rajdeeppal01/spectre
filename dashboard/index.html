@@ -6424,6 +6424,22 @@ async function sendMessage() {
               verb = 'Audited';
               iconHtml = '<span>🛡️</span>';
               target = `security scan (${args.target_paths || '.'})`;
+            } else if (ev.name === 'manage_task') {
+              verb = 'Task';
+              iconHtml = '<span style="color:#38bdf8; font-size:13px;">⚙️</span>';
+              target = `${args.action || 'manage'} ${args.command || args.task_id || ''}`.trim();
+            } else if (ev.name === 'browser_open') {
+              verb = 'Browsed';
+              iconHtml = '<span style="color:#60a5fa; font-size:13px;">🌐</span>';
+              target = args.url || 'web page';
+            } else if (ev.name === 'browser_interact') {
+              verb = 'Interacted';
+              iconHtml = '<span style="color:#34d399; font-size:13px;">🖱️</span>';
+              target = `${args.action || 'action'} ${args.selector || ''}`.trim();
+            } else if (ev.name === 'delegate_subagent') {
+              verb = 'Delegated';
+              iconHtml = '<span style="color:#f59e0b; font-size:13px;">👥</span>';
+              target = `${args.agent_type || 'subagent'}: ${args.task_description || ''}`.slice(0, 50);
             } else {
               verb = 'Executed';
               iconHtml = '<span>⚡</span>';
@@ -6500,6 +6516,26 @@ async function sendMessage() {
                       <pre class="tool-diff-pre">${formatDiffHtml(ev.diff)}</pre>
                     `;
                     drawer.appendChild(diffDiv);
+                  }
+                }
+
+                // Visual Verification Screenshot Rendering
+                if (ev.screenshot) {
+                  let shotDiv = drawer.querySelector('.tool-screenshot-preview');
+                  if (!shotDiv) {
+                    shotDiv = document.createElement('div');
+                    shotDiv.className = 'tool-screenshot-preview';
+                    shotDiv.style.cssText = 'margin-top:12px; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.3); padding:10px;';
+                    shotDiv.innerHTML = `
+                      <div style="font-size:11px; color:#94a3b8; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:600; color:#e2e8f0; display:flex; align-items:center; gap:6px;">📸 Visual Verification Snapshot</span>
+                        <a href="${ev.screenshot}" target="_blank" style="color:#38bdf8; text-decoration:none; font-size:11px; font-weight:500;">Open Full Size ↗</a>
+                      </div>
+                      <a href="${ev.screenshot}" target="_blank">
+                        <img src="${ev.screenshot}" style="width:100%; max-height:280px; object-fit:cover; object-position:top; display:block; border-radius:6px; cursor:zoom-in; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1.0'" alt="Browser Visual Verification Snapshot" />
+                      </a>
+                    `;
+                    drawer.appendChild(shotDiv);
                   }
                 }
               }
