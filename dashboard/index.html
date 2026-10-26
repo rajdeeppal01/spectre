@@ -984,6 +984,241 @@
       margin: 4px 0;
     }
 
+    /* ── Antigravity-Style Interactive Decision Card (ask_question) ── */
+    .agent-decision-card {
+      background: linear-gradient(145deg, rgba(16, 17, 30, 0.95), rgba(20, 15, 36, 0.95));
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      box-shadow: 0 4px 24px rgba(168, 85, 247, 0.18), 0 0 0 1px rgba(168, 85, 247, 0.12);
+      border-radius: 12px;
+      margin: 14px 0;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      position: relative;
+    }
+    .agent-decision-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, #a855f7, #ec4899, #38bdf8);
+    }
+    .decision-header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+    }
+    .decision-badge-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: rgba(168, 85, 247, 0.18);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #c084fc;
+      flex-shrink: 0;
+    }
+    .decision-title-group {
+      flex: 1;
+    }
+    .decision-badge-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #c084fc;
+      font-family: var(--mono);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .decision-badge-label .decision-live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #a855f7;
+      box-shadow: 0 0 8px #a855f7;
+      animation: agyPulse 1.2s infinite ease-in-out;
+    }
+    .decision-question-text {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-top: 3px;
+      line-height: 1.45;
+    }
+    .decision-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .decision-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .decision-opt-btn {
+      width: 100%;
+      text-align: left;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-family: var(--font);
+      font-size: 12.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+    .decision-opt-btn:hover:not(:disabled) {
+      background: rgba(168, 85, 247, 0.12);
+      border-color: rgba(168, 85, 247, 0.5);
+      transform: translateX(2px);
+      box-shadow: 0 2px 10px rgba(168, 85, 247, 0.15);
+    }
+    .decision-opt-btn.selected {
+      background: rgba(168, 85, 247, 0.22);
+      border-color: #a855f7;
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
+    }
+    .decision-opt-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+    .decision-opt-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .decision-checkbox {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+      font-size: 10px;
+      color: #fff;
+    }
+    .decision-opt-btn.selected .decision-checkbox {
+      background: #a855f7;
+      border-color: #a855f7;
+    }
+    .decision-rec-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      color: #34d399;
+      font-family: var(--mono);
+      flex-shrink: 0;
+    }
+    .decision-custom-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+    .decision-custom-input {
+      flex: 1;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 7px;
+      color: #ffffff;
+      font-family: var(--font);
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .decision-custom-input:focus {
+      border-color: #a855f7;
+      box-shadow: 0 0 8px rgba(168, 85, 247, 0.25);
+    }
+    .decision-custom-btn, .decision-confirm-btn, .decision-skip-btn {
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-family: var(--font);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+      border: none;
+    }
+    .decision-confirm-btn {
+      background: linear-gradient(135deg, #a855f7, #7c3aed);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(168, 85, 247, 0.3);
+    }
+    .decision-confirm-btn:hover:not(:disabled) {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+    .decision-custom-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .decision-custom-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+    }
+    .decision-skip-btn {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid transparent;
+      padding: 6px 10px;
+      font-size: 11px;
+    }
+    .decision-skip-btn:hover:not(:disabled) {
+      color: #cbd5e1;
+      text-decoration: underline;
+    }
+    .decision-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+      padding-top: 4px;
+    }
+    .decision-confirmed-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      border-radius: 8px;
+      color: #4ade80;
+      font-size: 12px;
+      font-weight: 600;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
     /* Tool Call Card */
     .tool-card {
       background: rgba(14, 14, 26, 0.9);
@@ -3876,6 +4111,7 @@ const SVG_ICONS = {
   more: `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>`,
   check: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
   search: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  compass: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
   brain: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-5.04z"/></svg>`
 };
 
@@ -5825,7 +6061,15 @@ async function sendMessage() {
           else if (ev.type === 'thinking_done') {
             completeActiveThinking();
           }
+          else if (ev.type === 'ask_question') {
+            completeActiveThinking();
+            renderDecisionCard(ev.id, ev.questions, agentContentEl, msgs);
+          }
           else if (ev.type === 'tool_call') {
+            if (ev.name === 'ask_question') {
+              // Interactive UI handled by ask_question event
+              continue;
+            }
             completeActiveThinking();
             const card = document.createElement('div');
             card.className = 'tool-card running';
@@ -5898,6 +6142,12 @@ async function sendMessage() {
             msgs.scrollTop = msgs.scrollHeight;
           }
           else if (ev.type === 'tool_result') {
+            if (ev.name === 'ask_question' || ev.question_id) {
+              const qCard = document.getElementById(`decision-${ev.question_id || ev.id}`);
+              if (qCard && !qCard.classList.contains('locked')) {
+                markDecisionCardConfirmed(qCard, ev.output || 'Decision confirmed');
+              }
+            }
             const card = (ev.id && activeToolCards[ev.id]) || (ev.name && activeToolCards[ev.name]) || (ev.id && document.getElementById(`tool-${ev.id}`));
             if (card) {
               card.classList.remove('running');
@@ -6009,6 +6259,202 @@ async function sendMessage() {
     stopGeneration();
     input.focus();
     msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+
+// ── Antigravity Interactive Decision Dialogs (ask_question) ────────────────────
+function renderDecisionCard(qId, questions, container, scrollTarget) {
+  if (!questions || !questions.length) return;
+  const primaryQ = questions[0];
+  const isMulti = Boolean(primaryQ.is_multi_select);
+
+  const card = document.createElement('div');
+  card.className = 'agent-decision-card';
+  card.id = `decision-${qId}`;
+
+  // Header
+  const headerHtml = `
+    <div class="decision-header">
+      <div class="decision-badge-icon">
+        ${getIconSvg('compass', 14)}
+      </div>
+      <div class="decision-title-group">
+        <div class="decision-badge-label">
+          <span class="decision-live-dot"></span>
+          <span>Architectural Decision Required</span>
+        </div>
+        <div class="decision-question-text">${escapeHtml(primaryQ.question)}</div>
+      </div>
+    </div>
+  `;
+
+  // Body with options
+  const options = primaryQ.options || [];
+  let optionsHtml = '';
+  options.forEach((optRaw, optIdx) => {
+    const isRec = optRaw.toLowerCase().includes('(recommended)') || optRaw.toLowerCase().includes('[recommended]');
+    const cleanLabel = optRaw.replace(/\((?:recommended|recommend)\)/gi, '').replace(/\[(?:recommended|recommend)\]/gi, '').trim();
+
+    optionsHtml += `
+      <button type="button" class="decision-opt-btn ${isRec && !isMulti ? 'recommended-opt' : ''}" data-idx="${optIdx}" data-val="${escapeHtml(optRaw)}" data-clean="${escapeHtml(cleanLabel)}" onclick="handleDecisionOptClick('${qId}', this, ${isMulti})">
+        <div class="decision-opt-left">
+          <span class="decision-checkbox">${isMulti ? '' : '●'}</span>
+          <span class="decision-opt-text">${escapeHtml(cleanLabel)}</span>
+        </div>
+        ${isRec ? `<span class="decision-rec-badge">Recommended</span>` : ''}
+      </button>
+    `;
+  });
+
+  const actionsRowHtml = `
+    <div class="decision-custom-row">
+      <input type="text" class="decision-custom-input" id="custom-in-${qId}" placeholder="Or type a custom specification..." onkeydown="if(event.key==='Enter') submitCustomDecisionChoice('${qId}')" />
+      <button type="button" class="decision-custom-btn" onclick="submitCustomDecisionChoice('${qId}')">Submit Custom</button>
+    </div>
+    <div class="decision-actions-row">
+      ${isMulti ? `<button type="button" class="decision-confirm-btn" onclick="submitMultiDecisionChoice('${qId}')">Confirm Selected (0)</button>` : '<span></span>'}
+      <button type="button" class="decision-skip-btn" onclick="skipDecisionChoice('${qId}')">Skip (Use Recommended)</button>
+    </div>
+  `;
+
+  card.innerHTML = `
+    ${headerHtml}
+    <div class="decision-body">
+      <div class="decision-options-list" id="opts-${qId}">
+        ${optionsHtml}
+      </div>
+      ${actionsRowHtml}
+    </div>
+  `;
+
+  container.appendChild(card);
+  if (scrollTarget) scrollTarget.scrollTop = scrollTarget.scrollHeight;
+}
+
+function handleDecisionOptClick(qId, btnEl, isMulti) {
+  const card = document.getElementById(`decision-${qId}`);
+  if (!card || card.classList.contains('locked')) return;
+
+  if (!isMulti) {
+    const rawVal = btnEl.getAttribute('data-val');
+    const cleanLabel = btnEl.getAttribute('data-clean') || rawVal;
+    card.querySelectorAll('.decision-opt-btn').forEach(b => b.classList.remove('selected'));
+    btnEl.classList.add('selected');
+
+    submitDecisionChoice(qId, [{
+      question: card.querySelector('.decision-question-text')?.textContent || '',
+      selected: [rawVal],
+      custom_text: ''
+    }], cleanLabel);
+  } else {
+    btnEl.classList.toggle('selected');
+    const chk = btnEl.querySelector('.decision-checkbox');
+    if (chk) chk.textContent = btnEl.classList.contains('selected') ? '✓' : '';
+
+    const selectedBtns = card.querySelectorAll('.decision-opt-btn.selected');
+    const confirmBtn = card.querySelector('.decision-confirm-btn');
+    if (confirmBtn) {
+      confirmBtn.textContent = `Confirm Selected (${selectedBtns.length})`;
+      confirmBtn.disabled = selectedBtns.length === 0;
+    }
+  }
+}
+
+function submitMultiDecisionChoice(qId) {
+  const card = document.getElementById(`decision-${qId}`);
+  if (!card || card.classList.contains('locked')) return;
+
+  const selectedBtns = card.querySelectorAll('.decision-opt-btn.selected');
+  const selectedVals = Array.from(selectedBtns).map(b => b.getAttribute('data-val'));
+  const cleanLabels = Array.from(selectedBtns).map(b => b.getAttribute('data-clean') || b.getAttribute('data-val'));
+  if (!selectedVals.length) return;
+
+  submitDecisionChoice(qId, [{
+    question: card.querySelector('.decision-question-text')?.textContent || '',
+    selected: selectedVals,
+    custom_text: ''
+  }], cleanLabels.join(', '));
+}
+
+function submitCustomDecisionChoice(qId) {
+  const card = document.getElementById(`decision-${qId}`);
+  if (!card || card.classList.contains('locked')) return;
+
+  const inEl = document.getElementById(`custom-in-${qId}`);
+  const val = inEl ? inEl.value.trim() : '';
+  if (!val) {
+    if (inEl) inEl.focus();
+    return;
+  }
+
+  submitDecisionChoice(qId, [{
+    question: card.querySelector('.decision-question-text')?.textContent || '',
+    selected: [],
+    custom_text: val
+  }], `Custom: ${val}`, val);
+}
+
+function skipDecisionChoice(qId) {
+  const card = document.getElementById(`decision-${qId}`);
+  if (!card || card.classList.contains('locked')) return;
+
+  const recBtn = card.querySelector('.decision-opt-btn.recommended-opt') || card.querySelector('.decision-opt-btn');
+  const val = recBtn ? recBtn.getAttribute('data-val') : 'Proceed with recommended default';
+  const clean = recBtn ? (recBtn.getAttribute('data-clean') || val) : val;
+
+  submitDecisionChoice(qId, [{
+    question: card.querySelector('.decision-question-text')?.textContent || '',
+    selected: [val],
+    custom_text: ''
+  }], `${clean} (Recommended Default)`);
+}
+
+function submitDecisionChoice(qId, answers, displaySummary, customChoice = '') {
+  const card = document.getElementById(`decision-${qId}`);
+  if (!card) return;
+
+  markDecisionCardConfirmed(card, displaySummary);
+
+  fetch('/api/chat/answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      questionId: qId,
+      answers: answers,
+      customChoice: customChoice
+    })
+  }).catch(err => {
+    console.error('Failed to submit decision choice:', err);
+  });
+}
+
+function markDecisionCardConfirmed(card, summaryText) {
+  if (!card) return;
+  card.classList.add('locked');
+
+  card.querySelectorAll('button, input').forEach(el => {
+    el.disabled = true;
+  });
+
+  const bodyEl = card.querySelector('.decision-body');
+  if (bodyEl) {
+    const existingBanner = card.querySelector('.decision-confirmed-banner');
+    if (!existingBanner) {
+      const banner = document.createElement('div');
+      banner.className = 'decision-confirmed-banner';
+      banner.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Architectural choice locked: <strong>${escapeHtml(summaryText)}</strong> · Resuming agent...</span>
+      `;
+      bodyEl.prepend(banner);
+    }
+  }
+
+  const liveDot = card.querySelector('.decision-live-dot');
+  if (liveDot) {
+    liveDot.style.background = '#4ade80';
+    liveDot.style.boxShadow = '0 0 8px #4ade80';
+    liveDot.style.animation = 'none';
   }
 }
 

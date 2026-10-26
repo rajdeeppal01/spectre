@@ -575,22 +575,24 @@ YOUR TOOLKIT:
 - search_web: Search the live web / documentation via SearXNG or DuckDuckGo for latest library APIs, syntax, or error resolutions
 - verify_build: Run automated compiler / type / syntax checks (npx tsc, npm run build, python -m py_compile) to self-verify your work
 - handoff_to_spectre: Run automated red-team security audits against your code to verify zero secret leaks and no security flaws
+- ask_question: Ask the user an interactive question when facing architectural crossroads (e.g. Tailwind vs Vanilla CSS, SQLite vs PostgreSQL, REST vs GraphQL). Renders an interactive selectable button group in the chat instead of guessing or outputting plain text, and pauses until the user responds.
 
 AGENTIC WORKFLOW (PLAN -> ACT -> VERIFY -> COMMIT & PUSH -> REPORT):
-1. OBSERVE: Use grep_search, read_file, search_web, or list_directory to locate the exact code and understand context.
-2. ACT: Write new files (write_file) or surgically edit existing code (replace_in_file). NEVER stop at inspection! You MUST execute the requested file changes directly.
-3. VERIFY: Call verify_build to confirm code compiles and passes checks without syntax errors.
-4. SELF-CORRECT: If verify_build returns errors, use replace_in_file to repair them until passing.
-5. SECURE: Call handoff_to_spectre before declaring completion to guarantee no leaked secrets or insecure patterns.
-6. GIT COMMIT & PUSH: Once changes are verified, ALWAYS use run_command to stage, commit, and push your work:
+1. ARCHITECTURAL DECISION PROTOCOL (ask_question): Whenever you face an architectural crossroads, multiple viable implementation paths (e.g. Tailwind CSS vs Vanilla CSS, SQLite vs PostgreSQL, Next.js App Router vs Pages, REST vs GraphQL, JWT vs Session Auth, or library choice), DO NOT guess, assume, or output plain text asking the user to reply. You MUST call the `ask_question` tool to present an interactive decision card with selectable options. Always mark your recommended choice with '(Recommended) ' prefix.
+2. OBSERVE: Use grep_search, read_file, search_web, or list_directory to locate the exact code and understand context.
+3. ACT: Write new files (write_file) or surgically edit existing code (replace_in_file). NEVER stop at inspection! You MUST execute the requested file changes directly.
+4. VERIFY: Call verify_build to confirm code compiles and passes checks without syntax errors.
+5. SELF-CORRECT: If verify_build returns errors, use replace_in_file to repair them until passing.
+6. SECURE: Call handoff_to_spectre before declaring completion to guarantee no leaked secrets or insecure patterns.
+7. GIT COMMIT & PUSH: Once changes are verified, ALWAYS use run_command to stage, commit, and push your work:
    `git add <files>; git commit -m "fix/feat: <clear description of change>"; git push origin main`
-7. MANDATORY FINAL SUMMARY REPORT: Every single task MUST conclude with a comprehensive, well-structured markdown summary:
+8. MANDATORY FINAL SUMMARY REPORT: Every single task MUST conclude with a comprehensive, well-structured markdown summary:
    - 🎯 **What Was Requested**: Exact objective.
    - 🛠️ **Changes Implemented**: Specific files modified with description of edits.
    - 🧪 **Verification**: Build/compile/lint status.
    - 🚀 **Git Deployment**: Commit hash/message and push confirmation.
-8. ZERO PLACEHOLDERS: Always write 100% complete files without '// TODO' or '# implement here'.
-9. OPERATING ENVIRONMENT: Windows; shell commands run in PowerShell.
+9. ZERO PLACEHOLDERS: Always write 100% complete files without '// TODO' or '# implement here'.
+10. OPERATING ENVIRONMENT: Windows; shell commands run in PowerShell.
 
 AGENTIC DELIBERATION & THOUGHT TRANSPARENCY PROTOCOL:
 Before calling any tool or producing your final answer, formulate your internal reasoning inside <thought>...</thought> tags.
@@ -614,6 +616,7 @@ YOUR TOOLKIT:
 - list_directory: Browse reports, logs, and workspace assets
 - search_web: Search the live web / NVD / CVE databases for exploit details, CVSS scores, and remediation advisories
 - verify_build: Verify that security patches and script modifications compile cleanly
+- ask_question: Ask the user to select scope boundaries, exploit depths, or remediation strategies when at an operational crossroads
 
 BUILT-IN WORKSPACE CAPABILITIES:
 - Target Recon & Port Scan : python scripts/recon_pipeline.py --target <IP_OR_HOST>
@@ -624,14 +627,15 @@ BUILT-IN WORKSPACE CAPABILITIES:
 
 STANDARDS & EXECUTION MANDATES:
 1. USE REAL TOOLS: When asked to audit, scan, investigate, or verify, USE YOUR TOOLS to execute the appropriate script or command. Never guess or hallucinate outputs.
-2. REMEDIATE & COMMIT: When patching vulnerabilities or hardening configurations, apply changes with replace_in_file, verify, and commit them via run_command (`git add <files>; git commit -m "..."; git push origin main`).
-3. CVE & CVSS MAPPING: Pair every vulnerability with CVE ID, CVSS v3.1 score, and actionable remediation code.
-4. MANDATORY FINAL SUMMARY REPORT: Conclude every task with a clear markdown executive summary:
+2. OPERATIONAL CROSSROADS (ask_question): When choosing between aggressive vs stealth recon or selecting remediation depth, call `ask_question` to render an interactive decision card.
+3. REMEDIATE & COMMIT: When patching vulnerabilities or hardening configurations, apply changes with replace_in_file, verify, and commit them via run_command (`git add <files>; git commit -m "..."; git push origin main`).
+4. CVE & CVSS MAPPING: Pair every vulnerability with CVE ID, CVSS v3.1 score, and actionable remediation code.
+5. MANDATORY FINAL SUMMARY REPORT: Conclude every task with a clear markdown executive summary:
    - 🎯 **Objective**: Target and scope of assessment.
    - 🔍 **Findings & Actions**: Concrete findings (CVEs, ports, secrets, crypto) or patches applied.
    - 🧪 **Verification**: Proof of patch or scan output.
    - 🚀 **Git / Status**: Commit or audit artifact status.
-5. You are operating on Windows with Python 3.14 and PowerShell available.
+6. You are operating on Windows with Python 3.14 and PowerShell available.
 
 AGENTIC DELIBERATION & THOUGHT TRANSPARENCY PROTOCOL:
 Before calling any tool or producing your final answer, formulate your internal reasoning inside <thought>...</thought> tags.
@@ -826,8 +830,82 @@ OLLAMA_TOOLS = [
                 }
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "ask_question",
+            "description": "Use this tool to ask the user an interactive question when facing architectural crossroads (e.g. Tailwind vs Vanilla CSS, SQLite vs PostgreSQL, REST vs GraphQL). Renders an interactive selectable button group dialog in the chat instead of guessing or outputting plain text, and pauses execution until the user selects or inputs their choice.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {
+                        "type": "string",
+                        "description": "The specific question or architectural crossroads to ask the user."
+                    },
+                    "options": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "The selectable options. Must have at least 2 options. Prefix the recommended choice with '(Recommended) ', e.g. ['(Recommended) Tailwind CSS', 'Vanilla CSS', 'CSS Modules']."
+                    },
+                    "is_multi_select": {
+                        "type": "boolean",
+                        "description": "Set to true if user can select multiple options simultaneously; false for single-choice button group."
+                    },
+                    "questions": {
+                        "type": "array",
+                        "description": "Optional list of question objects if asking multiple questions: [{'question': '...', 'options': ['...'], 'is_multi_select': false}].",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "question": {"type": "string", "description": "The question title"},
+                                "options": {"type": "array", "items": {"type": "string"}, "description": "Selectable choices"},
+                                "is_multi_select": {"type": "boolean", "description": "Allow multi-select"}
+                            }
+                        }
+                    }
+                },
+                "required": ["question", "options"]
+            }
+        }
     }
 ]
+
+def _to_gemini_param(prop_def: dict) -> dict:
+    ptype = prop_def.get("type", "string").lower()
+    desc = prop_def.get("description", "")
+    if ptype == "integer":
+        return {"type": "INTEGER", "description": desc}
+    elif ptype == "boolean":
+        return {"type": "BOOLEAN", "description": desc}
+    elif ptype == "array":
+        items = prop_def.get("items", {})
+        itype = items.get("type", "string").lower()
+        if itype == "string":
+            return {"type": "ARRAY", "description": desc, "items": {"type": "STRING"}}
+        elif itype == "object":
+            return {
+                "type": "ARRAY",
+                "description": desc,
+                "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                        ik: _to_gemini_param(iv) for ik, iv in items.get("properties", {}).items()
+                    }
+                }
+            }
+        else:
+            return {"type": "ARRAY", "description": desc, "items": {"type": "STRING"}}
+    elif ptype == "object":
+        return {
+            "type": "OBJECT",
+            "description": desc,
+            "properties": {
+                ok: _to_gemini_param(ov) for ok, ov in prop_def.get("properties", {}).items()
+            }
+        }
+    else:
+        return {"type": "STRING", "description": desc}
 
 # Convert to Gemini Function Declarations
 GEMINI_TOOLS = [
@@ -839,10 +917,7 @@ GEMINI_TOOLS = [
                 "parameters": {
                     "type": "OBJECT",
                     "properties": {
-                        k: {
-                            "type": "INTEGER" if v.get("type") == "integer" else ("BOOLEAN" if v.get("type") == "boolean" else "STRING"),
-                            "description": v.get("description", "")
-                        }
+                        k: _to_gemini_param(v)
                         for k, v in t["function"]["parameters"].get("properties", {}).items()
                     },
                     "required": t["function"]["parameters"].get("required", [])
@@ -862,6 +937,122 @@ CLAUDE_TOOLS = [
     }
     for t in OLLAMA_TOOLS
 ]
+
+# --- Interactive Decision Dialogs Registry (ask_question) -----------------------
+
+_PENDING_QUESTIONS: dict[str, dict] = {}
+_QUESTIONS_LOCK = threading.Lock()
+
+def _normalize_questions(args: dict) -> list[dict]:
+    raw_qs = args.get("questions")
+    if isinstance(raw_qs, str):
+        try:
+            raw_qs = json.loads(raw_qs)
+        except Exception:
+            raw_qs = None
+
+    if isinstance(raw_qs, list) and len(raw_qs) > 0:
+        norm_list = []
+        for q in raw_qs:
+            if isinstance(q, dict):
+                q_text = str(q.get("question", "")).strip()
+                raw_opts = q.get("options", [])
+                if isinstance(raw_opts, str):
+                    opts = [o.strip() for o in re.split(r'[,;\n]', raw_opts) if o.strip()]
+                elif isinstance(raw_opts, (list, tuple)):
+                    opts = [str(o).strip() for o in raw_opts if str(o).strip()]
+                else:
+                    opts = []
+                is_multi = bool(q.get("is_multi_select", False))
+                if q_text and len(opts) >= 2:
+                    norm_list.append({"question": q_text, "options": opts, "is_multi_select": is_multi})
+        if norm_list:
+            return norm_list
+
+    q_text = str(args.get("question", "Which architectural approach or framework do you prefer?")).strip()
+    raw_opts = args.get("options", [])
+    if isinstance(raw_opts, str):
+        opts = [o.strip() for o in re.split(r'[,;\n]', raw_opts) if o.strip()]
+    elif isinstance(raw_opts, (list, tuple)):
+        opts = [str(o).strip() for o in raw_opts if str(o).strip()]
+    else:
+        opts = []
+
+    if len(opts) < 2:
+        opts = ["(Recommended) Standard Setup", "Alternative Configuration"]
+
+    is_multi = bool(args.get("is_multi_select", False))
+    return [{"question": q_text, "options": opts, "is_multi_select": is_multi}]
+
+def _exec_interactive_decision(args: dict, call_id: str, sid: str):
+    t0_q = time.time()
+    normalized_qs = _normalize_questions(args)
+    q_id = f"q_{int(time.time()*1000)}_{uuid.uuid4().hex[:6]}"
+
+    # Emit interactive question SSE event
+    yield {
+        "type": "ask_question",
+        "id": q_id,
+        "call_id": call_id,
+        "questions": normalized_qs
+    }
+
+    # Register question event and wait
+    evt = threading.Event()
+    with _QUESTIONS_LOCK:
+        _PENDING_QUESTIONS[q_id] = {
+            "id": q_id,
+            "call_id": call_id,
+            "sid": sid,
+            "questions": normalized_qs,
+            "event": evt,
+            "answer": None,
+            "created_at": time.time()
+        }
+
+    answered = evt.wait(timeout=300)
+    with _QUESTIONS_LOCK:
+        q_record = _PENDING_QUESTIONS.pop(q_id, {})
+
+    ans_data = q_record.get("answer")
+    dur = round(time.time() - t0_q, 2)
+    if not answered or not ans_data:
+        first_opt = normalized_qs[0]["options"][0] if normalized_qs[0].get("options") else "Default"
+        out_msg = f"User decision timed out after 300s. Proceeding with recommended choice: {first_opt}"
+    else:
+        answers_list = ans_data.get("answers", [])
+        custom_txt = ans_data.get("custom_choice", "")
+        formatted_answers = []
+        for a in answers_list:
+            q_title = a.get("question", "")
+            selected = a.get("selected", [])
+            custom = a.get("custom_text", "")
+            items = list(selected)
+            if custom:
+                items.append(f"Custom: '{custom}'")
+            formatted_answers.append(f"{q_title}: {', '.join(items)}")
+        if not formatted_answers and custom_txt:
+            formatted_answers.append(f"User specified: {custom_txt}")
+        out_msg = f"User selected the following architectural choice:\n" + "\n".join(formatted_answers)
+
+    result = {
+        "output": out_msg,
+        "exit_code": 0,
+        "duration": dur,
+        "question_id": q_id
+    }
+
+    yield {
+        "type": "tool_result",
+        "name": "ask_question",
+        "output": result.get("output", ""),
+        "exit_code": 0,
+        "duration": dur,
+        "id": call_id,
+        "question_id": q_id
+    }
+
+    return result
 
 # --- Safe Tool Execution Engine Scoped to Active Project -----------------------
 
@@ -1497,6 +1688,9 @@ def _get_tool_rationale_desc(name: str, args: dict, proj_id: str = "spectre") ->
     elif name == "handoff_to_spectre":
         tp = args.get("target_paths", ".")
         return f"Triggering automated security audit on `{tp}`\n• Why this step: Auditing code for hardcoded secrets, weak cryptographic primitives, and vulnerabilities."
+    elif name == "ask_question":
+        q_txt = args.get("question") or (args.get("questions", [{}])[0].get("question", "") if isinstance(args.get("questions"), list) else "architectural crossroads")
+        return f"Presenting interactive decision dialog to user: '{q_txt}'\n• Why this step: Solicits explicit user alignment on architectural stack and design preference instead of guessing."
     else:
         return f"Executing tool `{name}`\n• Why this step: Executing required step in agentic workflow."
 
@@ -1504,7 +1698,10 @@ def _get_tool_evaluation_desc(name: str, result: dict) -> str:
     exit_code = result.get("exit_code", 0)
     dur = result.get("duration", 0.0)
     out = (result.get("output", "") or "").strip()
-    if exit_code == 0:
+    if name == "ask_question":
+        clean_ans = out.replace("User decision received: ", "").replace("User selected the following architectural choice:\n", "")[:180]
+        return f"User answered interactive decision dialog: {clean_ans}\n• Evaluation: Architectural choice locked. Aligning codebase and proceeding with implementation..."
+    elif exit_code == 0:
         summary = out[:160] if out else "Execution succeeded with clean output"
         return f"Tool `{name}` completed successfully (Exit 0 in {dur:.2f}s).\n• Evaluation: {summary}. Formulating next step..."
     else:
@@ -1959,19 +2156,22 @@ def _run_gemini_turn_loop(system_instruction: str, contents: list, sid: str, aut
                     "id": call_id
                 }
 
-                result = _dispatch_tool(name, args)
+                if name == "ask_question":
+                    result = yield from _exec_interactive_decision(args, call_id, sid)
+                else:
+                    result = _dispatch_tool(name, args)
 
-                yield {
-                    "type": "tool_result",
-                    "name": name,
-                    "output": result.get("output", ""),
-                    "exit_code": result.get("exit_code", 0),
-                    "duration": result.get("duration", 0.0),
-                    "diff": result.get("diff", ""),
-                    "snapshot_id": result.get("snapshot_id", ""),
-                    "path": result.get("path", ""),
-                    "id": call_id
-                }
+                    yield {
+                        "type": "tool_result",
+                        "name": name,
+                        "output": result.get("output", ""),
+                        "exit_code": result.get("exit_code", 0),
+                        "duration": result.get("duration", 0.0),
+                        "diff": result.get("diff", ""),
+                        "snapshot_id": result.get("snapshot_id", ""),
+                        "path": result.get("path", ""),
+                        "id": call_id
+                    }
 
                 # Explain evaluation of tool output
                 eval_step = _get_tool_evaluation_desc(name, result)
@@ -2320,19 +2520,22 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                             "id": call_id
                         }
 
-                        result = _dispatch_tool(tname, targs)
+                        if tname == "ask_question":
+                            result = yield from _exec_interactive_decision(targs, call_id, sid)
+                        else:
+                            result = _dispatch_tool(tname, targs)
 
-                        yield {
-                            "type": "tool_result",
-                            "name": tname,
-                            "output": result.get("output", ""),
-                            "exit_code": result.get("exit_code", 0),
-                            "duration": result.get("duration", 0.0),
-                            "diff": result.get("diff", ""),
-                            "snapshot_id": result.get("snapshot_id", ""),
-                            "path": result.get("path", ""),
-                            "id": call_id
-                        }
+                            yield {
+                                "type": "tool_result",
+                                "name": tname,
+                                "output": result.get("output", ""),
+                                "exit_code": result.get("exit_code", 0),
+                                "duration": result.get("duration", 0.0),
+                                "diff": result.get("diff", ""),
+                                "snapshot_id": result.get("snapshot_id", ""),
+                                "path": result.get("path", ""),
+                                "id": call_id
+                            }
 
                         eval_step = _get_tool_evaluation_desc(tname, result)
                         yield {"type": "thinking", "text": f"Local Autonomous Engine: {eval_step}"}
@@ -2361,19 +2564,22 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                             "id": call_id
                         }
 
-                        result = _dispatch_tool(fallback_name, fallback_args)
+                        if fallback_name == "ask_question":
+                            result = yield from _exec_interactive_decision(fallback_args, call_id, sid)
+                        else:
+                            result = _dispatch_tool(fallback_name, fallback_args)
 
-                        yield {
-                            "type": "tool_result",
-                            "name": fallback_name,
-                            "output": result.get("output", ""),
-                            "exit_code": result.get("exit_code", 0),
-                            "duration": result.get("duration", 0.0),
-                            "diff": result.get("diff", ""),
-                            "snapshot_id": result.get("snapshot_id", ""),
-                            "path": result.get("path", ""),
-                            "id": call_id
-                        }
+                            yield {
+                                "type": "tool_result",
+                                "name": fallback_name,
+                                "output": result.get("output", ""),
+                                "exit_code": result.get("exit_code", 0),
+                                "duration": result.get("duration", 0.0),
+                                "diff": result.get("diff", ""),
+                                "snapshot_id": result.get("snapshot_id", ""),
+                                "path": result.get("path", ""),
+                                "id": call_id
+                            }
 
                         eval_step = _get_tool_evaluation_desc(fallback_name, result)
                         yield {"type": "thinking", "text": f"Local Autonomous Engine: {eval_step}"}
@@ -2768,6 +2974,23 @@ class _Handler(BaseHTTPRequestHandler):
 
         if path == "/api/chat":
             self._handle_chat_stream(body)
+
+        elif path == "/api/chat/answer":
+            qid = body.get("questionId", "").strip()
+            answers = body.get("answers", [])
+            custom_choice = body.get("customChoice", "")
+            with _QUESTIONS_LOCK:
+                q_record = _PENDING_QUESTIONS.get(qid)
+                if q_record:
+                    q_record["answer"] = {
+                        "answers": answers,
+                        "custom_choice": custom_choice
+                    }
+                    q_record["event"].set()
+                    self._json_resp({"ok": True, "message": "Decision answer recorded successfully."})
+                    return
+
+            self._json_resp({"error": f"Question {qid} not found or already answered.", "ok": False}, 404)
 
         elif path == "/api/docker/start":
             docker_exe = Path(r"C:\Program Files\Docker\Docker\Docker Desktop.exe")
