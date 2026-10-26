@@ -333,6 +333,16 @@ DEFAULT_PROJECTS = {
         "pinned": True,
         "icon": "shield"
     },
+    "research": {
+        "id": "research",
+        "name": "research",
+        "title": "General Research & Learning",
+        "path": str(ROOT / "research"),
+        "category": "Learning & Research",
+        "description": "Sandbox workspace for general research, learning notes, snippets, and reviews",
+        "pinned": True,
+        "icon": "book"
+    },
     "trackrai": {
         "id": "trackrai",
         "name": "trackrai",
