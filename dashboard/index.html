@@ -1821,6 +1821,275 @@
     }
     .preview-hint.hidden { opacity: 0; }
 
+    /* Workspace Files & Code Viewer Drawer */
+    #files-drawer {
+      height: 420px;
+      background: #090912;
+      border-top: 1px solid var(--border2);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: height 0.25s ease;
+      position: relative;
+    }
+    #files-drawer.collapsed {
+      height: 0;
+      border-top: none;
+      overflow: hidden;
+    }
+    #files-drawer.expanded {
+      height: 680px;
+    }
+    #files-header {
+      padding: 7px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .files-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .files-header-middle {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      margin: 0 12px;
+    }
+    .files-breadcrumb {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #94a3b8;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .files-header-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-left: auto;
+    }
+    #files-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    #files-tree-panel {
+      width: 280px;
+      min-width: 220px;
+      max-width: 340px;
+      background: #06060c;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .files-tree-search-bar {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.25);
+    }
+    #files-filter-input {
+      width: 100%;
+      background: #0c0c16;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: #e2e8f0;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 8px;
+      outline: none;
+      box-sizing: border-box;
+    }
+    #files-filter-input:focus {
+      border-color: var(--accent);
+    }
+    .files-tree-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 6px 4px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+    }
+    .files-tree-list::-webkit-scrollbar {
+      width: 5px;
+    }
+    .files-tree-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    .tree-node-item {
+      display: flex;
+      align-items: center;
+      padding: 3px 6px;
+      cursor: pointer;
+      border-radius: 4px;
+      color: #cbd5e1;
+      user-select: none;
+      gap: 5px;
+      transition: background 0.12s, color 0.12s;
+      white-space: nowrap;
+    }
+    .tree-node-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+    .tree-node-item.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .tree-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 12px;
+      height: 12px;
+      font-size: 9px;
+      color: #64748b;
+      transition: transform 0.15s ease;
+      cursor: pointer;
+    }
+    .tree-arrow.expanded {
+      transform: rotate(90deg);
+      color: #94a3b8;
+    }
+    .tree-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+    .tree-label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .tree-size-badge {
+      font-size: 10px;
+      color: #64748b;
+      margin-left: auto;
+      padding-left: 6px;
+      font-family: var(--mono);
+    }
+    .tree-children {
+      padding-left: 14px;
+      display: block;
+    }
+    .tree-children.hidden-folder {
+      display: none;
+    }
+    .files-loading-state {
+      padding: 20px 10px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    #files-viewer-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #030307;
+      position: relative;
+      overflow: hidden;
+    }
+    .files-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+      background: #05050a;
+    }
+    #files-code-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #files-meta-bar {
+      padding: 4px 12px;
+      background: #080812;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: #94a3b8;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    #files-code-scroll {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      background: #030307;
+    }
+    .files-line-numbers {
+      padding: 12px 10px 12px 12px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: #3b3b4f;
+      text-align: right;
+      user-select: none;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      background: #05050b;
+      flex-shrink: 0;
+    }
+    #files-code-pre {
+      flex: 1;
+      margin: 0;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      line-height: 1.5;
+      overflow: visible;
+      background: transparent;
+      color: #e2e8f0;
+    }
+    #files-code-pre code {
+      font-family: var(--mono) !important;
+      white-space: pre !important;
+      background: transparent !important;
+      padding: 0 !important;
+    }
+    #files-image-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #040409;
+      overflow: auto;
+    }
+    #files-image-preview {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+    }
+
     /* Skills Slash Command Autocomplete Popup */
     .skills-popup {
       position: absolute;
@@ -3824,6 +4093,10 @@
           Settings
         </button>
 
+        <button class="header-btn" id="btn-files-toggle" onclick="toggleFilesDrawer()" title="Toggle Workspace Files Explorer & Code Viewer">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          Files
+        </button>
         <button class="header-btn" id="btn-preview-toggle" onclick="togglePreview()" title="Toggle Live Web Preview (:3000, :5173, :8000)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           Preview
@@ -3853,6 +4126,73 @@
         <h2 id="empty-title">ARCHITECT is ready</h2>
         <p id="empty-desc">Your autonomous web development intelligence. Prompt it to scaffold Next.js apps, generate React components, test FastAPI routes, or audit your codebase.</p>
         <div class="quick-prompts" id="quick-prompts"></div>
+      </div>
+    </div>
+
+    <!-- Workspace Files & Code Viewer Drawer (Collapsible) -->
+    <div id="files-drawer" class="collapsed">
+      <div id="files-header">
+        <div class="files-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          <span id="files-title-text">Workspace Files Explorer</span> — <span id="files-proj-name" style="color:#fff;margin-left:4px">spectre</span>
+        </div>
+        <div class="files-header-middle">
+          <span id="files-active-breadcrumb" class="files-breadcrumb">No file selected</span>
+        </div>
+        <div class="files-header-actions">
+          <button class="code-btn" id="btn-files-copy" onclick="copyCurrentCode()" title="Copy active file content" style="display:none;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+          <button class="code-btn" id="btn-files-download" onclick="downloadCurrentCode()" title="Download file" style="display:none;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </button>
+          <button class="code-btn" onclick="refreshWorkspaceTree()" title="Refresh file tree">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+          <button class="code-btn" id="btn-files-expand" onclick="toggleFilesExpand()" title="Toggle full height">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+            Expand
+          </button>
+          <button class="code-btn" onclick="toggleFilesDrawer()" title="Close Files drawer">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Close
+          </button>
+        </div>
+      </div>
+      <div id="files-body">
+        <!-- Left panel: File Tree with Search -->
+        <div id="files-tree-panel">
+          <div class="files-tree-search-bar">
+            <input type="text" id="files-filter-input" placeholder="Filter files (e.g. .py, test)..." oninput="filterFileTree(this.value)" />
+          </div>
+          <div id="files-tree-list" class="files-tree-list">
+            <div class="files-loading-state">Loading workspace tree...</div>
+          </div>
+        </div>
+        <!-- Right panel: Code / Image Viewer -->
+        <div id="files-viewer-panel">
+          <div id="files-empty-hint" class="files-hint">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.35; margin-bottom:8px;"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            <p>Select a file from the workspace tree to view with syntax highlighting, line numbers, or preview images.</p>
+          </div>
+          <div id="files-code-container" style="display:none;">
+            <div id="files-meta-bar">
+              <span id="files-meta-lines">0 lines</span>
+              <span id="files-meta-size">0 KB</span>
+              <span id="files-meta-type">plaintext</span>
+            </div>
+            <div id="files-code-scroll">
+              <div id="files-line-numbers" class="files-line-numbers"></div>
+              <pre id="files-code-pre"><code id="files-code-block"></code></pre>
+            </div>
+          </div>
+          <div id="files-image-container" style="display:none;">
+            <img id="files-image-preview" src="" alt="Preview" />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -5195,6 +5535,14 @@ function updateProjectUI() {
   // Update Live Web Preview for active project
   if (typeof updatePreviewDrawerForProject === 'function') {
     updatePreviewDrawerForProject(activeProjectData);
+  }
+
+  // Update Files Drawer for active project
+  const filesProjName = document.getElementById('files-proj-name');
+  if (filesProjName) filesProjName.textContent = activeProjectData.name;
+  const filesDrawer = document.getElementById('files-drawer');
+  if (filesDrawer && !filesDrawer.classList.contains('collapsed')) {
+    refreshWorkspaceTree();
   }
 
   // Render project specific chips
@@ -6845,6 +7193,329 @@ function copyLastResponse() {
   if (msgs.length) {
     navigator.clipboard.writeText(msgs[msgs.length - 1].content);
     alert('Last response copied to clipboard!');
+  }
+}
+
+// ── Workspace Files Explorer & Code Viewer ──────────────────────────────────
+let _workspaceTreeData = null;
+let _currentFilePath = null;
+let _currentFileContent = null;
+let _isFilesLoading = false;
+
+function toggleFilesDrawer() {
+  const drawer = document.getElementById('files-drawer');
+  const btn = document.getElementById('btn-files-toggle');
+  drawer.classList.toggle('collapsed');
+  const isOpen = !drawer.classList.contains('collapsed');
+  if (btn) btn.classList.toggle('active-btn', isOpen);
+  if (isOpen) {
+    const projName = activeProjectData ? (activeProjectData.name || activeProjectData.id) : activeProjectId;
+    const titleEl = document.getElementById('files-proj-name');
+    if (titleEl) titleEl.textContent = projName;
+    if (!_workspaceTreeData) {
+      loadWorkspaceTree();
+    }
+  }
+}
+
+function toggleFilesExpand() {
+  const drawer = document.getElementById('files-drawer');
+  const btn = document.getElementById('btn-files-expand');
+  if (!drawer) return;
+  drawer.classList.toggle('expanded');
+  const isExp = drawer.classList.contains('expanded');
+  if (btn) {
+    btn.innerHTML = isExp 
+      ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg> Restore`
+      : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg> Expand`;
+  }
+}
+
+function refreshWorkspaceTree() {
+  _workspaceTreeData = null;
+  loadWorkspaceTree();
+}
+
+async function loadWorkspaceTree() {
+  const listEl = document.getElementById('files-tree-list');
+  if (!listEl) return;
+  listEl.innerHTML = `<div class="files-loading-state"><span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Loading workspace files...</div>`;
+  _isFilesLoading = true;
+
+  try {
+    const res = await fetch('/api/workspace/tree');
+    const data = await res.json();
+    if (data.ok) {
+      _workspaceTreeData = data.tree || [];
+      const projName = data.project_name || activeProjectId;
+      const titleEl = document.getElementById('files-proj-name');
+      if (titleEl) titleEl.textContent = projName;
+      renderTreeNodes(_workspaceTreeData, listEl, '');
+    } else {
+      listEl.innerHTML = `<div class="files-loading-state" style="color:#ef4444;">Error: ${escapeHtml(data.error || 'Failed to load tree')}</div>`;
+    }
+  } catch (err) {
+    listEl.innerHTML = `<div class="files-loading-state" style="color:#ef4444;">Failed to fetch tree: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    _isFilesLoading = false;
+  }
+}
+
+function getFileIconSvg(name, isDir, isExpanded) {
+  if (isDir) {
+    return isExpanded
+      ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><polygon points="2 10 22 10 20 21 4 21 2 10"/></svg>`
+      : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+  }
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  switch (ext) {
+    case 'py':
+      return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`;
+    case 'js':
+    case 'jsx':
+    case 'ts':
+    case 'tsx':
+    case 'mjs':
+      return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+    case 'html':
+    case 'htm':
+      return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`;
+    case 'css':
+    case 'scss':
+    case 'sass':
+    case 'less':
+      return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+    case 'json':
+    case 'yml':
+    case 'yaml':
+    case 'toml':
+      return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+    case 'md':
+    case 'markdown':
+    case 'txt':
+    case 'rst':
+      return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+    case 'png':
+    case 'jpg':
+    case 'jpeg':
+    case 'gif':
+    case 'svg':
+    case 'ico':
+    case 'webp':
+      return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+    default:
+      return `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+  }
+}
+
+function formatBytes(bytes) {
+  if (bytes === undefined || bytes === null) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function renderTreeNodes(entries, container, query) {
+  if (!entries || !entries.length) {
+    container.innerHTML = `<div class="files-loading-state">No files found</div>`;
+    return;
+  }
+  container.innerHTML = '';
+  const q = (query || '').toLowerCase().trim();
+
+  function buildNode(item) {
+    const isDir = item.type === 'directory';
+    const hasChildren = isDir && item.children && item.children.length > 0;
+    
+    // Check if matches query
+    const nameMatches = !q || item.name.toLowerCase().includes(q) || item.path.toLowerCase().includes(q);
+    const childMatches = isDir && item.children && item.children.some(c => hasQueryMatch(c, q));
+    if (q && !nameMatches && !childMatches) return null;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'tree-node-wrap';
+
+    const row = document.createElement('div');
+    row.className = 'tree-node-item';
+    row.dataset.path = item.path;
+    row.dataset.type = item.type;
+
+    // Arrow
+    const arrow = document.createElement('span');
+    arrow.className = 'tree-arrow' + (q && childMatches ? ' expanded' : '');
+    arrow.innerHTML = isDir ? '▶' : '';
+    row.appendChild(arrow);
+
+    // Icon
+    const icon = document.createElement('span');
+    icon.className = 'tree-icon';
+    icon.innerHTML = getFileIconSvg(item.name, isDir, q && childMatches);
+    row.appendChild(icon);
+
+    // Label
+    const label = document.createElement('span');
+    label.className = 'tree-label';
+    label.textContent = item.name;
+    row.appendChild(label);
+
+    // Size badge for files
+    if (!isDir && item.size !== undefined) {
+      const sizeBadge = document.createElement('span');
+      sizeBadge.className = 'tree-size-badge';
+      sizeBadge.textContent = formatBytes(item.size);
+      row.appendChild(sizeBadge);
+    }
+
+    wrap.appendChild(row);
+
+    if (isDir) {
+      const childrenCont = document.createElement('div');
+      childrenCont.className = 'tree-children' + (q && childMatches ? '' : ' hidden-folder');
+      if (item.children) {
+        item.children.forEach(child => {
+          const childNode = buildNode(child);
+          if (childNode) childrenCont.appendChild(childNode);
+        });
+      }
+      wrap.appendChild(childrenCont);
+
+      row.onclick = (e) => {
+        e.stopPropagation();
+        const isCollapsed = childrenCont.classList.toggle('hidden-folder');
+        arrow.classList.toggle('expanded', !isCollapsed);
+        icon.innerHTML = getFileIconSvg(item.name, true, !isCollapsed);
+      };
+    } else {
+      row.onclick = (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.tree-node-item.active').forEach(el => el.classList.remove('active'));
+        row.classList.add('active');
+        openFileInViewer(item.path);
+      };
+    }
+
+    return wrap;
+  }
+
+  function hasQueryMatch(item, queryStr) {
+    if (!queryStr) return true;
+    if (item.name.toLowerCase().includes(queryStr) || item.path.toLowerCase().includes(queryStr)) return true;
+    if (item.children) {
+      return item.children.some(c => hasQueryMatch(c, queryStr));
+    }
+    return false;
+  }
+
+  entries.forEach(entry => {
+    const node = buildNode(entry);
+    if (node) container.appendChild(node);
+  });
+}
+
+function filterFileTree(query) {
+  const container = document.getElementById('files-tree-list');
+  if (!_workspaceTreeData || !container) return;
+  renderTreeNodes(_workspaceTreeData, container, query);
+}
+
+async function openFileInViewer(relPath) {
+  _currentFilePath = relPath;
+  const breadcrumb = document.getElementById('files-active-breadcrumb');
+  const emptyHint = document.getElementById('files-empty-hint');
+  const codeCont = document.getElementById('files-code-container');
+  const imgCont = document.getElementById('files-image-container');
+  const copyBtn = document.getElementById('btn-files-copy');
+  const dlBtn = document.getElementById('btn-files-download');
+
+  if (breadcrumb) breadcrumb.textContent = relPath;
+  if (emptyHint) emptyHint.style.display = 'none';
+
+  try {
+    const res = await fetch(`/api/workspace/file?path=${encodeURIComponent(relPath)}`);
+    const data = await res.json();
+    if (!data.ok) {
+      if (codeCont) codeCont.style.display = 'flex';
+      if (imgCont) imgCont.style.display = 'none';
+      document.getElementById('files-line-numbers').innerHTML = '1';
+      document.getElementById('files-code-block').textContent = `Error loading file: ${data.error || 'Unknown error'}`;
+      if (copyBtn) copyBtn.style.display = 'none';
+      if (dlBtn) dlBtn.style.display = 'none';
+      return;
+    }
+
+    if (data.is_image && data.data_url) {
+      if (codeCont) codeCont.style.display = 'none';
+      if (imgCont) imgCont.style.display = 'flex';
+      const img = document.getElementById('files-image-preview');
+      if (img) img.src = data.data_url;
+      if (copyBtn) copyBtn.style.display = 'none';
+      if (dlBtn) dlBtn.style.display = 'inline-flex';
+      _currentFileContent = null;
+    } else {
+      if (imgCont) imgCont.style.display = 'none';
+      if (codeCont) codeCont.style.display = 'flex';
+      _currentFileContent = data.content || '';
+
+      // Meta bar
+      const metaLines = document.getElementById('files-meta-lines');
+      const metaSize = document.getElementById('files-meta-size');
+      const metaType = document.getElementById('files-meta-type');
+      if (metaLines) metaLines.textContent = `${data.lines_count || 0} lines`;
+      if (metaSize) metaSize.textContent = formatBytes(data.size || 0);
+      if (metaType) metaType.textContent = (relPath.split('.').pop() || 'plaintext').toUpperCase();
+
+      // Line numbers column
+      const lineCount = data.lines_count || 1;
+      let lineNums = '';
+      for (let i = 1; i <= lineCount; i++) {
+        lineNums += i + '\n';
+      }
+      document.getElementById('files-line-numbers').textContent = lineNums;
+
+      // Code block
+      const codeEl = document.getElementById('files-code-block');
+      codeEl.textContent = _currentFileContent;
+      // remove any previous hljs class
+      codeEl.className = '';
+      if (window.hljs) {
+        hljs.highlightElement(codeEl);
+      }
+
+      if (copyBtn) copyBtn.style.display = 'inline-flex';
+      if (dlBtn) dlBtn.style.display = 'inline-flex';
+    }
+  } catch (err) {
+    if (codeCont) codeCont.style.display = 'flex';
+    if (imgCont) imgCont.style.display = 'none';
+    document.getElementById('files-code-block').textContent = `Network error loading file: ${err.message}`;
+  }
+}
+
+function copyCurrentCode() {
+  if (_currentFileContent === null || _currentFileContent === undefined) return;
+  navigator.clipboard.writeText(_currentFileContent).then(() => {
+    showToast(`Copied ${_currentFilePath || 'file'} to clipboard!`, 'success');
+  }).catch(() => {
+    alert('Failed to copy to clipboard.');
+  });
+}
+
+function downloadCurrentCode() {
+  if (!_currentFilePath) return;
+  const filename = _currentFilePath.split('/').pop() || 'file';
+  if (_currentFileContent !== null && _currentFileContent !== undefined) {
+    const blob = new Blob([_currentFileContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } else {
+    // Direct link to backend
+    window.open(`/api/workspace/file?path=${encodeURIComponent(_currentFilePath)}`, '_blank');
   }
 }
 

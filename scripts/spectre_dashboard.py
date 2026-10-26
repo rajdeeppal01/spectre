@@ -3457,7 +3457,142 @@ def _get_cached_health() -> int:
             except Exception:
                 pass
         threading.Thread(target=_calc, daemon=True).start()
-    return _cached_health_score
+# --- Workspace File Tree & Code Viewer Backend (Option 4) ---------------------
+
+def _get_workspace_tree(subpath: str = ".", max_depth: int = 4) -> dict:
+    active_dir = get_active_project_path()
+    try:
+        target = _safe_resolve_path(subpath)
+    except Exception:
+        target = active_dir
+
+    if not target.exists():
+        return {
+            "workspace": str(active_dir),
+            "project": get_active_project().get("name", "spectre"),
+            "tree": [],
+            "error": f"Path '{subpath}' does not exist."
+        }
+
+    ignored_names = {
+        ".git", "node_modules", "__pycache__", ".venv", "venv", ".next", "dist",
+        "build", ".cache", ".turbo", ".idea", ".vscode", ".pytest_cache"
+    }
+
+    def walk_tree(current: Path, depth: int):
+        if depth > max_depth:
+            return []
+        items = []
+        try:
+            entries = sorted(current.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
+        except Exception:
+            return []
+
+        for p in entries:
+            name = p.name
+            if name in ignored_names:
+                continue
+            if name.startswith(".") and name not in (".env.example", ".gitignore", ".env"):
+                continue
+
+            try:
+                rel = str(p.relative_to(active_dir)).replace("\\", "/")
+            except Exception:
+                rel = str(p.name)
+
+            if p.is_dir():
+                children = walk_tree(p, depth + 1)
+                items.append({
+                    "name": name,
+                    "path": rel,
+                    "type": "directory",
+                    "children": children
+                })
+            elif p.is_file():
+                try:
+                    size = p.stat().st_size
+                except Exception:
+                    size = 0
+                items.append({
+                    "name": name,
+                    "path": rel,
+                    "type": "file",
+                    "size": size,
+                    "ext": p.suffix.lower()
+                })
+        return items
+
+    tree_items = walk_tree(target, 1)
+    return {
+        "ok": True,
+        "workspace": str(active_dir),
+        "project": get_active_project().get("name", "spectre"),
+        "project_name": get_active_project().get("name", "spectre"),
+        "subpath": subpath,
+        "tree": tree_items
+    }
+
+def _get_workspace_file_content(rel_path: str) -> dict:
+    active_dir = get_active_project_path()
+    try:
+        target = _safe_resolve_path(rel_path)
+    except Exception as exc:
+        return {"ok": False, "error": f"Invalid path '{rel_path}': {exc}"}
+
+    if not target.exists() or not target.is_file():
+        return {"ok": False, "error": f"File '{rel_path}' not found in active workspace."}
+
+    size = target.stat().st_size
+    ext = target.suffix.lower()
+    is_image = ext in (".png", ".jpg", ".jpeg", ".svg", ".ico", ".webp", ".gif")
+
+    if is_image:
+        import base64
+        try:
+            raw = target.read_bytes()
+            b64 = base64.b64encode(raw).decode("ascii")
+            mime_map = {
+                ".png": "image/png",
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".svg": "image/svg+xml",
+                ".ico": "image/x-icon",
+                ".webp": "image/webp",
+                ".gif": "image/gif"
+            }
+            mime = mime_map.get(ext, "image/png")
+            return {
+                "ok": True,
+                "path": rel_path.replace("\\", "/"),
+                "name": target.name,
+                "is_image": True,
+                "data_url": f"data:{mime};base64,{b64}",
+                "size": size,
+                "ext": ext
+            }
+        except Exception as e:
+            return {"ok": False, "error": f"Failed to load image: {e}"}
+
+    # Text file
+    try:
+        if size > 3 * 1024 * 1024:
+            return {"ok": False, "error": f"File is too large ({round(size/1024/1024, 2)} MB). Max viewable size is 3 MB."}
+        
+        content = target.read_text(encoding="utf-8", errors="replace")
+        lines = content.splitlines()
+        return {
+            "ok": True,
+            "path": rel_path.replace("\\", "/"),
+            "name": target.name,
+            "is_image": False,
+            "content": content,
+            "size": size,
+            "lines": len(lines),
+            "lines_count": len(lines),
+            "ext": ext
+        }
+    except Exception as exc:
+        return {"ok": False, "error": f"Failed to read file: {exc}"}
 
 
 # --- HTTP Server Handler -------------------------------------------------------
@@ -3586,23 +3721,21 @@ class _Handler(BaseHTTPRequestHandler):
                 "projects": proj_list
             })
 
-        elif path == "/api/workspace/files":
-            active_dir = get_active_project_path()
-            files_tree = []
-            try:
-                for item in sorted(active_dir.iterdir()):
-                    if item.name.startswith(".") or item.name in ("__pycache__", "node_modules"):
-                        continue
-                    if item.is_dir():
-                        subfiles = [f.name for f in item.iterdir() if f.is_file() and not f.name.startswith(".")][:15]
-                        files_tree.append({"dir": item.name, "count": len(subfiles), "files": subfiles})
-            except Exception:
-                pass
-            self._json_resp({
-                "workspace": str(active_dir),
-                "project": get_active_project()["name"],
-                "structure": files_tree
-            })
+        elif path in ("/api/workspace/tree", "/api/workspace/files"):
+            qs = parse_qs(parsed.query)
+            subpath = qs.get("path", ["."])[0]
+            depth = int(qs.get("depth", [4])[0])
+            self._json_resp(_get_workspace_tree(subpath, depth))
+
+        elif path == "/api/workspace/file":
+            qs = parse_qs(parsed.query)
+            target_rel = qs.get("path", [""])[0]
+            if not target_rel:
+                self._json_resp({"error": "Query parameter 'path' is required."}, 400)
+                return
+            resp_data = _get_workspace_file_content(target_rel)
+            status_code = 200 if "error" not in resp_data else 404
+            self._json_resp(resp_data, status_code)
 
         elif path == "/api/qrng":
             try:
