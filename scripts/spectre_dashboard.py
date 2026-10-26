@@ -432,6 +432,11 @@ def _load_projects_registry() -> dict:
             projects.update(saved)
         except Exception:
             pass
+    
+    # Ensure default essential workspaces like research are always present
+    for pid, pdata in DEFAULT_PROJECTS.items():
+        if pid not in projects:
+            projects[pid] = pdata
 
     # Auto-discover other desktop projects
     desktop_projects_dir = Path(r"C:\Users\rajde\OneDrive\Desktop\projects")
