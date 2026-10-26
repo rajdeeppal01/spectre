@@ -33,8 +33,8 @@
       --agent-bg:    rgba(255,255,255,0.025);
 
       --radius:      12px;
-      --font:        'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --mono:        'Fira Code', 'Cascadia Code', Consolas, monospace;
+      --font:        -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
+      --mono:        'Fira Code', 'Cascadia Code', Consolas, Menlo, monospace;
     }
 
     /* SPECTRE (Pentest) Theme - Refined Dark Obsidian / Subtle Crimson Accent */
@@ -46,7 +46,17 @@
       --user-bg:     rgba(255,255,255,0.06);
     }
 
-    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font); }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      letter-spacing: -0.01em;
+    }
 
     /* Scrollbars */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -740,10 +750,11 @@
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 22px;
+      padding: 20px 24px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 10px;
+      scroll-behavior: smooth;
     }
 
     /* Empty state */
@@ -795,167 +806,147 @@
       background: var(--accent-dim);
     }
 
-    /* Message Bubbles */
+    /* ── Antigravity-Style Clean Message Stream ─────────────────────────── */
     .msg {
       display: flex;
-      gap: 12px;
-      animation: msg-in 0.25s ease-out;
+      flex-direction: column;
+      width: 100%;
+      margin: 4px 0 12px 0;
+      animation: msg-in 0.2s ease-out;
     }
-    @keyframes msg-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-    .msg.user { flex-direction: row-reverse; }
-
-    .msg-avatar {
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      flex-shrink: 0;
-      align-self: flex-start;
-      margin-top: 2px;
+    .msg-avatar, .msg-meta {
+      display: none !important; /* Hide bulky avatars and headers for Antigravity's clean full-width stream */
     }
 
-    .msg.user .msg-avatar { background: var(--user-bg); border: 1px solid var(--accent-glow); }
-    .msg.agent .msg-avatar { background: var(--agent-bg); border: 1px solid var(--border); }
-
-    .msg-body { max-width: 84%; display: flex; flex-direction: column; gap: 7px; }
-    .msg.user .msg-body { align-items: flex-end; }
-
-    .msg-meta {
-      font-size: 10px;
-      color: var(--muted2);
-      display: flex; align-items: center; gap: 6px;
+    .msg-body {
+      width: 100%;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
     }
 
-    .msg-content {
-      padding: 13px 16px;
-      border-radius: 12px;
-      line-height: 1.7;
-      font-size: 13.5px;
-      word-break: break-word;
+    .msg.user {
+      width: 100%;
+      margin: 8px 0 14px 0;
     }
 
     .msg.user .msg-content {
-      background: var(--user-bg);
-      border: 1px solid var(--accent-glow);
-      border-top-right-radius: 4px;
-      color: var(--text);
+      background: #111422;
+      background: rgba(17, 20, 34, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 13px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #e2e8f0;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      word-break: break-word;
+      font-family: var(--font);
+      letter-spacing: -0.01em;
+      width: 100%;
+    }
+
+    .msg.agent {
+      width: 100%;
+      margin: 2px 0 14px 0;
     }
 
     .msg.agent .msg-content {
-      background: var(--agent-bg);
-      border: 1px solid var(--border);
-      border-top-left-radius: 4px;
-      color: var(--text);
+      background: transparent;
+      border: none;
+      padding: 0;
+      border-radius: 0;
+      color: #e2e8f0;
+      width: 100%;
+      font-size: 13.5px;
+      line-height: 1.6;
+      font-family: var(--font);
     }
 
-    /* Antigravity Chain-of-Thought & Live Deliberation Card */
+    /* ── Antigravity Thinking Stream (Minimalist, readable, unboxed) ───── */
     .agent-thinking-card {
-      background: rgba(15, 17, 26, 0.7);
-      border: 1px solid rgba(139, 92, 246, 0.25);
-      border-radius: 9px;
-      margin: 8px 0;
-      overflow: hidden;
+      margin: 3px 0 6px 0;
+      font-family: var(--font);
       transition: all 0.2s ease;
-      backdrop-filter: blur(8px);
-    }
-    .agent-thinking-card.active {
-      border-color: rgba(168, 85, 247, 0.6);
-      box-shadow: 0 0 16px rgba(168, 85, 247, 0.15);
-    }
-    .agent-thinking-card.completed {
-      border-color: rgba(255, 255, 255, 0.08);
-      background: rgba(14, 15, 23, 0.45);
     }
     .thinking-header {
-      padding: 7px 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      background: rgba(139, 92, 246, 0.05);
-      user-select: none;
-      font-family: var(--mono);
-      font-size: 11.5px;
-      color: #c4b5fd;
-      transition: background 0.15s ease;
-    }
-    .thinking-header:hover {
-      background: rgba(139, 92, 246, 0.1);
-    }
-    .agent-thinking-card.completed .thinking-header {
-      color: #94a3b8;
-      background: rgba(255, 255, 255, 0.02);
-    }
-    .thinking-brain-icon {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      color: #c084fc;
-      filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.5));
-      animation: brainGlow 2.5s infinite ease-in-out;
+      gap: 6px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 20px;
+      color: #94a3b8;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease, color 0.15s ease;
+      width: fit-content;
     }
-    .agent-thinking-card.completed .thinking-brain-icon {
-      color: #64748b;
-      filter: none;
-      animation: none;
+    .thinking-header:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
     }
-    @keyframes brainGlow {
-      0%, 100% { opacity: 0.8; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 9px rgba(192, 132, 252, 0.8)); }
+    .thinking-brain-icon {
+      display: none; /* Native Antigravity screenshot uses clean text without bulky icons */
     }
     .thinking-title-area {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 6px;
-      flex: 1;
+      gap: 5px;
     }
     .thinking-label {
-      font-weight: 600;
-      letter-spacing: 0.2px;
+      font-weight: 400;
+      color: inherit;
     }
     .thinking-timer {
-      font-size: 11px;
-      opacity: 0.85;
+      font-weight: 400;
+      color: inherit;
       font-variant-numeric: tabular-nums;
     }
     .thinking-pulse-dot {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
-      background: #c084fc;
-      box-shadow: 0 0 8px #c084fc;
+      background: #a855f7;
+      box-shadow: 0 0 6px #a855f7;
       animation: agyPulse 1.2s infinite ease-in-out;
+      display: inline-block;
+      margin-left: 2px;
     }
     .thinking-chevron {
       font-size: 11px;
-      opacity: 0.65;
-      transition: transform 0.2s ease;
+      color: #64748b;
+      margin-left: 2px;
+      transition: transform 0.15s ease;
       display: inline-block;
-      margin-left: auto;
     }
     .agent-thinking-card.collapsed .thinking-chevron {
       transform: rotate(-90deg);
     }
+    .agent-thinking-card:not(.collapsed) .thinking-chevron {
+      transform: rotate(0deg);
+    }
     .agent-thinking-body {
-      padding: 10px 14px;
-      background: rgba(8, 9, 14, 0.85);
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      font-size: 12px;
-      line-height: 1.65;
-      color: #cbd5e1;
-      max-height: 280px;
+      margin: 4px 0 10px 14px;
+      padding-left: 14px;
+      border-left: 2px solid rgba(255, 255, 255, 0.08);
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #94a3b8;
+      max-height: 420px;
       overflow-y: auto;
-      border-left: 2px solid rgba(168, 85, 247, 0.35);
-      margin: 0;
-      transition: max-height 0.25s ease, opacity 0.2s ease;
+      white-space: pre-wrap;
+      word-break: break-word;
+      transition: all 0.2s ease;
     }
     .agent-thinking-card.collapsed .agent-thinking-body {
       display: none;
     }
     .agent-thinking-text {
-      white-space: pre-wrap;
-      word-break: break-word;
       font-family: var(--font);
     }
     .agent-thinking-text p {
@@ -982,6 +973,164 @@
       font-size: 10.5px;
       font-weight: 600;
       margin: 4px 0;
+    }
+
+    /* ── Antigravity Compact Action Row (Analyzed / Edited / Ran) ─────── */
+    .agy-action-container {
+      margin: 2px 0;
+      font-family: var(--font);
+    }
+    .agy-action-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 3px 6px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 20px;
+      color: #94a3b8;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s ease, color 0.15s ease;
+      width: fit-content;
+      max-width: 100%;
+    }
+    .agy-action-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+    }
+    .agy-action-verb {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+    .agy-action-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .agy-code-icon {
+      color: #f97316;
+      font-weight: 700;
+      font-size: 12px;
+      font-family: var(--mono);
+      letter-spacing: -0.04em;
+    }
+    .agy-action-target {
+      color: #f1f5f9;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .agy-action-range {
+      color: #64748b;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      letter-spacing: -0.02em;
+    }
+    .agy-action-chevron {
+      font-size: 11px;
+      color: #475569;
+      margin-left: 2px;
+      transition: transform 0.15s ease;
+    }
+    .agy-action-container.expanded .agy-action-chevron {
+      transform: rotate(90deg);
+      color: #94a3b8;
+    }
+    .agy-action-spinner {
+      width: 9px;
+      height: 9px;
+      border: 1.5px solid #a855f7;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      margin-left: 2px;
+    }
+    .agy-action-drawer {
+      margin: 4px 0 6px 12px;
+      padding: 8px 12px;
+      background: rgba(6, 7, 12, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 8px;
+      max-width: 96%;
+      overflow: hidden;
+    }
+    .agy-action-drawer.collapsed {
+      display: none;
+    }
+
+    /* ── Antigravity Working Status Indicator ──────────────────────────── */
+    .agy-working-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 6px;
+      font-size: 13px;
+      color: #94a3b8;
+      font-family: var(--font);
+      margin: 2px 0 4px 0;
+    }
+    .agy-working-text {
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Antigravity Bottom Toolbar (Review Changes & Tool Icons) ──────── */
+    .agy-chat-footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 4px 4px 4px;
+      margin-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      user-select: none;
+    }
+    .agy-footer-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .agy-tool-icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .agy-tool-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #cbd5e1;
+    }
+    .agy-review-changes-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 7px;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .agy-review-changes-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.22);
+      color: #f1f5f9;
+      transform: translateY(-1px);
     }
 
     /* ── Antigravity-Style Interactive Decision Card (ask_question) ── */
@@ -1305,20 +1454,21 @@
       border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
     .msg-content h1, .msg-content h2, .msg-content h3 {
-      font-weight: 700;
-      margin: 14px 0 8px;
-      color: #93c5fd;
-      letter-spacing: -0.01em;
+      font-weight: 600;
+      margin: 16px 0 8px;
+      color: #f8fafc;
+      letter-spacing: -0.015em;
     }
-    .msg-content h1 { font-size: 16.5px; }
-    .msg-content h2 { font-size: 14.5px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px; }
-    .msg-content h3 { font-size: 13.5px; color: #93c5fd; }
+    .msg-content h1 { font-size: 17px; }
+    .msg-content h2 { font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 5px; }
+    .msg-content h3 { font-size: 13.5px; color: #f1f5f9; }
     .msg-content p {
       margin: 8px 0;
-      color: #d1d5db;
-      line-height: 1.65;
+      color: #e2e8f0;
+      font-size: 13.5px;
+      line-height: 1.6;
     }
-    .msg-content ul, .msg-content ol { padding-left: 20px; margin: 8px 0; color: #d1d5db; }
+    .msg-content ul, .msg-content ol { padding-left: 20px; margin: 8px 0; color: #e2e8f0; }
     .msg-content li { margin: 4px 0; line-height: 1.6; }
     .msg-content a {
       color: #38bdf8;
@@ -3852,6 +4002,27 @@
   </div>
 </div>
 
+<!-- ── REVIEW CHANGES & SNAPSHOTS MODAL ───────────────────────────────────── -->
+<div id="review-changes-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeReviewChangesModal()">
+  <div class="modal-dialog" style="max-width: 820px; width: 92%;">
+    <div class="modal-header">
+      <div class="modal-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <div>
+          <h3>Review Changes & Snapshots</h3>
+          <p>Inspect visual diffs and restore rollback snapshots for files edited in this session</p>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeReviewChangesModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="review-changes-body" style="padding: 16px; max-height: 540px; overflow-y: auto;">
+      <!-- Populated dynamically -->
+    </div>
+  </div>
+</div>
+
 <!-- ── PERSONA HELP & REFERENCE MODAL ────────────────────────────────────── -->
 <div id="help-modal" class="modal-overlay hidden" onclick="if(event.target===this) closeHelpModal()">
   <div class="modal-dialog" style="max-width: 680px;">
@@ -5628,6 +5799,145 @@ function copyCode(btn) {
   });
 }
 
+// ── Antigravity Chat Stream & Session File Tracking ─────────────────────────
+let sessionModifiedFiles = [];
+
+function recordSessionModifiedFile(item) {
+  if (!item || !item.path) return;
+  const existingIdx = sessionModifiedFiles.findIndex(f => f.path === item.path);
+  if (existingIdx >= 0) {
+    sessionModifiedFiles[existingIdx] = item;
+  } else {
+    sessionModifiedFiles.unshift(item);
+  }
+}
+
+function openReviewChangesModal() {
+  const modal = document.getElementById('review-changes-modal');
+  const body = document.getElementById('review-changes-body');
+  if (!modal || !body) return;
+
+  if (!sessionModifiedFiles.length) {
+    body.innerHTML = `
+      <div style="text-align:center; padding: 40px 20px; color:#94a3b8;">
+        <div style="font-size:36px; margin-bottom:12px; opacity:0.8;">📄</div>
+        <div style="font-size:14px; font-weight:600; color:#e2e8f0; margin-bottom:6px;">No Code Changes in This Session Yet</div>
+        <div style="font-size:12px; line-height:1.6; max-width:440px; margin:0 auto; color:#64748b;">
+          When the agent writes files, patches code, or modifies files in your active workspace, visual diffs and 1-click rollback snapshots will appear here for review.
+        </div>
+      </div>
+    `;
+  } else {
+    body.innerHTML = sessionModifiedFiles.map(file => `
+      <div class="tool-diff-container" style="margin-bottom: 16px;">
+        <div class="tool-diff-header" style="padding: 8px 12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span>${getFileIconHtml(file.path)}</span>
+            <span class="diff-title" style="font-size:12px; font-weight:600; color:#f1f5f9;">${escapeHtml(file.path)}</span>
+          </div>
+          ${file.snapshotId ? `<button class="diff-revert-btn" onclick="revertSnapshot('${file.snapshotId}', this)">Revert Changes</button>` : ''}
+        </div>
+        <pre class="tool-diff-pre" style="max-height: 280px;">${formatDiffHtml(file.diff)}</pre>
+      </div>
+    `).join('');
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeReviewChangesModal() {
+  const modal = document.getElementById('review-changes-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function getFileIconHtml(filename) {
+  const ext = (filename || '').split('.').pop().toLowerCase();
+  if (['py'].includes(ext)) {
+    return '<span>🐍</span>';
+  }
+  if (['html', 'htm', 'jsx', 'tsx', 'vue', 'svelte', 'js', 'mjs', 'ts'].includes(ext)) {
+    return '<span class="agy-code-icon">&lt;/&gt;</span>';
+  }
+  if (['css', 'scss', 'less', 'sass'].includes(ext)) {
+    return '<span>🎨</span>';
+  }
+  if (['json', 'yaml', 'yml', 'toml', 'env', 'config'].includes(ext)) {
+    return '<span style="color:#eab308; font-weight:700; font-family:var(--mono);">{ }</span>';
+  }
+  if (['md', 'txt', 'rst', 'pdf', 'doc'].includes(ext)) {
+    return '<span>📄</span>';
+  }
+  return '<span>📄</span>';
+}
+
+function toggleActionDrawer(id) {
+  const container = document.getElementById(`tool-${id}`);
+  const drawer = document.getElementById(`drawer-${id}`);
+  if (!drawer) return;
+  drawer.classList.toggle('collapsed');
+  if (container) {
+    container.classList.toggle('expanded', !drawer.classList.contains('collapsed'));
+  }
+}
+
+function toggleThought(headerEl) {
+  const container = headerEl.closest('.agent-thinking-card') || headerEl.closest('.agy-thought-container');
+  if (!container) return;
+  container.classList.toggle('collapsed');
+  const chevron = container.querySelector('.thinking-chevron') || container.querySelector('.agy-thought-chevron');
+  if (chevron) {
+    chevron.textContent = container.classList.contains('collapsed') ? '>' : '▾';
+  }
+}
+
+function renderWorkingIndicator(parentEl) {
+  removeWorkingIndicator();
+  const row = document.createElement('div');
+  row.className = 'agy-working-row';
+  row.id = 'streaming-working-indicator';
+  row.innerHTML = `<span class="agy-working-text">Working..</span>`;
+  parentEl.appendChild(row);
+}
+
+function removeWorkingIndicator() {
+  const el = document.getElementById('streaming-working-indicator');
+  if (el) el.remove();
+}
+
+function ensureChatFooterBar(container) {
+  if (!container) return;
+  let bar = container.querySelector('.agy-chat-footer-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.className = 'agy-chat-footer-bar';
+    bar.innerHTML = `
+      <div class="agy-footer-tools">
+        <button class="agy-tool-icon-btn" title="Open Workspace Files" onclick="openProjectModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </button>
+        <button class="agy-tool-icon-btn" title="Toggle Workspace Terminal" onclick="toggleTerminal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        </button>
+        <button class="agy-tool-icon-btn" title="Chat Focus" onclick="document.getElementById('prompt-input').focus()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </button>
+        <button class="agy-tool-icon-btn" title="Toggle Live Web Preview" onclick="togglePreview()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </button>
+      </div>
+      <button class="agy-review-changes-btn" onclick="openReviewChangesModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Review Changes
+      </button>
+    `;
+    container.appendChild(bar);
+  } else {
+    if (container.lastElementChild !== bar) {
+      container.appendChild(bar);
+    }
+  }
+}
+
 function appendMessage(role, contentText = '', attachments = []) {
   const msgs = document.getElementById('messages');
   document.getElementById('empty-state').classList.add('hidden');
@@ -5635,16 +5945,8 @@ function appendMessage(role, contentText = '', attachments = []) {
   const div = document.createElement('div');
   div.className = `msg ${role}`;
 
-  const avatar = document.createElement('div');
-  avatar.className = 'msg-avatar';
-  avatar.innerHTML = role === 'user' ? getIconSvg('user', 14) : getIconSvg(AGENT_CONFIGS[currentAgent].iconKey, 14);
-
   const body = document.createElement('div');
   body.className = 'msg-body';
-
-  const meta = document.createElement('div');
-  meta.className = 'msg-meta';
-  meta.textContent = role === 'user' ? 'You' : `${AGENT_CONFIGS[currentAgent].name} · [${activeProjectId}]`;
 
   const content = document.createElement('div');
   content.className = 'msg-content';
@@ -5673,13 +5975,17 @@ function appendMessage(role, contentText = '', attachments = []) {
       content.appendChild(attContainer);
     }
   } else {
-    content.innerHTML = renderMarkdown(contentText);
-    processCodeBlocks(content);
+    if (contentText) {
+      const textContainer = document.createElement('div');
+      textContainer.className = 'agent-markdown-body';
+      textContainer.innerHTML = renderMarkdown(contentText);
+      processCodeBlocks(textContainer);
+      content.appendChild(textContainer);
+      ensureChatFooterBar(content);
+    }
   }
 
-  body.appendChild(meta);
   body.appendChild(content);
-  div.appendChild(avatar);
   div.appendChild(body);
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
@@ -5929,13 +6235,8 @@ async function sendMessage() {
     }
   }, 100);
 
-  // Insert visual thinking indicator
-  const indicator = document.createElement('div');
-  indicator.id = 'streaming-thinking-indicator';
-  indicator.className = 'thinking-indicator';
-  const modelName = MODELS_CONFIG[currentModel]?.name || 'Agent';
-  indicator.innerHTML = `<span class="pulse-dot"></span> <span>${modelName} is processing...</span>`;
-  agentContentEl.appendChild(indicator);
+  // Insert initial Antigravity working indicator
+  renderWorkingIndicator(agentContentEl);
   msgs.scrollTop = msgs.scrollHeight;
 
   let fullReplyText = '';
@@ -5958,11 +6259,13 @@ async function sendMessage() {
       clearInterval(activeThinkingInterval);
       activeThinkingInterval = null;
     }
-    const elapsed = Math.max(0.1, (Date.now() - activeThinkingStartTs) / 1000).toFixed(1);
+    const elapsed = Math.max(1, Math.round((Date.now() - activeThinkingStartTs) / 1000));
     if (activeThinkingLabelEl) activeThinkingLabelEl.textContent = 'Thought';
     if (activeThinkingTimerEl) activeThinkingTimerEl.textContent = `for ${elapsed}s`;
     const dot = activeThinkingCard.querySelector('.thinking-pulse-dot');
     if (dot) dot.remove();
+    const chevron = activeThinkingCard.querySelector('.thinking-chevron');
+    if (chevron) chevron.textContent = '>';
     activeThinkingCard.classList.remove('active');
     activeThinkingCard.classList.add('completed');
     activeThinkingCard.classList.add('collapsed');
@@ -6011,11 +6314,12 @@ async function sendMessage() {
         try {
           const ev = JSON.parse(raw);
 
-          // Clear thinking indicator on first event
+          // Clear initial working indicator on first event
           const ind = document.getElementById('streaming-thinking-indicator');
           if (ind) ind.remove();
 
           if (ev.type === 'thinking') {
+            removeWorkingIndicator();
             if (!activeThinkingCard) {
               activeThinkingStartTs = Date.now();
               activeThinkingCard = document.createElement('div');
@@ -6023,11 +6327,10 @@ async function sendMessage() {
               activeThinkingCard.id = 'th-' + Date.now();
 
               activeThinkingCard.innerHTML = `
-                <div class="thinking-header" onclick="this.parentElement.classList.toggle('collapsed')">
-                  <span class="thinking-brain-icon">${getIconSvg('brain', 13)}</span>
+                <div class="thinking-header" onclick="toggleThought(this)">
                   <div class="thinking-title-area">
-                    <span class="thinking-label">Thinking...</span>
-                    <span class="thinking-timer">(0.0s)</span>
+                    <span class="thinking-label">Thinking</span>
+                    <span class="thinking-timer">for 0s</span>
                   </div>
                   <span class="thinking-pulse-dot"></span>
                   <span class="thinking-chevron">▾</span>
@@ -6044,9 +6347,9 @@ async function sendMessage() {
 
               activeThinkingInterval = setInterval(() => {
                 if (!activeThinkingTimerEl) return;
-                const sec = ((Date.now() - activeThinkingStartTs) / 1000).toFixed(1);
-                activeThinkingTimerEl.textContent = `(${sec}s)`;
-              }, 100);
+                const sec = Math.max(1, Math.round((Date.now() - activeThinkingStartTs) / 1000));
+                activeThinkingTimerEl.textContent = `for ${sec}s`;
+              }, 250);
             }
 
             accumulatedThinkingText += ev.text + '\n';
@@ -6063,6 +6366,7 @@ async function sendMessage() {
           }
           else if (ev.type === 'ask_question') {
             completeActiveThinking();
+            removeWorkingIndicator();
             renderDecisionCard(ev.id, ev.questions, agentContentEl, msgs);
           }
           else if (ev.type === 'tool_call') {
@@ -6071,47 +6375,60 @@ async function sendMessage() {
               continue;
             }
             completeActiveThinking();
-            const card = document.createElement('div');
-            card.className = 'tool-card running';
-            card.id = `tool-${ev.id}`;
+            removeWorkingIndicator();
 
-            let iconName = 'terminal';
-            let cmdSummary = '';
+            const actionContainer = document.createElement('div');
+            actionContainer.className = 'agy-action-container';
+            actionContainer.id = `tool-${ev.id}`;
+
             const args = ev.args || {};
-            if (ev.name === 'run_command') {
-              iconName = 'terminal';
-              cmdSummary = args.command || '';
-            } else if (ev.name === 'write_file') {
-              iconName = 'file';
-              cmdSummary = `write ${args.path || ''}`;
-            } else if (ev.name === 'replace_in_file') {
-              iconName = 'edit';
-              cmdSummary = `patch ${args.path || ''}`;
-            } else if (ev.name === 'read_file') {
-              iconName = 'file';
-              cmdSummary = `read ${args.path || ''}`;
-            } else if (ev.name === 'grep_search') {
-              iconName = 'search';
-              cmdSummary = `search "${args.query || ''}" in ${args.path || '.'}`;
-            } else if (ev.name === 'list_directory') {
-              iconName = 'folder';
-              cmdSummary = `list ${args.path || '.'}`;
-            } else if (ev.name === 'search_web') {
-              iconName = 'search';
-              cmdSummary = `web search "${args.query || ''}"`;
-            } else if (ev.name === 'verify_build') {
-              iconName = 'shield';
-              cmdSummary = `compile & build check (${args.check_type || 'auto'})`;
-            } else if (ev.name === 'handoff_to_spectre') {
-              iconName = 'shield';
-              cmdSummary = `red-team security audit (${args.target_paths || '.'})`;
-            } else {
-              cmdSummary = JSON.stringify(args);
-            }
+            let verb = 'Executed';
+            let iconHtml = '<span>⚙️</span>';
+            let target = '';
+            let rangeTag = '';
 
-            const pillHtml = isAutopilotEnabled
-              ? `<span class="tool-status-pill running"><span class="tool-spinner"></span> ⚡ Auto-Approved</span>`
-              : `<span class="tool-status-pill running"><span class="tool-spinner"></span> Running...</span>`;
+            if (ev.name === 'read_file' || ev.name === 'view_file') {
+              verb = 'Analyzed';
+              const p = args.path || 'file';
+              target = p.split(/[\\/]/).pop() || p;
+              iconHtml = getFileIconHtml(target);
+              if (args.start_line) {
+                rangeTag = `#L${args.start_line}-${args.end_line || (args.start_line + 50)}`;
+              }
+            } else if (ev.name === 'write_file' || ev.name === 'replace_in_file') {
+              verb = 'Edited';
+              const p = args.path || 'file';
+              target = p.split(/[\\/]/).pop() || p;
+              iconHtml = getFileIconHtml(target);
+            } else if (ev.name === 'run_command') {
+              verb = 'Ran';
+              iconHtml = '<span style="color:#a855f7; font-family:var(--mono); font-weight:700;">&gt;_</span>';
+              target = args.command || 'terminal command';
+            } else if (ev.name === 'grep_search') {
+              verb = 'Searched';
+              iconHtml = '<span>🔍</span>';
+              target = `"${args.query || ''}" in ${args.path || '.'}`;
+            } else if (ev.name === 'search_web') {
+              verb = 'Searched web';
+              iconHtml = '<span>🌐</span>';
+              target = `"${args.query || ''}"`;
+            } else if (ev.name === 'list_directory') {
+              verb = 'Listed';
+              iconHtml = '<span>📁</span>';
+              target = args.path || '.';
+            } else if (ev.name === 'verify_build') {
+              verb = 'Verified';
+              iconHtml = '<span>🛡️</span>';
+              target = `build check (${args.check_type || 'auto'})`;
+            } else if (ev.name === 'handoff_to_spectre') {
+              verb = 'Audited';
+              iconHtml = '<span>🛡️</span>';
+              target = `security scan (${args.target_paths || '.'})`;
+            } else {
+              verb = 'Executed';
+              iconHtml = '<span>⚡</span>';
+              target = ev.name;
+            }
 
             const permBarHtml = !isAutopilotEnabled
               ? `<div class="tool-permission-bar" id="perm-${ev.id}">
@@ -6123,22 +6440,27 @@ async function sendMessage() {
                  </div>`
               : '';
 
-            card.innerHTML = `
-              <div class="tool-card-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                <span class="tool-badge-icon">${getIconSvg(iconName, 12)}</span>
-                <span class="tool-badge-name">${ev.name}</span>
-                <span class="tool-badge-cmd">[${activeProjectId}] ${escapeHtml(cmdSummary)}</span>
-                ${pillHtml}
+            actionContainer.innerHTML = `
+              <div class="agy-action-row" onclick="toggleActionDrawer('${ev.id}')">
+                <span class="agy-action-verb">${verb}</span>
+                <span class="agy-action-icon">${iconHtml}</span>
+                <span class="agy-action-target" title="${escapeHtml(args.path || args.command || target)}">${escapeHtml(target)}</span>
+                ${rangeTag ? `<span class="agy-action-range">${rangeTag}</span>` : ''}
+                <span class="agy-action-spinner" id="spin-${ev.id}"></span>
+                <span class="agy-action-chevron">›</span>
               </div>
-              <div class="tool-card-body">
+              <div class="agy-action-drawer collapsed" id="drawer-${ev.id}">
                 ${permBarHtml}
                 <pre class="tool-output">${isAutopilotEnabled ? `⚡ Autopilot: Pre-approved. Executing in ${activeProjectId}...` : `Executing in ${activeProjectId}...`}</pre>
               </div>
             `;
-            agentContentEl.appendChild(card);
-            if (ev.id) activeToolCards[ev.id] = card;
-            if (ev.name) activeToolCards[ev.name] = card;
+
+            agentContentEl.appendChild(actionContainer);
+            if (ev.id) activeToolCards[ev.id] = actionContainer;
+            if (ev.name) activeToolCards[ev.name] = actionContainer;
             if (!isAutopilotEnabled) pendingToolApprovals[ev.id] = true;
+
+            renderWorkingIndicator(agentContentEl);
             msgs.scrollTop = msgs.scrollHeight;
           }
           else if (ev.type === 'tool_result') {
@@ -6150,32 +6472,35 @@ async function sendMessage() {
             }
             const card = (ev.id && activeToolCards[ev.id]) || (ev.name && activeToolCards[ev.name]) || (ev.id && document.getElementById(`tool-${ev.id}`));
             if (card) {
-              card.classList.remove('running');
-              const isOk = ev.exit_code === 0;
-              card.classList.add(isOk ? 'completed' : 'failed');
+              const spinner = card.querySelector('.agy-action-spinner') || document.getElementById(`spin-${ev.id}`);
+              if (spinner) spinner.remove();
 
-              const pill = card.querySelector('.tool-status-pill');
-              if (pill) {
-                pill.className = `tool-status-pill ${isOk ? 'success' : 'error'}`;
-                pill.textContent = isOk ? `Exit 0 · ${ev.duration}s` : `Exit ${ev.exit_code} · ${ev.duration}s`;
-              }
-              const pre = card.querySelector('.tool-output');
-              if (pre) pre.textContent = ev.output || '(Command completed with no output)';
+              const drawer = card.querySelector('.agy-action-drawer') || document.getElementById(`drawer-${ev.id}`);
+              if (drawer) {
+                const pre = drawer.querySelector('.tool-output');
+                if (pre) pre.textContent = ev.output || '(Command completed with no output)';
 
-              // Live Visual Diff & Rollback Snapshot Rendering
-              if (ev.diff) {
-                const body = card.querySelector('.tool-card-body');
-                if (body && !card.querySelector('.tool-diff-container')) {
-                  const diffDiv = document.createElement('div');
-                  diffDiv.className = 'tool-diff-container';
-                  diffDiv.innerHTML = `
-                    <div class="tool-diff-header">
-                      <span class="diff-title">Visual Diff & Rollback Snapshot (${escapeHtml(ev.path || 'file')})</span>
-                      ${ev.snapshot_id ? `<button class="diff-revert-btn" onclick="revertSnapshot('${ev.snapshot_id}', this)">Revert Changes</button>` : ''}
-                    </div>
-                    <pre class="tool-diff-pre">${formatDiffHtml(ev.diff)}</pre>
-                  `;
-                  body.appendChild(diffDiv);
+                // Live Visual Diff & Rollback Snapshot Rendering
+                if (ev.diff) {
+                  recordSessionModifiedFile({
+                    path: ev.path || 'file',
+                    diff: ev.diff,
+                    snapshotId: ev.snapshot_id,
+                    timestamp: Date.now()
+                  });
+
+                  if (!drawer.querySelector('.tool-diff-container')) {
+                    const diffDiv = document.createElement('div');
+                    diffDiv.className = 'tool-diff-container';
+                    diffDiv.innerHTML = `
+                      <div class="tool-diff-header">
+                        <span class="diff-title">Visual Diff & Rollback Snapshot (${escapeHtml(ev.path || 'file')})</span>
+                        ${ev.snapshot_id ? `<button class="diff-revert-btn" onclick="revertSnapshot('${ev.snapshot_id}', this)">Revert Changes</button>` : ''}
+                      </div>
+                      <pre class="tool-diff-pre">${formatDiffHtml(ev.diff)}</pre>
+                    `;
+                    drawer.appendChild(diffDiv);
+                  }
                 }
               }
             }
@@ -6183,6 +6508,7 @@ async function sendMessage() {
           }
           else if (ev.type === 'text') {
             completeActiveThinking();
+            removeWorkingIndicator();
             fullReplyText += ev.text;
             let textContainer = agentContentEl.querySelector('.agent-markdown-body');
             if (!textContainer) {
@@ -6197,10 +6523,12 @@ async function sendMessage() {
             }
             textContainer.innerHTML = renderMarkdown(fullReplyText);
             processCodeBlocks(textContainer);
+            ensureChatFooterBar(agentContentEl);
             msgs.scrollTop = msgs.scrollHeight;
           }
           else if (ev.type === 'error') {
             completeActiveThinking();
+            removeWorkingIndicator();
             fullReplyText += `\n\n**[Error]** ${ev.message}`;
             let textContainer = agentContentEl.querySelector('.agent-markdown-body');
             if (!textContainer) {
@@ -6220,6 +6548,7 @@ async function sendMessage() {
     }
   } catch (err) {
     completeActiveThinking();
+    removeWorkingIndicator();
     hadError = true;
     wasAborted = err.name === 'AbortError';
     const ind = document.getElementById('streaming-thinking-indicator');
@@ -6233,6 +6562,8 @@ async function sendMessage() {
     agentContentEl.innerHTML = renderMarkdown(fullReplyText);
   } finally {
     completeActiveThinking();
+    removeWorkingIndicator();
+    ensureChatFooterBar(agentContentEl);
     clearInterval(timerInterval);
     const totalSecs = ((Date.now() - startTs) / 1000).toFixed(1);
     const durStr = totalSecs < 60 ? `${totalSecs}s` : `${Math.floor(totalSecs / 60)}m ${(totalSecs % 60).toFixed(0)}s`;
