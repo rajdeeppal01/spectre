@@ -76,6 +76,44 @@
       flex-direction: column;
       overflow: hidden;
       user-select: none;
+      transition: margin-left 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+    }
+
+    /* ── Zen Focus Mode (Distraction-Free Chat) ────────────────────────── */
+    body.zen-focus-mode #sidebar {
+      margin-left: -275px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    body.zen-focus-mode #messages {
+      padding: 24px calc(max(24px, (100% - 920px) / 2)) 16px;
+    }
+    body.zen-focus-mode #input-area {
+      padding: 12px calc(max(20px, (100% - 920px) / 2)) 18px;
+    }
+    body.zen-focus-mode #chat-header {
+      padding: 12px calc(max(20px, (100% - 920px) / 2));
+    }
+    body.zen-focus-mode #quick-actions-bar {
+      padding: 6px calc(max(20px, (100% - 920px) / 2));
+    }
+    .zen-pill {
+      display: none;
+      font-size: 10px;
+      font-family: var(--mono);
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 7px;
+      border-radius: 99px;
+      letter-spacing: 0.5px;
+      margin-left: 8px;
+    }
+    body.zen-focus-mode .zen-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     #sidebar-header {
@@ -4070,7 +4108,10 @@
       <div id="agent-badge">
         <div id="agent-icon"></div>
         <div>
-          <div id="agent-name">ARCHITECT</div>
+          <div style="display:flex; align-items:center;">
+            <div id="agent-name">ARCHITECT</div>
+            <span class="zen-pill">✨ ZEN FOCUS</span>
+          </div>
           <div id="agent-desc">Daily Full-Stack Web Development Agent (React 19, Next.js 15, FastAPI)</div>
         </div>
       </div>
@@ -4093,6 +4134,10 @@
           Settings
         </button>
 
+        <button class="header-btn" id="btn-zen-toggle" onclick="toggleZenFocusMode()" title="Toggle Zen Focus Mode (Distraction-Free Chat · Esc to exit)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          Zen
+        </button>
         <button class="header-btn" id="btn-files-toggle" onclick="toggleFilesDrawer()" title="Toggle Workspace Files Explorer & Code Viewer">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
           Files
@@ -5192,6 +5237,21 @@ window.addEventListener('keydown', (e) => {
     const sModal = document.getElementById('settings-modal');
     if (sModal && !sModal.classList.contains('hidden')) {
       closeSettingsModal();
+      return;
+    }
+    const hModal = document.getElementById('help-modal');
+    if (hModal && !hModal.classList.contains('hidden')) {
+      closeHelpModal();
+      return;
+    }
+    const pModal = document.getElementById('project-modal');
+    if (pModal && !pModal.classList.contains('hidden')) {
+      closeProjectModal();
+      return;
+    }
+    if (document.body.classList.contains('zen-focus-mode')) {
+      toggleZenFocusMode();
+      return;
     }
   }
 });
@@ -6269,8 +6329,8 @@ function ensureChatFooterBar(container) {
         <button class="agy-tool-icon-btn" id="btn-footer-terminal-toggle" title="Toggle Workspace Terminal" onclick="toggleTerminal()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
         </button>
-        <button class="agy-tool-icon-btn" title="Chat Focus" onclick="document.getElementById('prompt-input').focus()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <button class="agy-tool-icon-btn" id="btn-footer-zen-toggle" title="Toggle Zen Focus Mode (Distraction-Free Chat · Esc to exit)" onclick="toggleZenFocusMode()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
         </button>
         <button class="agy-tool-icon-btn" id="btn-footer-preview-toggle" title="Toggle Live Web Preview" onclick="togglePreview()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -7197,6 +7257,44 @@ function copyLastResponse() {
     navigator.clipboard.writeText(msgs[msgs.length - 1].content);
     alert('Last response copied to clipboard!');
   }
+}
+
+// ── Zen Focus Mode (Distraction-Free Chat) ────────────────────────────────────
+function toggleZenFocusMode() {
+  const isZen = document.body.classList.toggle('zen-focus-mode');
+  const headerBtn = document.getElementById('btn-zen-toggle');
+  const footerBtn = document.getElementById('btn-footer-zen-toggle');
+  if (headerBtn) headerBtn.classList.toggle('active-btn', isZen);
+  if (footerBtn) footerBtn.classList.toggle('active-btn', isZen);
+
+  if (isZen) {
+    // Automatically close all open drawers to maximize distraction-free chat
+    const preview = document.getElementById('preview-drawer');
+    const terminal = document.getElementById('terminal-drawer');
+    const files = document.getElementById('files-drawer');
+    if (preview && !preview.classList.contains('collapsed')) preview.classList.add('collapsed');
+    if (terminal && !terminal.classList.contains('collapsed')) terminal.classList.add('collapsed');
+    if (files && !files.classList.contains('collapsed')) files.classList.add('collapsed');
+
+    // Deselect active drawer buttons
+    const btnPreview = document.getElementById('btn-preview-toggle');
+    const btnTerm = document.getElementById('btn-terminal-toggle');
+    const btnFiles = document.getElementById('btn-files-toggle');
+    if (btnPreview) btnPreview.classList.remove('active-btn');
+    if (btnTerm) btnTerm.classList.remove('active-btn');
+    if (btnFiles) btnFiles.classList.remove('active-btn');
+
+    if (typeof showToast === 'function') {
+      showToast('✨ Zen Focus Mode: Sidebar and drawers hidden. Press Esc to exit.', 'info');
+    }
+  } else {
+    if (typeof showToast === 'function') {
+      showToast('Restored standard workspace layout.', 'info');
+    }
+  }
+
+  const input = document.getElementById('prompt-input');
+  if (input) input.focus();
 }
 
 // ── Workspace Files Explorer & Code Viewer ──────────────────────────────────
