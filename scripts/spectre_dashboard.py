@@ -34,6 +34,10 @@ from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import requests as _requests
+import queue
+
+WS_PORT = 5051
+_WS_SERVER_RUNNING = False
 
 try:
     import psutil
@@ -1284,6 +1288,207 @@ def _exec_run_command(command: str, timeout: int = 120) -> dict:
             "command": command,
             "cwd": str(active_dir)
         }
+
+
+# --- Real-Time Interactive PTY / Streaming Terminal Engine (Track B) -----------
+
+_TERMINAL_SESSIONS: dict[str, "TerminalSession"] = {}
+_TERMINAL_SESSIONS_LOCK = threading.Lock()
+
+class TerminalSession:
+    """Represents an active interactive shell process session with bi-directional streaming."""
+    def __init__(self, session_id: str, command: str, cwd: str):
+        self.session_id = session_id
+        self.command = command
+        self.cwd = cwd
+        self.process: subprocess.Popen | None = None
+        self.subscribers: list = []  # WebSocket objects or queue.Queue for SSE
+        self.output_history: list[str] = []
+        self.is_alive: bool = False
+        self.exit_code: int | None = None
+        self.created_at = time.time()
+        self.pid: int | None = None
+
+    def spawn(self):
+        if sys.platform == "win32":
+            args = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", self.command]
+        else:
+            args = self.command
+
+        try:
+            self.process = subprocess.Popen(
+                args,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                cwd=str(self.cwd),
+                text=False,
+                bufsize=0
+            )
+            self.pid = self.process.pid
+            self.is_alive = True
+        except Exception as exc:
+            self.is_alive = False
+            self.exit_code = 1
+            self.broadcast({"type": "error", "error": f"Failed to spawn process: {exc}"})
+            return
+
+        def _reader():
+            while True:
+                try:
+                    chunk = self.process.stdout.read(512)
+                    if not chunk:
+                        break
+                    text = chunk.decode("utf-8", errors="replace")
+                    with _TERMINAL_SESSIONS_LOCK:
+                        self.output_history.append(text)
+                        if len(self.output_history) > 3000:
+                            self.output_history.pop(0)
+                    self.broadcast({"type": "data", "data": text})
+                except Exception:
+                    break
+            try:
+                self.process.wait()
+                self.exit_code = self.process.returncode
+            except Exception:
+                self.exit_code = 1
+            self.is_alive = False
+            duration = round(time.time() - self.created_at, 2)
+            self.broadcast({
+                "type": "exit",
+                "code": self.exit_code,
+                "duration": duration,
+                "sessionId": self.session_id
+            })
+
+        threading.Thread(target=_reader, daemon=True).start()
+
+    def broadcast(self, msg: dict):
+        with _TERMINAL_SESSIONS_LOCK:
+            dead = []
+            for sub in list(self.subscribers):
+                try:
+                    if hasattr(sub, "send"):  # WebSocket client
+                        sub.send(json.dumps(msg, ensure_ascii=False))
+                    elif hasattr(sub, "put_nowait"):  # Queue for SSE
+                        sub.put_nowait(msg)
+                except Exception:
+                    dead.append(sub)
+            for d in dead:
+                if d in self.subscribers:
+                    self.subscribers.remove(d)
+
+    def write_input(self, text: str) -> bool:
+        if self.process and self.is_alive and self.process.stdin:
+            try:
+                self.process.stdin.write(text.encode("utf-8"))
+                self.process.stdin.flush()
+                return True
+            except Exception:
+                return False
+        return False
+
+    def kill(self):
+        if self.process and self.is_alive:
+            try:
+                if sys.platform == "win32":
+                    subprocess.run(["taskkill", "/F", "/T", "/PID", str(self.process.pid)], capture_output=True)
+                else:
+                    self.process.terminate()
+            except Exception:
+                pass
+            try:
+                self.process.kill()
+            except Exception:
+                pass
+            self.is_alive = False
+            self.exit_code = -9
+            duration = round(time.time() - self.created_at, 2)
+            self.broadcast({
+                "type": "exit",
+                "code": -9,
+                "duration": duration,
+                "sessionId": self.session_id,
+                "killed": True
+            })
+
+
+def _terminal_ws_handler(websocket):
+    """Handles bi-directional WebSocket connection for interactive terminal streaming."""
+    current_session = None
+    try:
+        for raw_msg in websocket:
+            try:
+                req = json.loads(raw_msg)
+            except Exception:
+                continue
+            req_type = req.get("type")
+
+            if req_type == "spawn":
+                cmd = req.get("command", "").strip()
+                if not cmd:
+                    websocket.send(json.dumps({"type": "error", "error": "Empty command"}))
+                    continue
+                cwd = req.get("cwd") or str(get_active_project_path())
+                sid = f"term_{int(time.time()*1000)}"
+                session = TerminalSession(sid, cmd, cwd)
+                with _TERMINAL_SESSIONS_LOCK:
+                    _TERMINAL_SESSIONS[sid] = session
+                    session.subscribers.append(websocket)
+                current_session = session
+                session.spawn()
+                websocket.send(json.dumps({
+                    "type": "spawned",
+                    "sessionId": sid,
+                    "pid": session.pid,
+                    "command": cmd,
+                    "cwd": cwd
+                }))
+
+            elif req_type == "input":
+                data = req.get("data", "")
+                if current_session:
+                    current_session.write_input(data)
+                elif "sessionId" in req:
+                    with _TERMINAL_SESSIONS_LOCK:
+                        s = _TERMINAL_SESSIONS.get(req["sessionId"])
+                    if s:
+                        s.write_input(data)
+
+            elif req_type == "kill":
+                if current_session:
+                    current_session.kill()
+                elif "sessionId" in req:
+                    with _TERMINAL_SESSIONS_LOCK:
+                        s = _TERMINAL_SESSIONS.get(req["sessionId"])
+                    if s:
+                        s.kill()
+
+            elif req_type == "ping":
+                websocket.send(json.dumps({"type": "pong"}))
+
+    except Exception:
+        pass
+    finally:
+        if current_session:
+            with _TERMINAL_SESSIONS_LOCK:
+                if websocket in current_session.subscribers:
+                    current_session.subscribers.remove(websocket)
+
+
+def _start_terminal_ws_server(host="127.0.0.1", port=5051):
+    """Starts the synchronous WebSocket server on host:port in a daemon thread."""
+    global _WS_SERVER_RUNNING
+    try:
+        from websockets.sync.server import serve
+        server = serve(_terminal_ws_handler, host, port)
+        _WS_SERVER_RUNNING = True
+        print(f"[+] Interactive Terminal WebSocket Server listening on ws://{host}:{port}")
+        server.serve_forever()
+    except Exception as exc:
+        print(f"[!] Interactive Terminal WebSocket failed to bind on {host}:{port}: {exc}")
+        _WS_SERVER_RUNNING = False
+
 
 def _exec_write_file(rel_path: str, content: str) -> dict:
     t0 = time.time()
@@ -3709,7 +3914,9 @@ class _Handler(BaseHTTPRequestHandler):
                 "sessions": len(_sessions),
                 "health": score,
                 "active_project": active_proj,
-                "active_path": str(active_path)
+                "active_path": str(active_path),
+                "terminal_ws_url": f"ws://127.0.0.1:{WS_PORT}",
+                "terminal_ws_active": _WS_SERVER_RUNNING
             })
 
         elif path == "/api/projects":
@@ -3869,7 +4076,9 @@ class _Handler(BaseHTTPRequestHandler):
                 "models": models_list,
                 "anthropic_key_set": bool(ANTHROPIC_API_KEY),
                 "gemini_key_set": bool(GEMINI_API_KEY),
-                "local_model": local_model
+                "local_model": local_model,
+                "terminal_ws_url": f"ws://127.0.0.1:{WS_PORT}",
+                "terminal_ws_active": _WS_SERVER_RUNNING
             })
 
         elif path == "/api/ollama/status":
@@ -3885,6 +4094,75 @@ class _Handler(BaseHTTPRequestHandler):
             active_path = get_active_project_path()
             self._json_resp({
                 "skills": _load_skills(active_path)
+            })
+
+        elif path == "/api/terminal/stream":
+            query = parse_qs(parsed.query)
+            sid = query.get("sessionId", [""])[0]
+            with _TERMINAL_SESSIONS_LOCK:
+                session = _TERMINAL_SESSIONS.get(sid)
+            if not session:
+                self._json_resp({"error": f"Terminal session '{sid}' not found"}, 404)
+                return
+
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("X-Accel-Buffering", "no")
+            self._cors_headers()
+            self.end_headers()
+
+            sub_q = queue.Queue()
+            with _TERMINAL_SESSIONS_LOCK:
+                session.subscribers.append(sub_q)
+                backlog = "".join(session.output_history)
+                if backlog:
+                    sub_q.put_nowait({"type": "data", "data": backlog})
+
+            try:
+                while True:
+                    try:
+                        msg = sub_q.get(timeout=0.5)
+                        payload = json.dumps(msg, ensure_ascii=False)
+                        self.wfile.write(f"data: {payload}\n\n".encode("utf-8"))
+                        self.wfile.flush()
+                        if msg.get("type") == "exit":
+                            break
+                    except queue.Empty:
+                        if not session.is_alive and sub_q.empty():
+                            break
+                        try:
+                            self.wfile.write(b": ping\n\n")
+                            self.wfile.flush()
+                        except Exception:
+                            break
+            except Exception:
+                pass
+            finally:
+                with _TERMINAL_SESSIONS_LOCK:
+                    if sub_q in session.subscribers:
+                        session.subscribers.remove(sub_q)
+
+        elif path == "/api/terminal/status":
+            with _TERMINAL_SESSIONS_LOCK:
+                sessions_data = [
+                    {
+                        "sessionId": s.session_id,
+                        "command": s.command,
+                        "pid": s.pid,
+                        "cwd": s.cwd,
+                        "is_alive": s.is_alive,
+                        "exit_code": s.exit_code,
+                        "created_at": s.created_at,
+                        "uptime": round(time.time() - s.created_at, 1)
+                    }
+                    for s in _TERMINAL_SESSIONS.values()
+                ]
+            self._json_resp({
+                "ok": True,
+                "ws_active": _WS_SERVER_RUNNING,
+                "ws_port": WS_PORT,
+                "sessions": sessions_data
             })
 
         else:
@@ -3978,6 +4256,46 @@ class _Handler(BaseHTTPRequestHandler):
                 return
             res = _exec_run_command(cmd)
             self._json_resp(res)
+
+        elif path == "/api/terminal/spawn":
+            cmd = body.get("command", "").strip()
+            cwd = body.get("cwd") or str(get_active_project_path())
+            if not cmd:
+                self._json_resp({"error": "No command provided", "ok": False}, 400)
+                return
+            sid = f"term_{int(time.time()*1000)}"
+            session = TerminalSession(sid, cmd, cwd)
+            with _TERMINAL_SESSIONS_LOCK:
+                _TERMINAL_SESSIONS[sid] = session
+            session.spawn()
+            self._json_resp({
+                "ok": True,
+                "sessionId": sid,
+                "pid": session.pid,
+                "command": cmd,
+                "cwd": cwd
+            })
+
+        elif path == "/api/terminal/input":
+            sid = body.get("sessionId", "").strip()
+            data = body.get("data", "")
+            with _TERMINAL_SESSIONS_LOCK:
+                session = _TERMINAL_SESSIONS.get(sid)
+            if not session:
+                self._json_resp({"error": f"Terminal session '{sid}' not found", "ok": False}, 404)
+                return
+            ok = session.write_input(data)
+            self._json_resp({"ok": ok})
+
+        elif path == "/api/terminal/kill":
+            sid = body.get("sessionId", "").strip()
+            with _TERMINAL_SESSIONS_LOCK:
+                session = _TERMINAL_SESSIONS.get(sid)
+            if not session:
+                self._json_resp({"error": f"Terminal session '{sid}' not found", "ok": False}, 404)
+                return
+            session.kill()
+            self._json_resp({"ok": True, "message": "Terminal session killed."})
 
         elif path == "/api/file/save":
             file_path = body.get("path", "").strip()
@@ -4076,6 +4394,7 @@ def _print_cli_matrix():
 def main():
     parser = argparse.ArgumentParser(description="SPECTRE Multi-Project Antigravity Command Center")
     parser.add_argument("--port", type=int, default=5050, help="HTTP port (default 5050)")
+    parser.add_argument("--ws-port", type=int, default=5051, help="WebSocket terminal port (default 5051)")
     parser.add_argument("--no-browser", action="store_true", help="Don't auto-open browser")
     parser.add_argument("--cli", action="store_true", help="Print terminal architecture matrix only")
     args = parser.parse_args()
@@ -4088,11 +4407,16 @@ def main():
     if not GEMINI_API_KEY:
         print("\n[!] WARNING: GEMINI_API_KEY not found in infrastructure/.env\n")
 
+    global WS_PORT
+    WS_PORT = args.ws_port
+    threading.Thread(target=_start_terminal_ws_server, args=("127.0.0.1", args.ws_port), daemon=True).start()
+
     server = ThreadingHTTPServer(("127.0.0.1", args.port), _Handler)
     url = f"http://127.0.0.1:{args.port}"
     print(f"\n[+] SPECTRE Antigravity Command Center -> {url}")
     print(f"    Active Model : {ACTIVE_MODEL} (Failover Pool: {len(MODEL_FAILOVER_POOL)} models)")
     print(f"    Active Workspace : {_ACTIVE_PROJECT_ID} ({get_active_project_path()})")
+    print(f"    Interactive Terminal WebSocket : ws://127.0.0.1:{args.ws_port}")
     print("    Press Ctrl+C to stop.\n")
 
     if not args.no_browser:
