@@ -1,0 +1,86 @@
+name: Secure AI CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  security-and-test:
+    runs-name: Security Tests & Container Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run Pytest Security Suite
+      run: |
+        pytest tests/test_security.py -v
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker Container Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: secure-ai-pipeline:latest
+        load: true
+
+    - name: Run Trivy Vulnerability Scanner
+      uses: aquasecurity/trivy-action@0.18.0
+      with:
+        image-ref: 'secure-ai-pipeline:latest'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
+        exit-code: '0' # Set to 1 in strict mode to fail pipeline on high CVEs
+
+    - name: Upload Trivy Scan Results to GitHub Security Tab
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  self-healing-remediation:
+    needs: security-and-test
+    runs-on: ubuntu-latest
+    if: failure()
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run AI Auto-Patch Remediation
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        python scripts/auto_patch.py
