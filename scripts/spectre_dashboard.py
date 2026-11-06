@@ -35,6 +35,7 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 import requests as _requests
 import queue
+import socket
 
 WS_PORT = 5051
 _WS_SERVER_RUNNING = False
@@ -992,6 +993,31 @@ OLLAMA_TOOLS = [
                     }
                 },
                 "required": ["agent_type", "task_description"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_knowledge_base",
+            "description": "Semantic search across SPECTRE's local offline knowledge base (CVE advisories, PQC standards, API documentation, project notes, and indexed source files). Returns the most relevant chunks with source attribution. Use this BEFORE searching the web to check if relevant context is already indexed locally.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Natural language search query (e.g. 'CVE-2024 JWT vulnerabilities' or 'WebSocket authentication best practices')."
+                    },
+                    "top_k": {
+                        "type": "integer",
+                        "description": "Number of top results to return (default 5, max 20)."
+                    },
+                    "collection": {
+                        "type": "string",
+                        "description": "Optional: filter to a specific knowledge collection — 'cve_advisories', 'api_docs', 'project_notes', or 'source_code'. Omit to search all."
+                    }
+                },
+                "required": ["query"]
             }
         }
     }
@@ -2550,6 +2576,49 @@ def _exec_delegate_subagent(agent_type: str, task_description: str, target: str 
             "duration": round(time.time() - t0, 2)
         }
 
+def _exec_search_knowledge_base(query: str, top_k: int = 5, collection: str = None) -> dict:
+    """Search SPECTRE's local ChromaDB vector store for semantically relevant chunks."""
+    t0 = time.time()
+    if not query.strip():
+        return {"output": "search_knowledge_base: query must be a non-empty string.", "exit_code": 1, "duration": 0.0}
+    top_k = min(max(1, top_k), 20)
+    try:
+        from init_rag import search_vector_store
+        results = search_vector_store(query, top_k=top_k)
+        if not results:
+            return {
+                "output": f"No results found in local knowledge base for query: '{query}'. Consider indexing relevant documents or searching the web.",
+                "exit_code": 0,
+                "duration": round(time.time() - t0, 2)
+            }
+        lines = [f"# Knowledge Base Search: '{query}' (top {len(results)})\n"]
+        for i, hit in enumerate(results, 1):
+            doc = hit.get("document", hit) if isinstance(hit, dict) else str(hit)
+            meta = hit.get("metadata", {}) if isinstance(hit, dict) else {}
+            dist = hit.get("distance", None) if isinstance(hit, dict) else None
+            source = meta.get("source", meta.get("file", "unknown"))
+            score = f"  [similarity: {1 - dist:.3f}]" if dist is not None else ""
+            lines.append(f"## Result {i} — {source}{score}")
+            lines.append(str(doc).strip()[:800])
+            lines.append("")
+        return {
+            "output": "\n".join(lines),
+            "exit_code": 0,
+            "duration": round(time.time() - t0, 2)
+        }
+    except ImportError:
+        return {
+            "output": "Knowledge base (ChromaDB) not initialized. Run 'python scripts/init_rag.py' to index documents first.",
+            "exit_code": 1,
+            "duration": round(time.time() - t0, 2)
+        }
+    except Exception as exc:
+        return {
+            "output": f"Knowledge base search failed: {type(exc).__name__}: {exc}",
+            "exit_code": 1,
+            "duration": round(time.time() - t0, 2)
+        }
+
 def _dispatch_tool(name: str, args: dict) -> dict:
     try:
         if name == "run_command":
@@ -2578,6 +2647,8 @@ def _dispatch_tool(name: str, args: dict) -> dict:
             return _exec_browser_interact(args.get("action", ""), args.get("selector", ""), args.get("text", ""), int(args.get("wait_ms", 1000)))
         elif name == "delegate_subagent":
             return _exec_delegate_subagent(args.get("agent_type", ""), args.get("task_description", ""), args.get("target", ""))
+        elif name == "search_knowledge_base":
+            return _exec_search_knowledge_base(args.get("query", ""), int(args.get("top_k", 5)), args.get("collection"))
         else:
             return {"output": f"Unknown tool: {name}", "exit_code": 1, "duration": 0.0}
     except Exception as exc:
@@ -2654,6 +2725,11 @@ def _get_tool_rationale_desc(name: str, args: dict, proj_id: str = "spectre") ->
         at = args.get("agent_type", "")
         tg = args.get("target", ".")
         return f"Delegating mission to specialized subagent crew `{at}` on `{tg}`\n• Why this step: Running multi-agent specialized pipeline for deep analysis without context clutter."
+    elif name == "search_knowledge_base":
+        q = args.get("query", "")
+        k = args.get("top_k", 5)
+        col = args.get("collection", "all collections")
+        return f"Searching local knowledge base for: `{q}` (top {k}, collection: {col})\n• Why this step: Querying SPECTRE's offline ChromaDB vector store for CVEs, API docs, and project notes before hitting the web."
     else:
         return f"Executing tool `{name}`\n• Why this step: Executing required step in agentic workflow."
 
@@ -4164,6 +4240,20 @@ class _Handler(BaseHTTPRequestHandler):
                 "ws_port": WS_PORT,
                 "sessions": sessions_data
             })
+
+        elif path == "/api/preview/ports":
+            common_ports = [3000, 5173, 8000, 8080, 5000, 4200]
+            open_ports = []
+            for pt in common_ports:
+                try:
+                    s = socket.socket()
+                    s.settimeout(0.08)
+                    if s.connect_ex(("127.0.0.1", pt)) == 0:
+                        open_ports.append(pt)
+                    s.close()
+                except Exception:
+                    pass
+            self._json_resp({"ok": True, "open_ports": open_ports})
 
         else:
             self.send_response(404)

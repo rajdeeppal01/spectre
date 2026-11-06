@@ -1833,6 +1833,74 @@
       border-top: none;
       overflow: hidden;
     }
+    #preview-drawer.maximized {
+      height: 68vh !important;
+    }
+    .preview-viewport-btns {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+    .preview-vp-btn {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: #64748b;
+      font-size: 10px;
+      padding: 3px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .preview-vp-btn:hover, .preview-vp-btn.active-vp {
+      background: rgba(100,220,255,0.08);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .preview-chip .port-status {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #334155;
+      margin-right: 3px;
+      transition: background 0.3s;
+    }
+    .preview-chip.port-open .port-status { background: #22c55e; }
+    .preview-chip.port-closed .port-status { background: #ef4444; }
+    .preview-scan-btn {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: #64748b;
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .preview-scan-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .preview-scan-btn.scanning { animation: pulse 1s infinite; }
+    #preview-frame-container {
+      transition: width 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+    }
+    #preview-frame-container.vp-mobile #preview-iframe { max-width: 375px; }
+    #preview-frame-container.vp-tablet #preview-iframe { max-width: 768px; }
+    .vp-label {
+      position: absolute;
+      bottom: 6px;
+      right: 10px;
+      font-size: 9px;
+      color: #334155;
+      font-family: var(--mono);
+      pointer-events: none;
+      z-index: 2;
+    }
     #preview-header {
       padding: 7px 14px;
       background: var(--surface);
@@ -1912,13 +1980,13 @@
       flex: 1;
       position: relative;
       background: #030306;
-      display: flex;
     }
     #preview-iframe {
       width: 100%;
       height: 100%;
       border: none;
       background: #fff;
+      transition: max-width 0.2s ease, margin 0.2s ease;
     }
     .preview-hint {
       position: absolute;
@@ -4328,10 +4396,17 @@
         </div>
         <div class="preview-address-bar">
           <div class="preview-port-chips" id="preview-port-chips">
-            <button class="preview-chip active" onclick="setPreviewUrl('http://localhost:3000')">:3000</button>
-            <button class="preview-chip" onclick="setPreviewUrl('http://localhost:5173')">:5173</button>
-            <button class="preview-chip" onclick="setPreviewUrl('http://localhost:8000')">:8000</button>
+            <button class="preview-chip active" data-port="3000" onclick="setPreviewUrl('http://localhost:3000')"><span class="port-status"></span>:3000</button>
+            <button class="preview-chip" data-port="5173" onclick="setPreviewUrl('http://localhost:5173')"><span class="port-status"></span>:5173</button>
+            <button class="preview-chip" data-port="8000" onclick="setPreviewUrl('http://localhost:8000')"><span class="port-status"></span>:8000</button>
+            <button class="preview-chip" data-port="5000" onclick="setPreviewUrl('http://localhost:5000')" style="display:none"><span class="port-status"></span>:5000</button>
+            <button class="preview-chip" data-port="4200" onclick="setPreviewUrl('http://localhost:4200')" style="display:none"><span class="port-status"></span>:4200</button>
+            <button class="preview-chip" data-port="8080" onclick="setPreviewUrl('http://localhost:8080')" style="display:none"><span class="port-status"></span>:8080</button>
           </div>
+          <button class="preview-scan-btn" id="btn-scan-ports" onclick="scanPreviewPorts()" title="Scan for running dev servers">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Scan
+          </button>
           <input type="text" id="preview-url-input" value="http://localhost:3000" onkeydown="if(event.key==='Enter') navigatePreview()" placeholder="http://localhost:3000" />
           <button class="preview-btn" onclick="navigatePreview()" title="Navigate to URL">Go</button>
           <button class="preview-btn" onclick="refreshPreview()" title="Reload Frame">
@@ -4344,7 +4419,13 @@
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </button>
         </div>
-        <div style="margin-left:auto;">
+        <div class="preview-viewport-btns" title="Viewport preset">
+          <button class="preview-vp-btn active-vp" id="vp-btn-desktop" onclick="setPreviewViewport('desktop')" title="Desktop (full width)">🖥</button>
+          <button class="preview-vp-btn" id="vp-btn-tablet" onclick="setPreviewViewport('tablet')" title="Tablet (768px)">📟</button>
+          <button class="preview-vp-btn" id="vp-btn-mobile" onclick="setPreviewViewport('mobile')" title="Mobile (375px)">📱</button>
+          <button class="preview-vp-btn" id="vp-btn-maximize" onclick="togglePreviewMaximize()" title="Maximize / Restore">⛶</button>
+        </div>
+        <div style="margin-left:8px;">
           <button class="code-btn" onclick="togglePreview()">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Close
@@ -4354,8 +4435,9 @@
       <div id="preview-frame-container">
         <iframe id="preview-iframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
         <div id="preview-empty-hint" class="preview-hint">
-          <p>Dev server frame is ready. Run <code>npm run dev</code> or select a port chip above to preview your web application.</p>
+          <p>Dev server frame is ready. Click <strong>Scan</strong> to detect running servers, or select a port chip above to preview your web application.</p>
         </div>
+        <div class="vp-label" id="preview-vp-label">Desktop</div>
       </div>
     </div>
 
@@ -8125,7 +8207,79 @@ function togglePreview(targetUrl) {
     const projUrl = getProjectPreviewUrl(activeProjectData);
     const target = targetUrl || projUrl;
     setPreviewUrl(target);
+    // Auto-scan ports when drawer opens
+    setTimeout(scanPreviewPorts, 300);
   }
+}
+
+// Scan for open dev server ports via /api/preview/ports
+let _portScanTimer = null;
+async function scanPreviewPorts() {
+  const btn = document.getElementById('btn-scan-ports');
+  if (btn) btn.classList.add('scanning');
+  try {
+    const r = await fetch('/api/preview/ports', { signal: AbortSignal.timeout(3000) });
+    const data = await r.json();
+    const openPorts = data.open_ports || [];
+    // Update port chips visibility and status
+    document.querySelectorAll('#preview-port-chips .preview-chip[data-port]').forEach(chip => {
+      const port = parseInt(chip.dataset.port);
+      const isOpen = openPorts.includes(port);
+      chip.style.display = isOpen || [3000, 5173, 8000].includes(port) ? '' : 'none';
+      chip.classList.toggle('port-open', isOpen);
+      chip.classList.toggle('port-closed', !isOpen && [3000, 5173, 8000].includes(port));
+    });
+    // Auto-navigate to first open port if none selected yet
+    const iframe = document.getElementById('preview-iframe');
+    if (openPorts.length > 0 && (!iframe || iframe.src === 'about:blank')) {
+      setPreviewUrl(`http://localhost:${openPorts[0]}`);
+      navigatePreview();
+    }
+    if (openPorts.length > 0 && typeof showToast === 'function') {
+      showToast(`🟢 Live ports detected: ${openPorts.map(p => ':' + p).join(', ')}`, 'success');
+    }
+  } catch (e) {
+    // Silently fail — no server or timeout
+  } finally {
+    if (btn) btn.classList.remove('scanning');
+  }
+}
+
+// Set viewport preset: 'desktop' | 'tablet' | 'mobile'
+function setPreviewViewport(preset) {
+  const iframe = document.getElementById('preview-iframe');
+  const container = document.getElementById('preview-frame-container');
+  const label = document.getElementById('preview-vp-label');
+  if (!iframe) return;
+  ['vp-btn-desktop','vp-btn-tablet','vp-btn-mobile'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active-vp');
+  });
+  document.getElementById('vp-btn-' + preset)?.classList.add('active-vp');
+  if (preset === 'mobile') {
+    iframe.style.maxWidth = '375px';
+    iframe.style.margin = '0 auto';
+    if (label) label.textContent = '📱 375px';
+  } else if (preset === 'tablet') {
+    iframe.style.maxWidth = '768px';
+    iframe.style.margin = '0 auto';
+    if (label) label.textContent = '📟 768px';
+  } else {
+    iframe.style.maxWidth = '';
+    iframe.style.margin = '';
+    if (label) label.textContent = 'Desktop';
+  }
+}
+
+// Toggle maximize / restore for preview drawer
+let _previewMaximized = false;
+function togglePreviewMaximize() {
+  const drawer = document.getElementById('preview-drawer');
+  const btn = document.getElementById('vp-btn-maximize');
+  _previewMaximized = !_previewMaximized;
+  drawer.classList.toggle('maximized', _previewMaximized);
+  if (btn) btn.title = _previewMaximized ? 'Restore' : 'Maximize';
+  if (btn) btn.textContent = _previewMaximized ? '⊡' : '⛶';
 }
 
 function setPreviewUrl(url) {
