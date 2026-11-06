@@ -4255,6 +4255,31 @@ class _Handler(BaseHTTPRequestHandler):
                     pass
             self._json_resp({"ok": True, "open_ports": open_ports})
 
+        elif path == "/api/automations":
+            try:
+                from scripts.scheduler import get_scheduler
+                engine = get_scheduler()
+                self._json_resp({
+                    "ok": True,
+                    "automations": engine.list_automations(),
+                    "recent_results": engine.get_results(limit=10),
+                    "running": engine._running,
+                })
+            except Exception as exc:
+                self._json_resp({"ok": False, "error": str(exc), "automations": []})
+
+        elif path.startswith("/api/automations/") and path.endswith("/run"):
+            aid = path[len("/api/automations/"):-len("/run")]
+            try:
+                from scripts.scheduler import get_scheduler
+                result = get_scheduler().run_now(aid)
+                if result:
+                    self._json_resp({"ok": True, "result": result})
+                else:
+                    self._json_resp({"ok": False, "error": f"Automation '{aid}' not found."})
+            except Exception as exc:
+                self._json_resp({"ok": False, "error": str(exc)})
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -4270,6 +4295,49 @@ class _Handler(BaseHTTPRequestHandler):
 
         if path == "/api/chat":
             self._handle_chat_stream(body)
+
+        elif path == "/api/automations/enable":
+            aid = body.get("id", "").strip()
+            try:
+                from scripts.scheduler import get_scheduler
+                ok = get_scheduler().enable(aid)
+                self._json_resp({"ok": ok, "id": aid})
+            except Exception as exc:
+                self._json_resp({"ok": False, "error": str(exc)})
+
+        elif path == "/api/automations/disable":
+            aid = body.get("id", "").strip()
+            try:
+                from scripts.scheduler import get_scheduler
+                ok = get_scheduler().disable(aid)
+                self._json_resp({"ok": ok, "id": aid})
+            except Exception as exc:
+                self._json_resp({"ok": False, "error": str(exc)})
+
+        elif path == "/api/automations/add":
+            name = body.get("name", "").strip()
+            schedule = body.get("schedule", "every hour").strip()
+            command = body.get("command", "").strip()
+            description = body.get("description", "").strip()
+            if not name or not command:
+                self._json_resp({"ok": False, "error": "name and command are required."}, 400)
+                return
+            try:
+                from scripts.scheduler import get_scheduler, Automation
+                auto = Automation(name=name, schedule=schedule, command=command, description=description)
+                aid = get_scheduler().add(auto)
+                self._json_resp({"ok": True, "id": aid, "automation": auto.to_dict()})
+            except Exception as exc:
+                self._json_resp({"ok": False, "error": str(exc)})
+
+        elif path == "/api/automations/remove":
+            aid = body.get("id", "").strip()
+            try:
+                from scripts.scheduler import get_scheduler
+                ok = get_scheduler().remove(aid)
+                self._json_resp({"ok": ok, "id": aid})
+            except Exception as exc:
+                self._json_resp({"ok": False, "error": str(exc)})
 
         elif path == "/api/chat/answer":
             qid = body.get("questionId", "").strip()
