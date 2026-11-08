@@ -3530,10 +3530,12 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                         "options": {
                             "temperature": 0.3,
                             "top_p": 0.95,
-                            "num_gpu": 0
+                            "num_gpu": 0,
+                            "num_ctx": 2048,
+                            "num_thread": 8
                         }
                     },
-                    timeout=(5, 120)
+                    timeout=(10, 600)
                 )
 
                 if resp.status_code != 200:
@@ -3550,10 +3552,12 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
                                 "options": {
                                     "temperature": 0.3,
                                     "top_p": 0.95,
-                                    "num_gpu": 0
+                                    "num_gpu": 0,
+                                    "num_ctx": 2048,
+                                    "num_thread": 8
                                 }
                             },
-                            timeout=(5, 120)
+                            timeout=(10, 600)
                         )
 
                 if resp.status_code != 200:
@@ -3699,12 +3703,22 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
             return
 
         except Exception as exc:
-            yield {
-                "type": "error",
-                "message": (
-                    f"**Local Ollama Connection Error**: `{str(exc)}`\n\n"
+            err_msg = str(exc)
+            if "Read timed out" in err_msg:
+                user_friendly = (
+                    f"**Local Ollama Generation Timeout**: `{err_msg}`\n\n"
+                    f"Docker and Ollama are working, but the 7B model took longer than expected to complete generation on CPU.\n\n"
+                    f"• **For instant (<2s) cloud execution**: Switch to **Gemini Pro** or **Gemini 3.8 Flash** from the top bar.\n"
+                    f"• **For fast local execution**: Run `docker exec -it spectre-ollama ollama pull llama3.2:3b` which fits in laptop GPU VRAM."
+                )
+            else:
+                user_friendly = (
+                    f"**Local Ollama Connection Error**: `{err_msg}`\n\n"
                     f"Ensure Docker Desktop is open and Ollama is active. Or switch to **Gemini Pro** from the top bar."
                 )
+            yield {
+                "type": "error",
+                "message": user_friendly
             }
             return
 
