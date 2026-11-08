@@ -3538,6 +3538,26 @@ def _stream_agent_task(agent: str, sid: str, user_prompt: str, selected_model: s
 
                 if resp.status_code != 200:
                     err_text = resp.text
+                    # Auto-fallback: if local model doesn't declare native Ollama tool support, retry without tools parameter
+                    if "does not support tools" in err_text:
+                        yield {"type": "thinking", "text": f"Local model `{local_model}` does not support native function calling API. Seamlessly falling back to ReAct / direct chat mode..."}
+                        resp = _requests.post(
+                            "http://127.0.0.1:11434/api/chat",
+                            json={
+                                "model": local_model,
+                                "messages": ollama_messages,
+                                "stream": False,
+                                "options": {
+                                    "temperature": 0.3,
+                                    "top_p": 0.95,
+                                    "num_gpu": 0
+                                }
+                            },
+                            timeout=(5, 120)
+                        )
+
+                if resp.status_code != 200:
+                    err_text = resp.text
                     yield {
                         "type": "error",
                         "message": (
