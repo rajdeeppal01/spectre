@@ -12,20 +12,20 @@ All unit tests run fully air-gapped (no real network calls); integration tests l
 
 ## Tasks
 
-- [ ] 1. Create test infrastructure
-  - [ ] 1.1 Create pyproject.toml pytest configuration
+- [x] 1. Create test infrastructure
+  - [x] 1.1 Create pyproject.toml pytest configuration
     - Add `[tool.pytest.ini_options]` section with `testpaths = ["tests"]`, `asyncio_mode = "auto"`, `addopts` with `--cov=scripts --cov=agents --cov-report=html:htmlcov --cov-fail-under=70`, and `markers` for `integration`, `unit`, and `pbt`
     - _Requirements: 1.1, 1.3, 1.4, 9.2_
 
-  - [ ] 1.2 Create requirements-test.txt with pinned dependencies
+  - [x] 1.2 Create requirements-test.txt with pinned dependencies
     - Write `requirements-test.txt` at repo root with exact-version pins: `pytest==8.2.2`, `pytest-asyncio==0.23.8`, `pytest-cov==5.0.0`, `hypothesis==6.108.5`, `httpx[asyncio]==0.27.0`
     - _Requirements: 1.5_
 
-  - [ ] 1.3 Create tests/ directory skeleton with __init__.py files
+  - [x] 1.3 Create tests/ directory skeleton with __init__.py files
     - Create `tests/__init__.py`, `tests/scripts/__init__.py`, `tests/agents/__init__.py`, `tests/integration/__init__.py`
     - _Requirements: 1.1_
 
-  - [ ] 1.4 Create root tests/conftest.py with all shared fixtures
+  - [x] 1.4 Create root tests/conftest.py with all shared fixtures
     - Implement `mock_ollama` fixture: monkeypatch `urllib.request.urlopen` to return `io.BytesIO`-wrapped `{"response": "mock AI analysis", "done": true}` JSON
     - Implement `mock_openai_client` fixture: monkeypatch `agents.web_audit_bridge.CLIENT` with a `MagicMock` whose `.chat.completions.create()` returns a fake `ChatCompletion`-shaped `SimpleNamespace`
     - Implement `mock_anu_success` fixture: monkeypatch `scripts.quantum_rng.urllib.request.urlopen` to return valid ANU JSON `{"success": True, "data": list(range(n))}`
@@ -35,13 +35,13 @@ All unit tests run fully air-gapped (no real network calls); integration tests l
     - Implement `tmp_dir_with_files` fixture: factory callable `(file_map: dict) -> Path` populating `tmp_path` with named files
     - _Requirements: 1.2_
 
-  - [ ] 1.5 Create tests/integration/conftest.py with skip guard
+  - [x] 1.5 Create tests/integration/conftest.py with skip guard
     - Register `--run-integration` CLI option via `pytest_addoption`
     - Implement `pytest_runtest_setup` hook that calls `pytest.skip()` for any test marked `integration` when `--run-integration` is not passed
     - _Requirements: 1.2, 9.1, 9.2, 9.3_
 
-- [ ] 2. Implement AUTO router unit tests
-  - [ ] 2.1 Write example-based routing rule tests
+- [x] 2. Implement AUTO router unit tests
+  - [x] 2.1 Write example-based routing rule tests
     - Implement `TestChooseModelRouting` class in `tests/scripts/test_auto_router.py`
     - Test 2.1: cybersec keyword → `"spectre"` (use `monkeypatch` on `has_internet`, pass payload with `"exploit payload"`)
     - Test 2.2: `is_private=True` + internet → `"architect"`

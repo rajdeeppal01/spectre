@@ -1,0 +1,9 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--cov=scripts --cov=agents --cov-report=html:htmlcov --cov-fail-under=70 --junitxml=test-results.xml"
+markers = [
+    "integration: mark test as requiring live local services (deselected by default)",
+    "unit: mark test as a pure unit test",
+    "pbt: mark test as a property-based test using Hypothesis",
+]

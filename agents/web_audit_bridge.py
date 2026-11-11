@@ -39,10 +39,12 @@ def parse_burp_xml(xml_path: str) -> list[dict]:
     items = []
     
     for item in root.findall('item'):
-        # Burp Base64 encodes requests/responses
-        req_b64 = item.find('request').text
-        res_b64 = item.find('response').text
-        
+        # Burp Base64 encodes requests/responses; tags may be absent in trimmed exports
+        req_el = item.find('request')
+        res_el = item.find('response')
+        req_b64 = req_el.text if req_el is not None else None
+        res_b64 = res_el.text if res_el is not None else None
+
         try:
             req = base64.b64decode(req_b64).decode('utf-8', errors='replace') if req_b64 else ""
             res = base64.b64decode(res_b64).decode('utf-8', errors='replace') if res_b64 else ""
