@@ -24,6 +24,8 @@ services:
     environment:
       - OLLAMA_NUM_PARALLEL=1
       - OLLAMA_MAX_LOADED_MODELS=1   # 4GB VRAM — load one model at a time
+      - OLLAMA_FLASH_ATTENTION=1
+      - OLLAMA_KV_CACHE_TYPE=q8_0
 
   litellm:
     image: ghcr.io/berriai/litellm:main-stable
