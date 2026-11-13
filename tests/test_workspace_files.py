@@ -37,14 +37,16 @@ def test_workspace_file_content_api():
 
 def test_workspace_image_preview_api():
     print("[3/6] Testing GET /api/workspace/file for image preview ...")
-    url = f"{BASE_URL}/api/workspace/file?path=dashboard/screenshots/shot_1793036320092_8648.png"
+    # dashboard/screenshots/ is runtime-generated and git-ignored, so use a
+    # committed asset instead of a screenshot that only exists on a dev machine.
+    url = f"{BASE_URL}/api/workspace/file?path=dashboard/assets/ferris_poster.jpg"
     req = urllib.request.Request(url)
     with urllib.request.urlopen(req, timeout=5) as resp:
         assert resp.status == 200, f"Expected 200, got {resp.status}"
         data = json.loads(resp.read().decode("utf-8"))
         assert data.get("ok") is True, f"Expected ok: True, got {data}"
-        assert data.get("is_image") is True, "Expected is_image: True for PNG file"
-        assert data.get("data_url", "").startswith("data:image/png;base64,"), "Expected valid base64 data URL"
+        assert data.get("is_image") is True, "Expected is_image: True for JPEG file"
+        assert data.get("data_url", "").startswith("data:image/jpeg;base64,"), "Expected valid base64 data URL"
         assert data.get("size", 0) > 10000, f"Expected size >10KB, got {data.get('size')}"
         print(f"      OK! Image preview returned base64 data URL ({data['size']} bytes).")
 
