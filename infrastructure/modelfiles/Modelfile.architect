@@ -1,6 +1,6 @@
 FROM devstral:7b-q4_K_M
 
-PARAMETER num_gpu 28
+PARAMETER num_gpu 24
 PARAMETER num_thread 6
 PARAMETER num_ctx 8192
 PARAMETER num_batch 512
